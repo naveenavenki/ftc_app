@@ -25,33 +25,33 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
      * Initialize the drive system variables.
      * The init() method of the hardware class does all the work here
      */
-    public BokStatus init(OpMode opMode) {
+    protected BoKStatus initMotors(OpMode opMode) {
 
         leftBack = opMode.hardwareMap.dcMotor.get(LEFT_BACK_MOTOR_NAME);
         if (leftBack == null) {
-            return BokStatus.BOK_FAILURE;
+            return BoKStatus.BOK_FAILURE;
         }
 
         leftFront = opMode.hardwareMap.dcMotor.get(LEFT_FRONT_MOTOR_NAME);
         if (leftFront == null) {
-            return BokStatus.BOK_FAILURE;
+            return BoKStatus.BOK_FAILURE;
         }
 
         rightBack = opMode.hardwareMap.dcMotor.get(RIGHT_BACK_MOTOR_NAME);
         if (rightBack == null) {
-            return BokStatus.BOK_FAILURE;
+            return BoKStatus.BOK_FAILURE;
         }
 
         rightFront = opMode.hardwareMap.dcMotor.get(RIGHT_FRONT_MOTOR_NAME);
         if (rightFront == null) {
-            return BokStatus.BOK_FAILURE;
+            return BoKStatus.BOK_FAILURE;
         }
 
         rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Drive train is initialized, initialize sensors
-        return super.initSensors(opMode);
+        return BoKStatus.BOK_SUCCESS;
     }
 
     public void setPowerToMotors(double left, double right) {

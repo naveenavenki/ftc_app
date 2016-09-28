@@ -19,26 +19,37 @@ public abstract class BoKHardwareBot {
     private ElapsedTime period  = new ElapsedTime();
 
     // return status
-    public enum BokStatus {
+    public enum BoKStatus {
         BOK_FAILURE,
         BOK_SUCCESS
+    }
+
+    public BoKStatus initHardware(OpMode opMode) {
+        // first initialize the drive train
+        BoKStatus rc = initMotors(opMode);
+        if (rc == BoKStatus.BOK_SUCCESS) {
+            rc = initSensors(opMode);
+        }
+        return rc;
     }
 
     /*
      * Initialize the sensor variables.
      * The initSensors() method of the hardware class does all the work here
      */
-    public BokStatus initSensors(OpMode opMode) {
+    private BoKStatus initSensors(OpMode opMode) {
         colorSensor = opMode.hardwareMap.colorSensor.get(COLOR_SENSOR_NAME);
         if (colorSensor == null) {
-            return BokStatus.BOK_FAILURE;
+            return BoKStatus.BOK_FAILURE;
         }
 
-        return BokStatus.BOK_SUCCESS;
+        return BoKStatus.BOK_SUCCESS;
     }
 
-    public abstract BokStatus init(OpMode opMode);
+    // Initialization of drive train is protected
+    protected abstract BoKStatus initMotors(OpMode opMode);
 
+    // Using the drive train is public
     public abstract void setModeForMotors(DcMotor.RunMode runMode);
     public abstract void setPowerToMotors(double leftPower, double rightPower);
 

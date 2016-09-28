@@ -18,7 +18,7 @@ public class BoKTeleop extends LinearOpMode {
         robot = new BoK6WDHardwareBot();
         //robot = new BoK4WDHardwareBot();
 
-        if (BoKHardwareBot.BokStatus.BOK_FAILURE == robot.init(this))
+        if (BoKHardwareBot.BoKStatus.BOK_FAILURE == robot.initHardware(this))
         {
             throw new InterruptedException("Hardware not initialized");
         }

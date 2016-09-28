@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
@@ -20,7 +18,7 @@ public class BoKAuto extends LinearOpMode{
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
          */
-        if (BoKHardwareBot.BokStatus.BOK_FAILURE == robot.init(this)) {
+        if (BoKHardwareBot.BoKStatus.BOK_FAILURE == robot.initHardware(this)) {
             throw new InterruptedException("Hardware not initialized!");
         }
 
