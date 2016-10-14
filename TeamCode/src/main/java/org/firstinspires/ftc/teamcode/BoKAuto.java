@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@Autonomous(name="BoK Auto Color", group="BoK6WD")
+@Autonomous(name="BoK Auto", group="BoK6WD")
 public class BoKAuto extends LinearOpMode{
     protected BoKHardwareBot robot;
 
@@ -30,7 +30,7 @@ public class BoKAuto extends LinearOpMode{
         waitForStart();
 
         // Run the autonomous operation
-        BoKAutoColorTest test = new BoKAutoColorTest();
+        BoKAutoRunTest test = new BoKAutoRunTest();
         test.runTest(this, robot);
     }
 }

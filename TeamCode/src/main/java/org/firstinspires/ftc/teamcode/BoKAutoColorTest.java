@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 /**
  * Created by Krishna Saxena on 9/28/2016.
  */
-public class BoKAutoColorTest {
+public class BoKAutoColorTest implements BokAutoTest {
     // Constants
     private static final int RED_THRESHOLD = 30;
     private static final int BLUE_THRESHOLD = 15;
