@@ -47,8 +47,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
-        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Drive train is initialized, initialize sensors
         return BoKStatus.BOK_SUCCESS;

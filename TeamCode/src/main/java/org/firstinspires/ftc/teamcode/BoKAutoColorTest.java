@@ -82,4 +82,48 @@ public class BoKAutoColorTest implements BokAutoTest {
             } // while (opModeIsActive())
         } // if (opModeIsActive())
     }
+
+    private void followRedLine_Right(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
+    {
+        if (opMode.opModeIsActive()) {
+            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            int current_red = robot.colorSensor.red();
+            int current_blue = robot.colorSensor.blue();
+
+            // run until the end of the match (driver presses STOP)
+            while (opMode.opModeIsActive()) {
+                // Allow time for other processes to run.
+                opMode.telemetry.addData("r: ", current_red + " b: " + current_blue );
+                opMode.telemetry.update();
+                opMode.idle();
+                current_red = robot.colorSensor.red();
+                current_blue = robot.colorSensor.blue();
+                if(current_red > 10){
+                    while((current_red > 10) && opMode.opModeIsActive()) {
+                        robot.setPowerToMotors(0.2f, 0.0f);
+                        opMode.idle();
+                        current_red = robot.colorSensor.red();
+                        current_blue = robot.colorSensor.blue();
+                        opMode.telemetry.addData("r: ", current_red + " b: " + current_blue );
+                    }
+                    robot.setPowerToMotors(0.0f, 0.0f);
+                    opMode.idle();
+                }
+                else{
+                    while((current_red < 10) && opMode.opModeIsActive()) {
+                        robot.setPowerToMotors(0.0f, 0.2f);
+                        opMode.idle();
+
+                        current_red = robot.colorSensor.red();
+                        current_blue = robot.colorSensor.blue();
+                        opMode.telemetry.addData("r: ", current_red + " b: " + current_blue );
+                    }
+                    robot.setPowerToMotors(0.0f, 0.0f);
+                    opMode.idle();
+                }
+            } // while (opModeIsActive()
+        } // if (opModeIsActive())
+        robot.setPowerToMotors(0.0f, 0.0f);
+        opMode.idle();
+    }
 }
