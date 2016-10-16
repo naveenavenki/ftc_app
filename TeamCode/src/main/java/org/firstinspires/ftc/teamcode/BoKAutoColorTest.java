@@ -9,9 +9,13 @@ public class BoKAutoColorTest implements BokAutoTest {
     // Constants
     private static final int RED_THRESHOLD = 30;
     private static final int BLUE_THRESHOLD = 15;
-    private static final float LEFT_MOTOR_POWER = 0.2f;
-    private static final float RIGHT_MOTOR_POWER = 0.2f;
 
+    @Override
+    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+
+    }
+
+    @Override
     public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
         runToRed(opMode, robot);
         runToBlue(opMode, robot);
@@ -29,7 +33,7 @@ public class BoKAutoColorTest implements BokAutoTest {
                 int current_red = robot.colorSensor.red();
                 int current_blue = robot.colorSensor.blue();
                 int current_green = robot.colorSensor.green();
-                while (current_red < RED_THRESHOLD) {
+                while (current_red < RED_THRESHOLD && opMode.opModeIsActive()) {
                     // Display the color info on the driver station
                     opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " g: " + current_green);
                     opMode.telemetry.update();
@@ -61,7 +65,7 @@ public class BoKAutoColorTest implements BokAutoTest {
                 int current_red = robot.colorSensor.red();
                 int current_blue = robot.colorSensor.blue();
                 int current_green = robot.colorSensor.green();
-                while (current_blue < BLUE_THRESHOLD) {
+                while (current_blue < BLUE_THRESHOLD && opMode.opModeIsActive()) {
                     // Display the color info on the driver station
                     opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " g: " + current_green);
                     opMode.telemetry.update();
