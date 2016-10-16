@@ -6,8 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Created by shiv on 10/14/2016.
  */
 public class BoKAutoRunTest implements BokAutoTest {
-    private static final float LEFT_MOTOR_POWER = 0.5f;
-    private static final float RIGHT_MOTOR_POWER = 0.525f;
+    @Override
+    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+    }
 
     @Override
     public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {

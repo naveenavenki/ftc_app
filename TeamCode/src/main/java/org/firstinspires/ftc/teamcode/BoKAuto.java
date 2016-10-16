@@ -26,11 +26,14 @@ public class BoKAuto extends LinearOpMode{
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();
 
+        //BoKAutoRunTest test = new BoKAutoRunTest();
+        BoKVuforiaTest test = new BoKVuforiaTest();
+        test.initTest(this, robot);
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
         // Run the autonomous operation
-        BoKAutoRunTest test = new BoKAutoRunTest();
         test.runTest(this, robot);
     }
 }
