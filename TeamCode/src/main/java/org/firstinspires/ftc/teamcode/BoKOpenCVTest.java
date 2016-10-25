@@ -45,11 +45,10 @@ public class BoKOpenCVTest implements BokAutoTest {
     private VuforiaTrackables beacons;
     private VuforiaLocalizer vuforiaFTC;
 
-    private final int BEACON_AREA_WRT_CENTER_OF_IMAGE_X = -80; // in mm from center of image which is 254
-    private final int BEACON_AREA_WRT_CENTER_OF_IMAGE_Y = 192;
-    private final int BEACON_ROI_PIXELS_X = 100;
-    private final int BEACON_ROI_PIXELS_Y = 100;
-    private final int NORM_HIST_RED_THRESHOLD = 200;
+    private final int BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_X = -40; // in mm from center of image which is 254
+    private final int BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_Y = 240;
+    private final int BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_X = -80;
+    private final int BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_Y = 200;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity()) {
         @Override
@@ -107,19 +106,15 @@ public class BoKOpenCVTest implements BokAutoTest {
                     raw.setData(rawData);
 
                     // Now call Vuforia's projectPoint to convert 3D point in space to camera image coordinates
-                    Vec2F point = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(BEACON_AREA_WRT_CENTER_OF_IMAGE_X, BEACON_AREA_WRT_CENTER_OF_IMAGE_Y, 0));
-                    //opMode.telemetry.addData(beac.getName() + "-Img point: ", point.getData()[0] + ", " +  point.getData()[1]);
+                    Vec2F pointUR = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_X, BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_Y, 0));
+                    Vec2F pointBL = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_X, BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_Y, 0));
+                    //opMode.telemetry.addData(beac.getName() + "-Img point: ", pointUL.getData()[0] + ", " +  pointUL.getData()[1]);
 
                     VuforiaLocalizer.CloseableFrame frame = vuforiaFTC.getFrameQueue().take() ;//takes the frame at the head of the queue
-                    Image rgb = null;
-
                     long numImages = frame.getNumImages();
-                   //opMode.telemetry.addData("Num frames ", numImages);
-                   //opMode.telemetry.update();
-
                     for (int i = 0; i < numImages; i++) {
                         if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-                            rgb = frame.getImage(i);
+                            Image rgb = frame.getImage(i);
                             if (rgb != null) {
                                 //opMode.telemetry.addData("rgb is not null!", "Yay: " + i);
                                 //opMode.telemetry.update();
@@ -136,10 +131,14 @@ public class BoKOpenCVTest implements BokAutoTest {
                                 MatOfFloat ranges = new MatOfFloat(0f, 180f);
                                 Mat mask = new Mat(img.rows(), img.cols(), CvType.CV_8UC1, new Scalar(0));
                                 float[] resFloat = new float[180];
-                                int roiPixelsX = BEACON_ROI_PIXELS_X;
-                                int roiPixelsY = BEACON_ROI_PIXELS_Y;
 
-                                Rect roi = new Rect((int)point.getData()[0], (int)point.getData()[1], roiPixelsX, roiPixelsY);
+                                // the image is rotated 90 degrees
+                                int roiPixelsX = (int)pointBL.getData()[0] - (int)pointUR.getData()[0];
+                                int roiPixelsY = (int)pointBL.getData()[1] - (int)pointUR.getData()[1];
+                                int numPixels = roiPixelsX*roiPixelsY;
+                                Log.v("BOL", "NumPixels: " + numPixels);
+
+                                Rect roi = new Rect((int)pointUR.getData()[0], (int)pointUR.getData()[1], roiPixelsX, roiPixelsY);
 
                                 // Make sure that our region of interest fits in the image
                                 if ((roi.x >= 0) && (roi.x < (rgb.getWidth()-roiPixelsX)) && (roi.y >= 0) && (roi.y < (rgb.getHeight()-roiPixelsY))) {
@@ -148,19 +147,19 @@ public class BoKOpenCVTest implements BokAutoTest {
                                     subMask.setTo(new Scalar(255));
 
                                     Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0), mask, hist, histSize, ranges);
-                                    Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
+                                    //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
                                     hist.get(0, 0, resFloat);
                                     for (int p = 170; p < 180; p++) {
-                                        if (((int) resFloat[p]) > NORM_HIST_RED_THRESHOLD) {
-                                            //Log.v("BOK", "num #: " + p + ", " + (int) resFloat[p]);
+                                        if (((int) resFloat[p]) > 0) {
+                                            Log.v("BOK", "num #: " + p + ", " + (int) resFloat[p]);
                                             foundRed = true;
                                             break;
                                         }
                                     }
                                     if (foundRed == false) {
                                         for (int p = 0; p < 10; p++) {
-                                            if (((int) resFloat[p]) > NORM_HIST_RED_THRESHOLD) {
-                                                //Log.v("BOK", "num #: " + p + ", " + (int) resFloat[p]);
+                                            if (((int) resFloat[p]) > 0) {
+                                                Log.v("BOK", "num #: " + p + ", " + (int) resFloat[p]);
                                                 foundRed = true;
                                                 break;
                                             }
@@ -175,8 +174,8 @@ public class BoKOpenCVTest implements BokAutoTest {
                                 }
                             }
                             break;
-                        }//if
-                    }//for
+                        }//if (rgb != null)
+                    }//for (int i = 0; i < numImages; i++)
                     frame.close();
                 }
             }
