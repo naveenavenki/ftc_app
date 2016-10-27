@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@Autonomous(name="BoK Auto", group="BoK6WD")
+//@Autonomous(name="BoK Auto", group="BoK6WD")
 public class BoKAuto_CV extends BoKAuto{
 
 

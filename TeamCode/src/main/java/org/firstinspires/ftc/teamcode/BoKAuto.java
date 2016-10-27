@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@Autonomous(name="BoK Auto", group="BoK6WD")
-@Disabled
+@Autonomous(name="BoK Auto New", group="BoK6WD")
+//@Disabled
 public class BoKAuto extends LinearOpMode{
     protected BoKHardwareBot robot;
 

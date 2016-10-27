@@ -17,7 +17,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 /**
  * Created by shiv on 10/5/2016.
  */
-//@Autonomous(name="BoK Auto Vuforia", group="BoK6WD")
 public class BoKVuforiaTest implements BokAutoTest {
     private VuforiaTrackables beacons;
 
@@ -109,7 +108,7 @@ public class BoKVuforiaTest implements BokAutoTest {
 
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(-LEFT_MOTOR_POWER/5, RIGHT_MOTOR_POWER/5);
+            robot.setPowerToMotors(-LEFT_MOTOR_POWER/3.5, RIGHT_MOTOR_POWER/3.5);
             opMode.telemetry.addData("Status: ", "turn till pic 2");
 
             // run until the end of the match (driver presses STOP)
@@ -119,8 +118,8 @@ public class BoKVuforiaTest implements BokAutoTest {
                     if (pose != null) {
                         VectorF translation = pose.getTranslation();
                         opMode.telemetry.addData(beac.getName() + "-Translation: ", translation);
-                        double degreesToTurn = Math.toDegrees(Math.atan2(translation.get(0), translation.get(2)));
-                        opMode.telemetry.addData(beac.getName() + "-Degrees: ", degreesToTurn);
+                        //double degreesToTurn = Math.toDegrees(Math.atan2(translation.get(0), translation.get(2)));
+                        //opMode.telemetry.addData(beac.getName() + "-Degrees: ", degreesToTurn);
                         picIsVisible = true;
                         break;
                     }
@@ -129,6 +128,40 @@ public class BoKVuforiaTest implements BokAutoTest {
                 if (picIsVisible == true) {
                     robot.setPowerToMotors(0, 0);
                     break;
+                }
+                opMode.telemetry.update();
+                opMode.idle();
+            }
+
+            // run until the end of the match (driver presses STOP)
+            boolean facingBeacon = false;
+            while (opMode.opModeIsActive() && (facingBeacon == false)) {
+                for (VuforiaTrackable beac : beacons) {
+                    OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) beac.getListener()).getPose();
+                    if (pose != null) {
+                        VectorF translation = pose.getTranslation();
+                        opMode.telemetry.addData(beac.getName() + "-Translation: ", translation);
+
+                        float x = translation.get(0);
+                        if ((x > -10) && (x < 10)) {
+                            robot.setPowerToMotors(0, 0);
+                            facingBeacon = true;
+                            break;
+                        }
+
+                        if (x > 0) {
+                            robot.setPowerToMotors(+LEFT_MOTOR_POWER/3.5, -RIGHT_MOTOR_POWER/3.5);
+                        }
+                        else {
+                            robot.setPowerToMotors(-LEFT_MOTOR_POWER/3.5, +RIGHT_MOTOR_POWER/3.5);
+                        }
+
+
+                        //double degreesToTurn = Math.toDegrees(Math.atan2(translation.get(0), translation.get(2)));
+                        //opMode.telemetry.addData(beac.getName() + "-Degrees: ", degreesToTurn);
+                        //picIsVisible = true;
+                        break;
+                    }
                 }
                 opMode.telemetry.update();
                 opMode.idle();
