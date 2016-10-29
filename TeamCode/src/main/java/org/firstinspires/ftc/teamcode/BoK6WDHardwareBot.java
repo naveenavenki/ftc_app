@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
@@ -14,11 +15,13 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     private static final String RIGHT_BACK_MOTOR_NAME = "rb";
     private static final String RIGHT_FRONT_MOTOR_NAME = "rf";
 
+
     // Drive train motors
     protected DcMotor leftBack;
     protected DcMotor leftFront;
     protected DcMotor rightBack;
     protected DcMotor rightFront;
+
 
     @Override
     /*

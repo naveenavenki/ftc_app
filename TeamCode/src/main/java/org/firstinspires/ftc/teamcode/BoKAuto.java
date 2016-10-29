@@ -29,7 +29,8 @@ public class BoKAuto extends LinearOpMode{
         telemetry.update();
 
         //BoKAutoRunTest test = new BoKAutoRunTest();
-        BoKVuforiaTest test = new BoKVuforiaTest();
+        //BoKVuforiaTest test = new BoKVuforiaTest();
+        BensonAuto test = new BensonAuto();
         test.initTest(this, robot);
 
         // Wait for the game to start (driver presses PLAY)
