@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@Autonomous(name="BoK Auto New", group="BoK6WD")
+@Autonomous(name="BoK Auto League", group="BoK6WD")
 //@Disabled
 public class BoKAuto extends LinearOpMode{
     protected BoKHardwareBot robot;
@@ -28,9 +27,8 @@ public class BoKAuto extends LinearOpMode{
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();
 
-        //BoKAutoRunTest test = new BoKAutoRunTest();
         //BoKVuforiaTest test = new BoKVuforiaTest();
-        BensonAuto test = new BensonAuto();
+        League0Auto test = new League0Auto();
         test.initTest(this, robot);
 
         // Wait for the game to start (driver presses PLAY)

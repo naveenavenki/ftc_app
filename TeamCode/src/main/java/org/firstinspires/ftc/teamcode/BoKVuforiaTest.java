@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /**
- * Created by shiv on 10/5/2016.
+ * Created by Krishna Saxena on 10/5/2016.
  */
 public class BoKVuforiaTest implements BokAutoTest {
     private VuforiaTrackables beacons;

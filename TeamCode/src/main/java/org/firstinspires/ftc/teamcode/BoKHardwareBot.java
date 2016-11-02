@@ -12,28 +12,27 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 public abstract class BoKHardwareBot {
     // Constants
-    private static final String COLOR_SENSOR_NAME = "color";
-    private static final String SERVO_SHOOTER = "ss";
-    private static final String SERVO_PUSHER_LEFT = "pl";
-    private static final String SERVO_PUSHER_RIGHT = "pr";
-    private static final String LEFT_SHOOTER_NAME = "sl";
-    private static final String RIGHT_SHOOTER_NAME = "sr";
-    private static final String SWEEPER_NAME = "sw";
-
-
+    private static final String COLOR_SENSOR_CFG        = "color";
+    private static final String SERVO_SHOOTER_CFG       = "ss";
+    private static final String SERVO_PUSHER_LEFT_CFG   = "pl";
+    private static final String SERVO_PUSHER_RIGHT_CFG  = "pr";
+    private static final String MOTOR_LEFT_SHOOTER_CFG  = "sl";
+    private static final String MOTOR_RIGHT_SHOOTER_CFG = "sr";
+    private static final String MOTOR_SWEEPER_CFG       = "sw";
 
     // Sensors
     public ColorSensor colorSensor;
 
     //servos
     //public Servo shooterServo;
-    public Servo pusherLeftServo;
+    protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
     //shooter and sweeper
-    protected DcMotor leftShooter;
-    protected DcMotor rightShooter;
-    protected DcMotor sweeper;
+    protected DcMotor leftShooterMotor;
+    protected DcMotor rightShooterMotor;
+    protected DcMotor sweeperMotor;
+
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();
 
@@ -47,7 +46,7 @@ public abstract class BoKHardwareBot {
         // first initialize the drive train
         BoKStatus rc = initMotors(opMode);
         if (rc == BoKStatus.BOK_SUCCESS) {
-            rc = initSensors(opMode);
+            rc = initMotorsAndSensors(opMode);
         }
         return rc;
     }
@@ -56,43 +55,45 @@ public abstract class BoKHardwareBot {
      * Initialize the sensor variables.
      * The initSensors() method of the hardware class does all the work here
      */
-    private BoKStatus initSensors(OpMode opMode) {
-        colorSensor = opMode.hardwareMap.colorSensor.get(COLOR_SENSOR_NAME);
+    private BoKStatus initMotorsAndSensors(OpMode opMode) {
+        colorSensor = opMode.hardwareMap.colorSensor.get(COLOR_SENSOR_CFG);
         if (colorSensor == null) {
             return BoKStatus.BOK_FAILURE;
         }
-      //  shooterServo = opMode.hardwareMap.servo.get(SERVO_SHOOTER);
+
+        //shooterServo = opMode.hardwareMap.servo.get(SERVO_SHOOTER_CFG);
         //if (shooterServo == null) {
           //  return BoKStatus.BOK_FAILURE;
         //}
-        pusherLeftServo = opMode.hardwareMap.servo.get(SERVO_PUSHER_LEFT);
+
+        pusherLeftServo = opMode.hardwareMap.servo.get(SERVO_PUSHER_LEFT_CFG);
         if (pusherLeftServo == null) {
             return BoKStatus.BOK_FAILURE;
         }
-        pusherRightServo = opMode.hardwareMap.servo.get(SERVO_PUSHER_RIGHT);
+        pusherRightServo = opMode.hardwareMap.servo.get(SERVO_PUSHER_RIGHT_CFG);
         if (pusherRightServo == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        leftShooter = opMode.hardwareMap.dcMotor.get(LEFT_SHOOTER_NAME);
-        if (leftShooter == null) {
+        leftShooterMotor = opMode.hardwareMap.dcMotor.get(MOTOR_LEFT_SHOOTER_CFG);
+        if (leftShooterMotor == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        rightShooter = opMode.hardwareMap.dcMotor.get(RIGHT_SHOOTER_NAME);
-        if (rightShooter == null) {
+        rightShooterMotor = opMode.hardwareMap.dcMotor.get(MOTOR_RIGHT_SHOOTER_CFG);
+        if (rightShooterMotor == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        sweeper = opMode.hardwareMap.dcMotor.get(SWEEPER_NAME);
-        if (sweeper == null) {
+        sweeperMotor = opMode.hardwareMap.dcMotor.get(MOTOR_SWEEPER_CFG);
+        if (sweeperMotor == null) {
             return BoKStatus.BOK_FAILURE;
         }
-        sweeper.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
+
         return BoKStatus.BOK_SUCCESS;
-
-
     }
 
     // Initialization of drive train is protected
@@ -102,19 +103,24 @@ public abstract class BoKHardwareBot {
     public abstract void setModeForMotors(DcMotor.RunMode runMode);
     public abstract void setPowerToMotors(double leftPower, double rightPower);
 
+    // Using the sweeper motor
     public void setPowerToSweeper(double sweeperPow){
-        sweeper.setPower(sweeperPow);
+        sweeperMotor.setPower(sweeperPow);
 
     }
+    // Using the shooter motors
     public void setPowerToShooter(double shooterPow){
-        leftShooter.setPower(shooterPow);
-        rightShooter.setPower(shooterPow);
+        leftShooterMotor.setPower(shooterPow);
+        rightShooterMotor.setPower(shooterPow);
     }
 
-    public void setLeftPusherPos(double leftPos){
+    public void setLeftPusherPos(double leftPos)
+    {
         pusherLeftServo.setPosition(leftPos);
     }
-    public void setRightPusherPos(double rightPos){
+
+    public void setRightPusherPos(double rightPos)
+    {
         pusherRightServo.setPosition(rightPos);
     }
 /*

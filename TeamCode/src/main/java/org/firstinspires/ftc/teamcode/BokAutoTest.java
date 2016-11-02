@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 /**
- * Created by shiv on 10/14/2016.
+ * Created by Krishna Saxena on 10/14/2016.
  */
 public interface BokAutoTest {
     static final float LEFT_MOTOR_POWER = 0.5f;

@@ -37,7 +37,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.Arrays;
 
 /**
- * Created by shiv on 10/5/2016.
+ * Created by Krishna Saxena on 10/5/2016.
  */
 //@Autonomous(name="BoK Auto Vuforia", group="BoK6WD")
 public class BoKOpenCVTest implements BokAutoTest {
