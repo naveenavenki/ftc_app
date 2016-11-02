@@ -30,7 +30,9 @@ public class League0Auto implements BokAutoTest {
     @Override
     public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
     {
+        // First shoot the two balls by turning on the sweeper and the ball shooter
         shootBall(opMode, robot, WAIT_FOR_SEC);
+        // Run to red or blue line
         runToRedOrBlue(opMode, robot);
     }
 
@@ -39,16 +41,16 @@ public class League0Auto implements BokAutoTest {
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
-            robot.setPowerToSweeper(-1);
+            robot.setPowerToSweeper(-1); // start the sweeper in reverse
 
-            // run until the end of the match (driver presses STOP)
+            // run till red or blue line or if the user presses stop
             while (opMode.opModeIsActive()) {
                 // go to red or blue line
                 int current_red = robot.colorSensor.red();
                 int current_blue = robot.colorSensor.blue();
                 //int current_green = robot.colorSensor.green();
 
-                while ((current_red < RED_THRESHOLD && current_blue < BLUE_THRESHOLD) && opMode.opModeIsActive()) {
+                while (((current_red < RED_THRESHOLD) && (current_blue < BLUE_THRESHOLD)) && opMode.opModeIsActive()) {
                     // Display the color info on the driver station
                     // opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " g: " + current_green);
                     opMode.telemetry.addData("r: ", current_red + " b: " + current_blue);
@@ -69,9 +71,9 @@ public class League0Auto implements BokAutoTest {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(0, 0);
-            robot.setPowerToShooter(1);
-            robot.setPowerToSweeper(1);
+            robot.setPowerToMotors(0, 0); // Do not move the robot
+            robot.setPowerToShooter(1);   // start the ball shooter
+            robot.setPowerToSweeper(1);   // start the sweeper
             runTime.reset();
 
             // run until the end of the match (driver presses STOP)
@@ -84,5 +86,4 @@ public class League0Auto implements BokAutoTest {
             robot.setPowerToSweeper(0.0f); // stop the sweeper
         } // if (opModeIsActive())
     }
-
 }
