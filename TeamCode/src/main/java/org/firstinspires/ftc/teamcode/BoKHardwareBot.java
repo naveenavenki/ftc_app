@@ -24,7 +24,7 @@ public abstract class BoKHardwareBot {
     public ColorSensor colorSensor;
 
     //servos
-    //public Servo shooterServo;
+    protected Servo shooterServo;
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
@@ -61,10 +61,10 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
-        //shooterServo = opMode.hardwareMap.servo.get(SERVO_SHOOTER_CFG);
-        //if (shooterServo == null) {
-          //  return BoKStatus.BOK_FAILURE;
-        //}
+        shooterServo = opMode.hardwareMap.servo.get(SERVO_SHOOTER_CFG);
+        if (shooterServo == null) {
+          return BoKStatus.BOK_FAILURE;
+        }
 
         pusherLeftServo = opMode.hardwareMap.servo.get(SERVO_PUSHER_LEFT_CFG);
         if (pusherLeftServo == null) {
@@ -90,6 +90,7 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
+        sweeperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
 
@@ -123,11 +124,11 @@ public abstract class BoKHardwareBot {
     {
         pusherRightServo.setPosition(rightPos);
     }
-/*
+
     public void setShooterServoPos(double pos){
         shooterServo.setPosition(pos);
     }
-*/
+
     /***
      *
      * waitForTick implements a periodic delay. However, this acts like a metronome with a regular
