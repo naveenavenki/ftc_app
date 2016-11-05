@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class League0Auto implements BokAutoTest {
 
     private static final double WAIT_FOR_SEC_SHOOTER = 8.0;
-    private static final double WAIT_FOR_SEC_LINE = 5.0;
+    private static final double WAIT_FOR_SEC_LINE = 4.0;
     private static final int RED_THRESHOLD  = 5;
     private static final int BLUE_THRESHOLD = 5;
 
@@ -55,7 +55,7 @@ public class League0Auto implements BokAutoTest {
                 // go to red or blue line
                 int current_red = robot.colorSensor.red();
                 int current_blue = robot.colorSensor.blue();
-                //Log.v("BOK", "Red " + current_red + " Blue " + current_blue);
+                Log.v("BOK", "Red " + current_red + " Blue " + current_blue);
                 //int current_green = robot.colorSensor.green();
 
                 while (((current_red < RED_THRESHOLD) && (current_blue < BLUE_THRESHOLD)) && opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
@@ -63,7 +63,7 @@ public class League0Auto implements BokAutoTest {
                     // opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " g: " + current_green);
                     opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " sec: " + runTime.seconds());
                     opMode.telemetry.update();
-                    //Log.v("BOK", "RED " + current_red + " BLUE " + current_blue + " sec: " + runTime.seconds());
+                    Log.v("BOK", "RED " + current_red + " BLUE " + current_blue + " sec: " + runTime.seconds());
 
                     current_red = robot.colorSensor.red();
                     current_blue = robot.colorSensor.blue();
