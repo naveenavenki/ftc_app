@@ -28,6 +28,12 @@ public abstract class BoKHardwareBot {
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
+    public static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.85;
+    public static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.35;
+    public static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.0;
+    public static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
+
+
     //shooter and sweeper
     protected DcMotor leftShooterMotor;
     protected DcMotor rightShooterMotor;

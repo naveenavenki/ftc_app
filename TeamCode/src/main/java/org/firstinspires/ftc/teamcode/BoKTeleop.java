@@ -15,20 +15,17 @@ public class BoKTeleop extends LinearOpMode {
 
     protected double leftGamepad1 = 0;
     protected double rightGamepad1 = 0;
+    private static final double SHOOTER_SERVO_POS   = 0.1;
+    private static final double SWEEPER_MOTOR_POWER = 0.9;
+    private double  positionLeft = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
+    private double  positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
+
     //private static final double MAX_POS     =  1.0;     // Maximum rotational position
     //private static final double MIN_POS     =  0.0;     // Minimum rotational position
     //private int currentLeftServoPosition = 0;
     //private int currentRightServoPosition = 0;
     //private boolean rampUpLeft = true;
     //private boolean rampUpRight = true;
-    private static final double INITIAL_POS_LEFT  = 0.85;
-    private static final double FINAL_POS_LEFT    = 0.35;
-    private static final double INITIAL_POS_RIGHT = 0.0;
-    private static final double FINAL_POS_RIGHT  = 0.5;
-    private static final double SERVO_POS        = 0.0;
-    private double  positionLeft = INITIAL_POS_LEFT;//(MAX_POS - MIN_POS) / 2; // Start at halfway position
-    private double  positionRight = INITIAL_POS_RIGHT;//(MAX_POS - MIN_POS) / 2; // Start at halfway position
-    private boolean SWEEPER_ON=false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -44,7 +41,7 @@ public class BoKTeleop extends LinearOpMode {
         robot.setLeftPusherPos(positionLeft);
         robot.setRightPusherPos(positionRight);
 
-        robot.setShooterServoPos(SERVO_POS);
+        robot.setShooterServoPos(SHOOTER_SERVO_POS);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Hardware initialized");
@@ -55,10 +52,6 @@ public class BoKTeleop extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
-            if (SWEEPER_ON) {
-                Log.v("BOK", "IS_BUSY="+robot.sweeperMotor.isBusy());
-            }
 
             // Run wheels in tank mode (note: The joystick goes negative when pushed
             leftGamepad1 = -gamepad1.left_stick_y;
@@ -75,11 +68,10 @@ public class BoKTeleop extends LinearOpMode {
             }
 
             if(gamepad2.left_bumper){
-                SWEEPER_ON = true;
-                robot.setPowerToSweeper(1);
+                robot.setPowerToSweeper(SWEEPER_MOTOR_POWER);
             }
 
-            if(gamepad2.b)  {
+            if(gamepad1.right_bumper)  {
                 /*
                 if (rampUpRight) {
                     positionRight += 0.1;
@@ -103,12 +95,13 @@ public class BoKTeleop extends LinearOpMode {
                 idle();
                 */
                 Log.v("BOK", "PositionRight: " + positionRight);
-                if (positionRight == INITIAL_POS_RIGHT) {
-                    positionRight = FINAL_POS_RIGHT;
+
+                if(positionRight != BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT) {
+                    positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
                     robot.setRightPusherPos(positionRight);
                 }
             }
-            if(gamepad2.x) {
+            if(gamepad1.left_bumper) {
                 /*
                 if (rampUpLeft) {
                     positionLeft += 0.1;
@@ -132,10 +125,12 @@ public class BoKTeleop extends LinearOpMode {
                 idle();
                 */
                 Log.v("BOK", "PositionLeft: " + positionLeft);
-                if (positionLeft == INITIAL_POS_LEFT) {
-                    positionLeft = FINAL_POS_LEFT;
+
+                if(positionLeft != BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT) {
+                    positionLeft = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
                     robot.setLeftPusherPos(positionLeft);
                 }
+
             }
 
             if(gamepad2.y){
@@ -144,22 +139,23 @@ public class BoKTeleop extends LinearOpMode {
             if(gamepad2.a)
             {
                 robot.setPowerToSweeper(0);
-                SWEEPER_ON = false;
             }
 
-            if(gamepad1.left_bumper){
-                if(positionLeft != INITIAL_POS_LEFT) {
-                    positionLeft = INITIAL_POS_LEFT;
+            if(gamepad2.x){
+                if (positionLeft == BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT) {
+                    positionLeft = BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT;
                     robot.setLeftPusherPos(positionLeft);
                 }
             }
 
-            if(gamepad1.right_bumper){
-                if(positionRight != INITIAL_POS_RIGHT) {
-                    positionRight = INITIAL_POS_RIGHT;
+            if(gamepad2.b){
+                if (positionRight == BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT) {
+                    positionRight = BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT;
                     robot.setRightPusherPos(positionRight);
                 }
-            
+            }
+            if(gamepad1.a){
+                robot.setPowerToSweeper(-SWEEPER_MOTOR_POWER);
             }
 
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second

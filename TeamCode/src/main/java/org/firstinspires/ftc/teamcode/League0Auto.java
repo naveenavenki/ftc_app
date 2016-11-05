@@ -1,26 +1,27 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.vuforia.HINT;
-import com.vuforia.Vuforia;
-
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /**
  * Created by Krishna Saxena on 10/5/2016.
  */
 public class League0Auto implements BokAutoTest {
 
-    private static final double WAIT_FOR_SEC = 5.0;
+    private static final double WAIT_FOR_SEC_SHOOTER = 8.0;
+    private static final double WAIT_FOR_SEC_LINE = 5.0;
     private static final int RED_THRESHOLD  = 5;
     private static final int BLUE_THRESHOLD = 5;
+
+    private static final double SHOOTER_SERVO_POS = 0.1;
+    private double positionLeft = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
+    private double positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
+
+    private static final double SHOOTER_MOTOR_POWER = 1.0;
+    private static final double SWEEPER_MOTOR_POWER = 1.0;
+
     private ElapsedTime runTime  = new ElapsedTime();
 
     @Override
@@ -30,36 +31,44 @@ public class League0Auto implements BokAutoTest {
     @Override
     public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
     {
+        // set the initial position (both pointed down)
+        robot.setLeftPusherPos(positionLeft);
+        robot.setRightPusherPos(positionRight);
+
+        robot.setShooterServoPos(SHOOTER_SERVO_POS);
         // First shoot the two balls by turning on the sweeper and the ball shooter
-        shootBall(opMode, robot, WAIT_FOR_SEC);
+        shootBall(opMode, robot, WAIT_FOR_SEC_SHOOTER);
         // Run to red or blue line
-        runToRedOrBlue(opMode, robot);
+        runToRedOrBlue(opMode, robot, WAIT_FOR_SEC_LINE);
     }
 
-    private void runToRedOrBlue(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void runToRedOrBlue(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
             robot.setPowerToSweeper(-1); // start the sweeper in reverse
+            runTime.reset();
 
             // run till red or blue line or if the user presses stop
             while (opMode.opModeIsActive()) {
                 // go to red or blue line
                 int current_red = robot.colorSensor.red();
                 int current_blue = robot.colorSensor.blue();
+                //Log.v("BOK", "Red " + current_red + " Blue " + current_blue);
                 //int current_green = robot.colorSensor.green();
 
-                while (((current_red < RED_THRESHOLD) && (current_blue < BLUE_THRESHOLD)) && opMode.opModeIsActive()) {
+                while (((current_red < RED_THRESHOLD) && (current_blue < BLUE_THRESHOLD)) && opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
                     // Display the color info on the driver station
                     // opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " g: " + current_green);
-                    opMode.telemetry.addData("r: ", current_red + " b: " + current_blue);
+                    opMode.telemetry.addData("r: ", current_red + " b: " + current_blue + " sec: " + runTime.seconds());
                     opMode.telemetry.update();
+                    //Log.v("BOK", "RED " + current_red + " BLUE " + current_blue + " sec: " + runTime.seconds());
 
                     current_red = robot.colorSensor.red();
                     current_blue = robot.colorSensor.blue();
                     // current_green = robot.colorSensor.green();
-                } // while (current_red < RED_THRESHOLD)
+                } // while (current_red < RED_THRESHOLD) && (current_blue < BLUE_THRESHOLD)
 
                 robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
                 break; // done
@@ -72,8 +81,8 @@ public class League0Auto implements BokAutoTest {
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(0, 0); // Do not move the robot
-            robot.setPowerToShooter(1);   // start the ball shooter
-            robot.setPowerToSweeper(1);   // start the sweeper
+            robot.setPowerToShooter(SHOOTER_MOTOR_POWER);   // start the ball shooter
+            robot.setPowerToSweeper(SWEEPER_MOTOR_POWER);   // start the sweeper
             runTime.reset();
 
             // run until the end of the match (driver presses STOP)
