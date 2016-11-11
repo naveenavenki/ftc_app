@@ -22,7 +22,13 @@ public class League0Auto implements BokAutoTest {
     private static final double SHOOTER_MOTOR_POWER = 1.0;
     private static final double SWEEPER_MOTOR_POWER = 1.0;
 
+    private static final int MIDDLE_LINE = 20;
+
     private ElapsedTime runTime  = new ElapsedTime();
+    private double distance;
+    private int delta;
+    private double steer;
+    private int alpha;
 
     @Override
     public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
@@ -32,14 +38,17 @@ public class League0Auto implements BokAutoTest {
     public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
     {
         // set the initial position (both pointed down)
-        robot.setLeftPusherPos(positionLeft);
-        robot.setRightPusherPos(positionRight);
-
+        //robot.setLeftPusherPos(positionLeft);
+        //robot.setRightPusherPos(positionRight);
+/*
         robot.setShooterServoPos(SHOOTER_SERVO_POS);
         // First shoot the two balls by turning on the sweeper and the ball shooter
         shootBall(opMode, robot, WAIT_FOR_SEC_SHOOTER);
         // Run to red or blue line
-        runToRedOrBlue(opMode, robot, WAIT_FOR_SEC_LINE);
+        runToRedOrBlue(opMode, robot, WAIT_FOR_SEC_LINE);*/
+        //beaconTest(opMode, robot, 1.0);
+        proportionalLineFollowerTest(opMode, robot, 4);
+        ultrasonicTest(opMode, robot, 0.5);
     }
 
     private void runToRedOrBlue(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
@@ -71,7 +80,7 @@ public class League0Auto implements BokAutoTest {
                 } // while (current_red < RED_THRESHOLD) && (current_blue < BLUE_THRESHOLD)
 
                 robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
-                break; // done
+                break; // done4
             } // while (opModeIsActive())
         } // if (opModeIsActive())
     }
@@ -93,6 +102,84 @@ public class League0Auto implements BokAutoTest {
 
             robot.setPowerToShooter(0.0f); // stop the ball shooter
             robot.setPowerToSweeper(0.0f); // stop the sweeper
+        } // if (opModeIsActive())
+    }
+
+
+    private void ultrasonicTest(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+//            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
+            //robot.setPowerToSweeper(-1); // start the sweeper in reverse
+            runTime.reset();
+            robot.setPowerToMotors(-0.3,-0.3);
+
+            // run till red or blue line or if the user presses stop
+            while (opMode.opModeIsActive()) {
+                // go to red or blue line
+                /*int current_red = robot.colorSensor.red();
+                int current_blue = robot.colorSensor.blue();
+                Log.v("BOK", "Red " + current_red + " Blue " + current_blue);
+                //int current_green = robot.colorSensor.green();
+                */
+                distance = robot.rangeSensor.cmUltrasonic();
+
+                while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
+                    opMode.telemetry.addData("BOK", "distance: " + distance);
+                    opMode.telemetry.update();
+                    distance = robot.rangeSensor.cmUltrasonic();
+
+                } // while (opModeIsActive())
+
+
+                robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
+                break; // done
+            } // while (opModeIsActive())
+        } // if (opModeIsActive())
+    }
+
+    private void proportionalLineFollowerTest(BoKAuto opMode, BoKHardwareBot robot, double distanceToWall) throws InterruptedException {
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+//            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
+            //robot.setPowerToSweeper(-1); // start the sweeper in reverse
+            runTime.reset();
+            distance = robot.rangeSensor.cmUltrasonic();
+
+            // run till red or blue line or if the user presses stop
+            while (opMode.opModeIsActive()) {
+                // go to red or blue line
+                /*int current_red = robot.colorSensor.red();
+                int current_blue = robot.colorSensor.blue();
+                Log.v("BOK", "Red " + current_red + " Blue " + current_blue);
+                //int current_green = robot.colorSensor.green();
+                */
+                alpha = robot.colorSensor.alpha();
+                distance = robot.rangeSensor.cmUltrasonic();
+
+                while (opMode.opModeIsActive() && (distance > distanceToWall)) {
+                    distance = robot.rangeSensor.cmUltrasonic();
+                    alpha = robot.colorSensor.alpha();
+                    delta = MIDDLE_LINE-alpha;
+                    steer = (double) ((delta)/MIDDLE_LINE);
+                    if(steer < 0){
+                        robot.setPowerToMotors((1*steer)-0.5, 0.5);
+                    }
+                    else if(steer > 0){
+                        robot.setPowerToMotors(0.5, (-1*steer)+0.5);
+                    }
+                    else{
+                        robot.setPowerToMotors(0.5, 0.525);
+                    }
+                    opMode.telemetry.addData("BoK", "Alpha: " + alpha + " Difference: " + delta + " Percent " + steer);
+
+                } // while (opModeIsActive())
+                opMode.telemetry.addData("BoK", "Alpha: " + alpha + " Difference: " + delta + " Percent " + steer);
+                robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
+                break; // done
+            } // while (opModeIsActive())
         } // if (opModeIsActive())
     }
 }

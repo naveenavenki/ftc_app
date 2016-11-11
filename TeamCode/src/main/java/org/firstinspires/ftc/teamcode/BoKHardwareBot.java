@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public abstract class BoKHardwareBot {
     // Constants
     private static final String COLOR_SENSOR_CFG        = "color";
+    private static final String RANGE_SENSOR_CFG        = "rs";
     private static final String SERVO_SHOOTER_CFG       = "ss";
     private static final String SERVO_PUSHER_LEFT_CFG   = "pl";
     private static final String SERVO_PUSHER_RIGHT_CFG  = "pr";
@@ -21,7 +23,8 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_SWEEPER_CFG       = "sw";
 
     // Sensors
-    public ColorSensor colorSensor;
+    protected ColorSensor colorSensor;
+    protected ModernRoboticsI2cRangeSensor rangeSensor;
 
     //servos
     protected Servo shooterServo;
@@ -62,11 +65,15 @@ public abstract class BoKHardwareBot {
      * The initSensors() method of the hardware class does all the work here
      */
     private BoKStatus initMotorsAndSensors(OpMode opMode) {
+
         colorSensor = opMode.hardwareMap.colorSensor.get(COLOR_SENSOR_CFG);
         if (colorSensor == null) {
             return BoKStatus.BOK_FAILURE;
         }
-
+        rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_CFG);
+        if (rangeSensor == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
         shooterServo = opMode.hardwareMap.servo.get(SERVO_SHOOTER_CFG);
         if (shooterServo == null) {
           return BoKStatus.BOK_FAILURE;

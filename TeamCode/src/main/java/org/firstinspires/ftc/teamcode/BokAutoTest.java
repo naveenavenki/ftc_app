@@ -5,7 +5,7 @@ package org.firstinspires.ftc.teamcode;
  */
 public interface BokAutoTest {
     static final float LEFT_MOTOR_POWER = 0.5f;
-    static final float RIGHT_MOTOR_POWER = 0.505f;
+    static final float RIGHT_MOTOR_POWER = 0.525f;
 
     public void initTest(BoKAuto opMode, BoKHardwareBot robot);
     public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException;
