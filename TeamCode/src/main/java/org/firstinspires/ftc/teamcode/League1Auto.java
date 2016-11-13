@@ -47,12 +47,10 @@ public class League1Auto implements BokAutoTest {
     //private static final double ALPHA_THRESHOLD  = 0.2;
 
 
-    private static final double SHOOTER_SERVO_POS = 0.1;
     private double positionLeft = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
     private double positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
 
     private static final double SHOOTER_MOTOR_POWER = 1.0;
-    private static final double SWEEPER_MOTOR_POWER = 1.0;
     private VuforiaLocalizer vuforiaFTC;
 
     private final int BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_X = 80; // in mm from center of image which is 254
@@ -330,7 +328,7 @@ public class League1Auto implements BokAutoTest {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(0, 0); // Do not move the robot
             robot.setPowerToShooter(SHOOTER_MOTOR_POWER);   // start the ball shooter
-            robot.setPowerToSweeper(SWEEPER_MOTOR_POWER);   // start the sweeper
+            robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);   // start the sweeper
             runTime.reset();
 
             // run until the end of the match (driver presses STOP)
@@ -340,7 +338,7 @@ public class League1Auto implements BokAutoTest {
             } // while (opModeIsActive())
 
             robot.setPowerToShooter(0.0f); // stop the ball shooter
-            robot.setPowerToSweeper(0.0f); // stop the sweeper
+            robot.sweeperMotor.setPower(0.0f); // stop the sweeper
         } // if (opModeIsActive())
     }
 
