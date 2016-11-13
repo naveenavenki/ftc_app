@@ -10,17 +10,17 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 public class BoK6WDHardwareBot extends BoKHardwareBot {
     // Constants
-    private static final String LEFT_BACK_MOTOR_NAME = "lb";
-    private static final String LEFT_FRONT_MOTOR_NAME = "lf";
-    private static final String RIGHT_BACK_MOTOR_NAME = "rb";
+    private static final String LEFT_BACK_MOTOR_NAME   = "lb";
+    private static final String LEFT_FRONT_MOTOR_NAME  = "lf";
+    private static final String RIGHT_BACK_MOTOR_NAME  = "rb";
     private static final String RIGHT_FRONT_MOTOR_NAME = "rf";
 
 
     // Drive train motors
-    protected DcMotor leftBack;
-    protected DcMotor leftFront;
-    protected DcMotor rightBack;
-    protected DcMotor rightFront;
+    private DcMotor leftBack;
+    private DcMotor leftFront;
+    private DcMotor rightBack;
+    private DcMotor rightFront;
 
 
     @Override

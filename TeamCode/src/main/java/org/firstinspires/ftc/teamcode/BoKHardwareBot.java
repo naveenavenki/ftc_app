@@ -29,21 +29,25 @@ public abstract class BoKHardwareBot {
     protected OpticalDistanceSensor odsSensor;
     protected ModernRoboticsI2cRangeSensor rangeSensor;
 
-    //servos
+    //servos: shooter and button pushers
     protected Servo shooterServo;
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
-    public static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.0;
-    public static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
-    public static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 1.0;
-    public static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
+    protected static final double INITIAL_SHOOTER_SERVO_POS      = 0.1;
+    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.0;
+    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
+    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 1.0;
+    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
 
 
-    //shooter and sweeper
-    protected DcMotor leftShooterMotor;
-    protected DcMotor rightShooterMotor;
+    //shooter motors and sweeper motor
+    private DcMotor leftShooterMotor;
+    private DcMotor rightShooterMotor;
     protected DcMotor sweeperMotor;
+
+    protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.9;
+    protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.2;
 
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();
@@ -113,7 +117,7 @@ public abstract class BoKHardwareBot {
         }
 
         sweeperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);      // start the sweeper motor for ball intake
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
 
         return BoKStatus.BOK_SUCCESS;
@@ -126,29 +130,10 @@ public abstract class BoKHardwareBot {
     public abstract void setModeForMotors(DcMotor.RunMode runMode);
     public abstract void setPowerToMotors(double leftPower, double rightPower);
 
-    // Using the sweeper motor
-    public void setPowerToSweeper(double sweeperPow){
-        sweeperMotor.setPower(sweeperPow);
-
-    }
-    // Using the shooter motors
+    // Using the shooter motors (we want to control both motors at the same time)
     public void setPowerToShooter(double shooterPow){
         leftShooterMotor.setPower(shooterPow);
         rightShooterMotor.setPower(shooterPow);
-    }
-
-    public void setLeftPusherPos(double leftPos)
-    {
-        pusherLeftServo.setPosition(leftPos);
-    }
-
-    public void setRightPusherPos(double rightPos)
-    {
-        pusherRightServo.setPosition(rightPos);
-    }
-
-    public void setShooterServoPos(double pos){
-        shooterServo.setPosition(pos);
     }
 
     /***

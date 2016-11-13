@@ -55,7 +55,7 @@ public class League0Auto implements BokAutoTest {
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
-            robot.setPowerToSweeper(-1); // start the sweeper in reverse
+            robot.sweeperMotor.setPower(-0.9); // start the sweeper in reverse
             runTime.reset();
 /*
             // run till red or blue line or if the user presses stop
@@ -91,7 +91,7 @@ public class League0Auto implements BokAutoTest {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(0, 0); // Do not move the robot
             robot.setPowerToShooter(SHOOTER_MOTOR_POWER);   // start the ball shooter
-            robot.setPowerToSweeper(SWEEPER_MOTOR_POWER);   // start the sweeper
+            robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);   // start the sweeper
             runTime.reset();
 
             // run until the end of the match (driver presses STOP)
@@ -100,8 +100,8 @@ public class League0Auto implements BokAutoTest {
                 opMode.telemetry.update();
             } // while (opModeIsActive())
 
-            robot.setPowerToShooter(0.0f); // stop the ball shooter
-            robot.setPowerToSweeper(0.0f); // stop the sweeper
+            robot.setPowerToShooter(0); // stop the ball shooter
+            robot.sweeperMotor.setPower(0); // stop the sweeper
         } // if (opModeIsActive())
     }
 
