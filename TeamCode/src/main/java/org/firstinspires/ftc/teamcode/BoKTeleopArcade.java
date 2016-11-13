@@ -70,7 +70,7 @@ public class BoKTeleopArcade extends LinearOpMode {
                 // 2. We are throttling down and turning right (backward right)
                 //    left power is -ve, right power is +ve
                 //if (gamePad1LeftStickY > 0.05) { // we are throttling up and moving right
-                    rightPower = (-1 * gamePad1RightStickX) * rightPower; // left power is +ve, right power is -ve
+                    rightPower = (1-gamePad1RightStickX) * rightPower; // left power is +ve, right power is -ve
                 //}
                 //else {  // we are throttling down: backward right
                 //    rightPower = (-1 * gamePad1RightStickX) * rightPower; // left power is -ve, right power is +ve
@@ -83,7 +83,7 @@ public class BoKTeleopArcade extends LinearOpMode {
                 // 2. We are throttling down and turning left (backward left)
                 //    left power is +ve (RightStickX is -ve), right power is -ve
                 //if (gamePad1LeftStickY > 0.05) { // we are throttling up and moving left
-                    leftPower = gamePad1RightStickX * leftPower; // left power is -ve (RightStickX is -ve), right power is +ve
+                    leftPower = (1-Math.abs(gamePad1RightStickX)) * leftPower; // left power is -ve (RightStickX is -ve), right power is +ve
                 //}
                 //else { // we are throttling down, backward left
                 //    leftPower = gamePad1RightStickX * leftPower; // left power is +ve (RightStickX is -ve), right power is -ve
