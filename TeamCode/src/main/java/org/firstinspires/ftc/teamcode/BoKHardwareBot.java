@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -14,6 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public abstract class BoKHardwareBot {
     // Constants
     private static final String COLOR_SENSOR_CFG        = "color";
+    private static final String ODS_SENSOR_CFG          = "ods";
     private static final String RANGE_SENSOR_CFG        = "rs";
     private static final String SERVO_SHOOTER_CFG       = "ss";
     private static final String SERVO_PUSHER_LEFT_CFG   = "pl";
@@ -24,6 +26,7 @@ public abstract class BoKHardwareBot {
 
     // Sensors
     protected ColorSensor colorSensor;
+    protected OpticalDistanceSensor odsSensor;
     protected ModernRoboticsI2cRangeSensor rangeSensor;
 
     //servos
@@ -31,9 +34,9 @@ public abstract class BoKHardwareBot {
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
-    public static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.85;
-    public static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.35;
-    public static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.0;
+    public static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.0;
+    public static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
+    public static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 1.0;
     public static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
 
 
@@ -65,11 +68,17 @@ public abstract class BoKHardwareBot {
      * The initSensors() method of the hardware class does all the work here
      */
     private BoKStatus initMotorsAndSensors(OpMode opMode) {
-
+        /*
         colorSensor = opMode.hardwareMap.colorSensor.get(COLOR_SENSOR_CFG);
         if (colorSensor == null) {
             return BoKStatus.BOK_FAILURE;
         }
+        */
+        odsSensor = opMode.hardwareMap.opticalDistanceSensor.get(ODS_SENSOR_CFG);
+        if (odsSensor == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
         rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_CFG);
         if (rangeSensor == null) {
             return BoKStatus.BOK_FAILURE;

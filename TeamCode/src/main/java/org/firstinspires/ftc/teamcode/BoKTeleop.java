@@ -4,11 +4,12 @@ import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@TeleOp(name="BoK TeleOp", group="BoK6WD")
+//@TeleOp(name="BoK TeleOp", group="BoK6WD")
 public class BoKTeleop extends LinearOpMode {
     protected BoKHardwareBot robot;
     protected double shooterServoStartPos;
@@ -20,12 +21,12 @@ public class BoKTeleop extends LinearOpMode {
     private double  positionLeft = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
     private double  positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
 
-    //private static final double MAX_POS     =  1.0;     // Maximum rotational position
-    //private static final double MIN_POS     =  0.0;     // Minimum rotational position
-    //private int currentLeftServoPosition = 0;
-    //private int currentRightServoPosition = 0;
-    //private boolean rampUpLeft = true;
-    //private boolean rampUpRight = true;
+    private static final double MAX_POS     =  1.0;     // Maximum rotational position
+    private static final double MIN_POS     =  0.0;     // Minimum rotational position
+    private int currentLeftServoPosition = 0;
+    private int currentRightServoPosition = 0;
+    private boolean rampUpLeft = true;
+    private boolean rampUpRight = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -72,12 +73,14 @@ public class BoKTeleop extends LinearOpMode {
             }
 
             if(gamepad1.right_bumper)  {
-                /*
+    /*
                 if (rampUpRight) {
                     positionRight += 0.1;
                     if (positionRight >= MAX_POS) {
                         positionRight = MAX_POS;
-                        rampUpRight = !rampUpRight;   // Switch ramp direction
+                        rampUpRight = !rampUpRight;
+                        // Switch ramp direction
+
                     }
                 }
                 else {
@@ -94,15 +97,17 @@ public class BoKTeleop extends LinearOpMode {
                 sleep(50);
                 idle();
                 */
+
                 Log.v("BOK", "PositionRight: " + positionRight);
 
                 if(positionRight != BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT) {
                     positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
                     robot.setRightPusherPos(positionRight);
                 }
+
             }
             if(gamepad1.left_bumper) {
-                /*
+/*
                 if (rampUpLeft) {
                     positionLeft += 0.1;
                     if (positionLeft >= MAX_POS) {
@@ -124,6 +129,7 @@ public class BoKTeleop extends LinearOpMode {
                 sleep(50);
                 idle();
                 */
+
                 Log.v("BOK", "PositionLeft: " + positionLeft);
 
                 if(positionLeft != BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT) {

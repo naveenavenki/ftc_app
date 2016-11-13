@@ -28,7 +28,7 @@ public class BoKAuto extends LinearOpMode{
         telemetry.update();
 
         //BoKVuforiaTest test = new BoKVuforiaTest();
-        League0Auto test = new League0Auto();
+        League1Auto test = new League1Auto();
         test.initTest(this, robot);
 
         // Wait for the game to start (driver presses PLAY)

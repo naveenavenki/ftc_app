@@ -8,19 +8,19 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@TeleOp(name="BoK TeleOp", group="BoK6WD")
+@TeleOp(name="BoK TeleOpArcade", group="BoK6WD")
 public class BoKTeleopArcade extends LinearOpMode {
     protected BoKHardwareBot robot;
     protected double shooterServoStartPos;
 
-    protected double leftGamepad1 = 0;
-    protected double rightGamepad1 = 0;
+    protected double Gamepad1ToggleRight = 0;
+    protected double Gamepad1ToggleLeft = 0;
     private static final double SHOOTER_SERVO_POS   = 0.1;
     private static final double SWEEPER_MOTOR_POWER = 0.9;
     private double  positionLeft = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
     private double  positionRight = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
-    private double rightSteering = 0;
-    private double leftSteering = 0;
+    private double rightPower = 0;
+    private double leftPower = 0;
     private double upPower = 0;
 
     //private static final double MAX_POS     =  1.0;     // Maximum rotational position
@@ -57,17 +57,28 @@ public class BoKTeleopArcade extends LinearOpMode {
         while (opModeIsActive()) {
 
             // Run wheels in tank mode (note: The joystick goes negative when pushed
-            leftSteering = -gamepad1.right_stick_x;
-            rightSteering = gamepad1.right_stick_x;
 
-            upPower = -gamepad1.left_stick_y;
+            if(!(gamepad1.left_stick_y > 0.05) || !(gamepad1.left_stick_y < -0.05)){
+                Gamepad1ToggleRight = 0;
+                Gamepad1ToggleLeft = 0;
+            }
+            Gamepad1ToggleRight = -gamepad1.left_stick_y;
+            Gamepad1ToggleLeft = -gamepad1.left_stick_y;
 
 
+            if( gamepad1.right_stick_x > 0.05){
+                Gamepad1ToggleLeft+=gamepad1.right_stick_x;
+                Gamepad1ToggleRight-=gamepad1.right_stick_x;
+            }
+
+            if(gamepad1.right_stick_x < -0.05 ){
+                Gamepad1ToggleLeft-=gamepad1.right_stick_x;
+                Gamepad1ToggleRight+=gamepad1.right_stick_x;
+            }
+
+            robot.setPowerToMotors(Gamepad1ToggleLeft, Gamepad1ToggleRight);
 
 
-
-            telemetry.addData("left",  "%.2f", leftGamepad1);
-            telemetry.addData("right", "%.2f", rightGamepad1);
             telemetry.update();
 
             if(gamepad2.right_bumper){
