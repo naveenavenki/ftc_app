@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
@@ -129,6 +132,12 @@ public abstract class BoKHardwareBot {
     // Using the drive train is public
     public abstract void setModeForMotors(DcMotor.RunMode runMode);
     public abstract void setPowerToMotors(double leftPower, double rightPower);
+
+    // RUN_USING_ENCODER
+    public abstract void setupMotorEncoders(LinearOpMode opMode);
+    public abstract void setMotorEncoderTarget(int leftTarget, int rightTarget);
+
+    public abstract boolean getCurrentPosition(OpMode opMode);
 
     // Using the shooter motors (we want to control both motors at the same time)
     public void setPowerToShooter(double shooterPow){
