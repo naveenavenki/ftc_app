@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  */
 @Autonomous(name="BoK Auto League", group="BoK6WD")
 //@Disabled
-public class BoKAuto extends LinearOpMode{
+public class BoKAutoRed extends LinearOpMode
+{
     protected BoKHardwareBot robot;
 
     @Override

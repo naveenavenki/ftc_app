@@ -16,7 +16,6 @@ import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
@@ -39,13 +38,13 @@ import java.util.Arrays;
 /**
  * Created by Krishna Saxena on 10/5/2016.
  */
-public class League1Auto implements BokAutoTest {
+public class League1AutoRed implements BokAutoTest {
     protected AppUtil appUtil = AppUtil.getInstance();
 
+    private int alliance = ALLIANCE_RED;
     private static final double WAIT_FOR_SEC_SHOOTER = 8.0;
     private static final double WAIT_FOR_SEC_LINE = 4.0;
 
-    private static final double SHOOTER_MOTOR_POWER = 1.0;
     private VuforiaLocalizer vuforiaFTC;
 
     private final int BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_X = 80; // in mm from center of image which is 254
@@ -60,7 +59,6 @@ public class League1Auto implements BokAutoTest {
 
     private VuforiaTrackables beacons;
     private ElapsedTime runTime  = new ElapsedTime();
-    private int alliance = ALLIANCE_RED;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity()) {
         @Override
@@ -70,7 +68,7 @@ public class League1Auto implements BokAutoTest {
     };
 
     @Override
-    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+    public void initTest(BoKAutoRed opMode, BoKHardwareBot robot) {
         // Initialize OpenCV
         if (!OpenCVLoader.initDebug()) {
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, appUtil.getActivity(), loaderCallback);
@@ -110,7 +108,7 @@ public class League1Auto implements BokAutoTest {
     }
 
     @Override
-    public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
+    public void runTest(BoKAutoRed opMode, BoKHardwareBot robot) throws InterruptedException
     {
         // First shoot the two balls by turning on the sweeper and the ball shooter
         //shootBall(opMode, robot, WAIT_FOR_SEC_SHOOTER);
@@ -132,12 +130,12 @@ public class League1Auto implements BokAutoTest {
         beacons.deactivate();
     }
 
-    private void shootBall(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void shootBall(BoKAutoRed opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(0, 0); // Do not move the robot
-            robot.setPowerToShooter(SHOOTER_MOTOR_POWER);   // start the ball shooter
+            robot.setPowerToShooter(BoKHardwareBot.SHOOTER_MOTORS_POWER);   // start the ball shooter
             robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);   // start the sweeper
             runTime.reset();
 
@@ -152,7 +150,7 @@ public class League1Auto implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void moveForwardAndTurn(BoKAuto opMode, BoKHardwareBot robot, double inchesForward, double degreesToTurn, double waitForSec) throws InterruptedException {
+    private void moveForwardAndTurn(BoKAutoRed opMode, BoKHardwareBot robot, double inchesForward, double degreesToTurn, double waitForSec) throws InterruptedException {
         double degreesOfWheelTurn, degreesOfMotorTurn, targetEncCount;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -199,7 +197,7 @@ public class League1Auto implements BokAutoTest {
         }
     }
 
-    private void runToWhite(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void runToWhite(BoKAutoRed opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         double current_alpha;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -231,7 +229,7 @@ public class League1Auto implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void turnToWhite(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void turnToWhite(BoKAutoRed opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         double current_alpha;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -262,7 +260,7 @@ public class League1Auto implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void goBackTillBeaconIsVisible(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException
+    private void goBackTillBeaconIsVisible(BoKAutoRed opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException
     {
         boolean picIsVisible = false, foundBeacon = false;
 
@@ -395,7 +393,7 @@ public class League1Auto implements BokAutoTest {
         }
     }
 
-    private void proportionalLineFollower(BoKAuto opMode, BoKHardwareBot robot, double distanceToWall) throws InterruptedException
+    private void proportionalLineFollower(BoKAutoRed opMode, BoKHardwareBot robot, double distanceToWall) throws InterruptedException
     {
         double alpha, distance;
         float delta;
@@ -439,7 +437,7 @@ public class League1Auto implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void goBackFromWall(BoKAuto opMode, BoKHardwareBot robot, double targetDistance, double waitForSec) throws InterruptedException
+    private void goBackFromWall(BoKAutoRed opMode, BoKHardwareBot robot, double targetDistance, double waitForSec) throws InterruptedException
     {
         double distance;
         // Ensure that the opmode is still active
@@ -463,7 +461,7 @@ public class League1Auto implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void goForwardToWall(BoKAuto opMode, BoKHardwareBot robot, double targetDistance, double waitForSec) throws InterruptedException
+    private void goForwardToWall(BoKAutoRed opMode, BoKHardwareBot robot, double targetDistance, double waitForSec) throws InterruptedException
     {
         double distance, current_alpha;
         // Ensure that the opmode is still active
