@@ -68,6 +68,7 @@ public class BoKAutoCommon implements BoKAuto {
 
     @Override
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
+        Log.v("BOK", "Initializing OpenCV");
         // Initialize OpenCV
         if (!OpenCVLoader.initDebug()) {
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, appUtil.getActivity(), loaderCallback);
@@ -75,6 +76,19 @@ public class BoKAutoCommon implements BoKAuto {
         else {
             loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+
+        // set the initial position (both pointed down)
+        robot.pusherLeftServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT);
+        robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
+
+        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS);
+
+        Log.v("BOK", "Calling setupMotorEncoders");
+        // setup the motor encoders
+        robot.setupMotorEncoders(opMode);
+
+        alliance = redOrBlue;
+        Log.v("BOK", "Initializing Vuforia");
 
         // Initialize Vuforia
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
@@ -96,18 +110,7 @@ public class BoKAutoCommon implements BoKAuto {
 
         /** Start tracking the data sets we care about. */
         beacons.activate();
-
-        // set the initial position (both pointed down)
-        robot.pusherLeftServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT);
-        robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
-
-        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS);
-
-        Log.v("BOK", "Calling setupMotorEncoders");
-        // setup the motor encoders
-        robot.setupMotorEncoders(opMode);
-
-        alliance = redOrBlue;
+        Log.v("BOK", "Done initializing Vuforia");
     }
 
     @Override
