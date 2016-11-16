@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  * Created by Krishna Saxena on 9/24/2016.
  */
 //@Autonomous(name="BoK Auto CV", group="BoK6WD")
-public class BoKAuto_CV extends BoKAuto{
+public class BoKAutoCVTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         /*
@@ -16,7 +16,7 @@ public class BoKAuto_CV extends BoKAuto{
          * The init() method of the hardware class does all the work here
          */
         BoKOpenCVTest Test = new BoKOpenCVTest();
-        Test.initTest(this,null);
+        Test.initSoftware(this, null, BoKAuto.BoKAlliance.BOK_ALLIANCE_RED);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Software initialized");
@@ -27,7 +27,7 @@ public class BoKAuto_CV extends BoKAuto{
 
         // Run the autonomous operation
 
-        Test.runTest(this,null);
+        Test.runSoftware(this, null);
 
     }
 }

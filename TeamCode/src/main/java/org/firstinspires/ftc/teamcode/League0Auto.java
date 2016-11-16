@@ -2,13 +2,14 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * Created by Krishna Saxena on 10/5/2016.
  */
-public class League0Auto implements BokAutoTest {
+public class League0Auto implements BoKAuto {
 
     private static final double WAIT_FOR_SEC_SHOOTER = 8.0;
     private static final double WAIT_FOR_SEC_LINE = 4.0;
@@ -31,11 +32,11 @@ public class League0Auto implements BokAutoTest {
     private int alpha;
 
     @Override
-    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+    public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
     }
 
     @Override
-    public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
         // set the initial position (both pointed down)
         //robot.setLeftPusherPos(positionLeft);
@@ -50,7 +51,7 @@ public class League0Auto implements BokAutoTest {
         ultrasonicTest(opMode, robot, 0.5);
     }
 
-    private void runToRedOrBlue(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void runToRedOrBlue(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -85,7 +86,7 @@ public class League0Auto implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void shootBall(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void shootBall(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -106,7 +107,7 @@ public class League0Auto implements BokAutoTest {
     }
 
 
-    private void ultrasonicTest(BoKAuto opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void ultrasonicTest(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 //            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

@@ -1,27 +1,28 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * Created by Krishna Saxena on 9/28/2016.
  */
-public class BoKAutoColorTest implements BokAutoTest {
+public class BoKAutoColorTest implements BoKAuto {
     // Constants
     private static final int RED_THRESHOLD = 30;
     private static final int BLUE_THRESHOLD = 15;
 
     @Override
-    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+    public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
 
     }
 
     @Override
-    public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
         runToRed(opMode, robot);
         runToBlue(opMode, robot);
     }
 
-    private void runToRed(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void runToRed(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -53,7 +54,7 @@ public class BoKAutoColorTest implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void runToBlue(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
+    private void runToBlue(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -87,7 +88,7 @@ public class BoKAutoColorTest implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void followRedLine_Right(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
+    private void followRedLine_Right(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

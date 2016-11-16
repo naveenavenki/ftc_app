@@ -17,11 +17,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 /**
  * Created by Krishna Saxena on 10/5/2016.
  */
-public class BoKVuforiaTest implements BokAutoTest {
+public class BoKVuforiaTest implements BoKAuto {
     private VuforiaTrackables beacons;
 
     @Override
-    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+    public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         parameters.vuforiaLicenseKey = "ASodJvL/////AAAAGa9Isk5Oa0brtCRz7Z0fQngHmf2Selfx3RDk3MzjmK9DFWkQRsg1dH8Q8VvU/9L9nr9krXa+2nY5zoK6moC4UpRIg+gRsnG5M504q50Dd+z8DDATBaamc8t5qa8OeLjFKQ/+blHLbe8tjXSdVdl/xxGdowpeuQ18dnlf129q5NjM7Z9s/M8l693yEl28b+/LLJ4SiFLBTXwkEpVblemfJKZVHO5I8JmGmQ4jcwCWFIMCFxPRbCeDVqdCeqQzFa3BcCiuuGUgZDBCaidiW0/pzEFzdXcVCQfJPMgdZUWkPAk0QXVC8zYXaweeLuAONyTDkanRiyzqZbDVpJhVHaLBsUaC3OmZ/Xo+ThguyX3tNs3G";
@@ -41,7 +41,7 @@ public class BoKVuforiaTest implements BokAutoTest {
     }
 
     @Override
-    public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
         opMode.telemetry.addData("Status", "Run to white");
         opMode.idle();
@@ -67,7 +67,7 @@ public class BoKVuforiaTest implements BokAutoTest {
         }
     }
 
-    private void runToWhite(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void runToWhite(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -103,7 +103,7 @@ public class BoKVuforiaTest implements BokAutoTest {
         } // if (opModeIsActive())
     }
 
-    private void turnTillPicIsVisible(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void turnTillPicIsVisible(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
         boolean picIsVisible = false;
 
         if (opMode.opModeIsActive()) {

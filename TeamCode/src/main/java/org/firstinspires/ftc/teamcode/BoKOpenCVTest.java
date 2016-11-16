@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.vuforia.HINT;
 import com.vuforia.Image;
 import com.vuforia.Matrix34F;
@@ -40,7 +41,7 @@ import java.util.Arrays;
  * Created by Krishna Saxena on 10/5/2016.
  */
 //@Autonomous(name="BoK Auto Vuforia", group="BoK6WD")
-public class BoKOpenCVTest implements BokAutoTest {
+public class BoKOpenCVTest implements BoKAuto {
     protected AppUtil appUtil = AppUtil.getInstance();
     private VuforiaTrackables beacons;
     private VuforiaLocalizer vuforiaFTC;
@@ -58,7 +59,7 @@ public class BoKOpenCVTest implements BokAutoTest {
     };
 
     @Override
-    public void initTest(BoKAuto opMode, BoKHardwareBot robot) {
+    public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue ) {
         // Initialize OpenCV
         if (!OpenCVLoader.initDebug()) {
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, appUtil.getActivity(), loaderCallback);
@@ -89,7 +90,7 @@ public class BoKOpenCVTest implements BokAutoTest {
     }
 
     @Override
-    public void runTest(BoKAuto opMode, BoKHardwareBot robot) throws InterruptedException {
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
         while (opMode.opModeIsActive()) {
 
             for (VuforiaTrackable beac : beacons) {

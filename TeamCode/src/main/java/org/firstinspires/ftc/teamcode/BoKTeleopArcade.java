@@ -151,7 +151,7 @@ public class BoKTeleopArcade extends LinearOpMode {
             }
 
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second
-            robot.waitForTick(40);
+            robot.waitForTick(BoKAuto.METRONOME_TICK);
             idle(); // Always call idle() at the bottom of your while(opModeIsActive(
         }
     }

@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@Autonomous(name="BoK Auto League", group="BoK6WD")
+@Autonomous(name="BoK Auto RED", group="BoK6WD")
 //@Disabled
 public class BoKAutoRed extends LinearOpMode
 {
@@ -28,14 +28,16 @@ public class BoKAutoRed extends LinearOpMode
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();
 
-        //BoKVuforiaTest test = new BoKVuforiaTest();
-        League1Auto test = new League1Auto();
-        test.initTest(this, robot);
+        League1AutoRed test = new League1AutoRed();
+        test.initSoftware(this, robot, BoKAuto.BoKAlliance.BOK_ALLIANCE_RED);
+
+        telemetry.addData("Status", "Software initialized");
+        telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
         // Run the autonomous operation
-        test.runTest(this, robot);
+        test.runSoftware(this, robot);
     }
 }

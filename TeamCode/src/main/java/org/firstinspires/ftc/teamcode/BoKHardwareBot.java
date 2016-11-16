@@ -49,6 +49,7 @@ public abstract class BoKHardwareBot {
     private DcMotor rightShooterMotor;
     protected DcMotor sweeperMotor;
 
+    protected static final double SHOOTER_MOTORS_POWER = 1.0;
     protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.9;
     protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.2;
 
