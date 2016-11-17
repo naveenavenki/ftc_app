@@ -17,6 +17,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     protected static final double   DRIVE_GEAR_REDUCTION    = 1.33;   // For 360 degrees wheel turn, motor shaft moves 480 degrees (approx)
     protected static final double   WHEEL_DIAMETER_INCHES   = 4.0;    // For calculating circumference
     protected static final double   WHEEL_BASE              = 15;     // In inches (approx)
+    protected static final double   COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
+    private static final int DISTANCE_THRESHOLD             = 10;
 
     // Constants
     private static final String LEFT_BACK_MOTOR_NAME   = "lb";
@@ -36,6 +38,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     private int currentRightTarget;
     private boolean leftPositive;
     private boolean rightPositive;
+    private boolean leftReached;
+    private boolean rightReached;
 
     @Override
     /*
@@ -73,97 +77,95 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
 
     public void setPowerToMotors(double left, double right) {
         leftBack.setPower(left);
-        leftFront.setPower(left);
         rightBack.setPower(right);
+        leftFront.setPower(left);
         rightFront.setPower(right);
     }
 
     public void setModeForMotors(DcMotor.RunMode runMode)
     {
         leftBack.setMode(runMode);
-        leftFront.setMode(runMode);
         rightBack.setMode(runMode);
+        leftFront.setMode(runMode);
         rightFront.setMode(runMode);
     }
 
-    public void setupMotorEncoders(LinearOpMode opMode)
+    public void setMotorEncoderTarget(LinearOpMode opMode, int leftTarget, int rightTarget)
     {
-        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setModeForMotors(DcMotor.RunMode.RUN_USING_ENCODER);
         opMode.idle();
 
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        opMode.idle();
+        leftReached = rightReached = false;
 
-        // Send telemetry message to indicate successful Encoder reset
-        opMode.telemetry.addData("BOK",  "Starting at %5d %5d %5d %5d",
-                leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), leftBack.getCurrentPosition(), rightBack.getCurrentPosition());
-        opMode.telemetry.update();
-        Log.v("BOK", "Start: " + leftFront.getCurrentPosition() +", " + rightFront.getCurrentPosition() + ", " + leftBack.getCurrentPosition() + ", " + rightBack.getCurrentPosition());
-    }
-
-    public void setMotorEncoderTarget(int leftTarget, int rightTarget)
-    {
         currentLeftTarget = leftFront.getCurrentPosition() + leftTarget;
+        currentRightTarget = rightFront.getCurrentPosition() + rightTarget;
+        //leftBack.setTargetPosition(leftBack.getCurrentPosition() + leftTarget);
+        //rightBack.setTargetPosition(rightBack.getCurrentPosition() + rightTarget);
         leftFront.setTargetPosition(currentLeftTarget);
-        leftBack.setTargetPosition(leftBack.getCurrentPosition() + leftTarget);
+        rightFront.setTargetPosition(currentRightTarget);
+        opMode.idle();
+
         if (leftTarget > 0)
             leftPositive = true;
         else
             leftPositive = false;
 
-        currentRightTarget = rightFront.getCurrentPosition() + rightTarget;
-        rightFront.setTargetPosition(currentRightTarget);
-        rightBack.setTargetPosition(rightBack.getCurrentPosition() + rightTarget);
         if (rightTarget > 0)
             rightPositive = true;
         else
             rightPositive = false;
 
         leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Log.v("BOK", "START: " + leftFront.getCurrentPosition() +", " + currentLeftTarget + ", " + rightFront.getCurrentPosition() + ", " + currentRightTarget);
     }
 
     // Returns true if target is reached
     public boolean getCurrentPosition(OpMode opMode)
     {
+        //boolean leftReached = false;
+        //boolean rightReached = false;
         int leftFrontCurrentPos = leftFront.getCurrentPosition();
         int rightFrontCurrentPos = rightFront.getCurrentPosition();
         //int leftBackCurrentPos = leftBack.getCurrentPosition();
         //int rightBackCurrentPos = rightBack.getCurrentPosition();
 
 
-        opMode.telemetry.addData("Target",  "Running to %5d : %5d", currentLeftTarget,  currentRightTarget);
-        opMode.telemetry.addData("Position",  "Running at %5d %5d", leftFrontCurrentPos, rightFrontCurrentPos);
-        opMode.telemetry.update();
+        //opMode.telemetry.addData("Target",  "Running to %5d : %5d", currentLeftTarget,  currentRightTarget);
+        //opMode.telemetry.addData("Position",  "Running at %5d %5d", leftFrontCurrentPos, rightFrontCurrentPos);
+        //opMode.telemetry.update();
 
         //Log.v("BOK", "Target " + currentLeftTarget + ", " + currentRightTarget);
-        //Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + rightFrontCurrentPos);
+        Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " + rightFrontCurrentPos + ", " + rightFront.isBusy());
 
         if (leftPositive) {
-            if (leftFrontCurrentPos >= currentLeftTarget)
-                return true;
+            if ((leftFrontCurrentPos >= currentLeftTarget) || (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD)) {
+                Log.v("BOK", "RETURNING TRUE!!");
+                leftReached = true;
+                //return true;
+            }
         }
         else {
-            if (leftFrontCurrentPos <= currentLeftTarget)
-                return true;
+            if ((leftFrontCurrentPos <= currentLeftTarget) || (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD))
+                leftReached = true;
+                //return true;
         }
+
         if (rightPositive) {
-            if (rightFrontCurrentPos >= currentRightTarget)
-                return true;
+            if ((rightFrontCurrentPos >= currentRightTarget) || (Math.abs(rightFrontCurrentPos - currentRightTarget) <= DISTANCE_THRESHOLD)) {
+                Log.v("BOK", "RETURNING TRUE right!!");
+                //return true;
+                rightReached = true;
+            }
         }
         else {
-            if (rightFrontCurrentPos <= currentRightTarget)
-                return true;
+            if ((rightFrontCurrentPos <= currentRightTarget) || (Math.abs(rightFrontCurrentPos - currentRightTarget) <= DISTANCE_THRESHOLD))
+                rightReached = true;
+                //return true;
         }
-        return false;
+
+        return rightReached && leftReached;
     }
 }

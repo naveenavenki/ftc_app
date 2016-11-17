@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public abstract class BoKHardwareBot {
     // Constants
     private static final String COLOR_SENSOR_CFG        = "color";
+    private static final String GYRO_SENSOR_CFG         = "gy";
     private static final String ODS_SENSOR_CFG          = "ods";
     private static final String RANGE_SENSOR_CFG        = "rs";
     private static final String SERVO_SHOOTER_CFG       = "ss";
@@ -29,8 +32,10 @@ public abstract class BoKHardwareBot {
 
     // Sensors
     protected ColorSensor colorSensor;
+    protected ModernRoboticsI2cGyro gyroSensor;
     protected OpticalDistanceSensor odsSensor;
     protected ModernRoboticsI2cRangeSensor rangeSensor;
+
 
     //servos: shooter and button pushers
     protected Servo shooterServo;
@@ -82,6 +87,11 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
         */
+        gyroSensor = (ModernRoboticsI2cGyro)opMode.hardwareMap.gyroSensor.get(GYRO_SENSOR_CFG);
+        if (gyroSensor == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
         odsSensor = opMode.hardwareMap.opticalDistanceSensor.get(ODS_SENSOR_CFG);
         if (odsSensor == null) {
             return BoKStatus.BOK_FAILURE;
@@ -135,8 +145,8 @@ public abstract class BoKHardwareBot {
     public abstract void setPowerToMotors(double leftPower, double rightPower);
 
     // RUN_USING_ENCODER
-    public abstract void setupMotorEncoders(LinearOpMode opMode);
-    public abstract void setMotorEncoderTarget(int leftTarget, int rightTarget);
+    //public abstract void setupMotorEncoders(LinearOpMode opMode);
+    public abstract void setMotorEncoderTarget(LinearOpMode opMode, int leftTarget, int rightTarget);
 
     public abstract boolean getCurrentPosition(OpMode opMode);
 
