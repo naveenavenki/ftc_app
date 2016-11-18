@@ -36,7 +36,7 @@ public class BoKTeleopArcade extends LinearOpMode {
         robot.pusherRightServo.setPosition(positionRight);
 
         // set the initial position of the shooter servo
-        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS);
+        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Hardware initialized");

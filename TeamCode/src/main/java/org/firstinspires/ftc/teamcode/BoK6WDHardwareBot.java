@@ -46,7 +46,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
      * Initialize the drive system variables.
      * The init() method of the hardware class does all the work here
      */
-    protected BoKStatus initMotors(OpMode opMode) {
+    protected BoKStatus initMotors(LinearOpMode opMode) {
+        currentOpMode = opMode;
 
         leftBack = opMode.hardwareMap.dcMotor.get(LEFT_BACK_MOTOR_NAME);
         if (leftBack == null) {
@@ -80,6 +81,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         rightBack.setPower(right);
         leftFront.setPower(left);
         rightFront.setPower(right);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
     }
 
     public void setModeForMotors(DcMotor.RunMode runMode)
@@ -88,12 +90,12 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         rightBack.setMode(runMode);
         leftFront.setMode(runMode);
         rightFront.setMode(runMode);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
     }
 
-    public void setMotorEncoderTarget(LinearOpMode opMode, int leftTarget, int rightTarget)
+    public void setMotorEncoderTarget(int leftTarget, int rightTarget)
     {
         setModeForMotors(DcMotor.RunMode.RUN_USING_ENCODER);
-        opMode.idle();
 
         leftReached = rightReached = false;
 
@@ -103,7 +105,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         //rightBack.setTargetPosition(rightBack.getCurrentPosition() + rightTarget);
         leftFront.setTargetPosition(currentLeftTarget);
         rightFront.setTargetPosition(currentRightTarget);
-        opMode.idle();
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
+        //opMode.idle();
 
         if (leftTarget > 0)
             leftPositive = true;
@@ -117,28 +120,21 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
 
         leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
         //leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Log.v("BOK", "START: " + leftFront.getCurrentPosition() +", " + currentLeftTarget + ", " + rightFront.getCurrentPosition() + ", " + currentRightTarget);
     }
 
     // Returns true if target is reached
-    public boolean getCurrentPosition(OpMode opMode)
+    public boolean getCurrentPosition()
     {
         //boolean leftReached = false;
         //boolean rightReached = false;
         int leftFrontCurrentPos = leftFront.getCurrentPosition();
         int rightFrontCurrentPos = rightFront.getCurrentPosition();
-        //int leftBackCurrentPos = leftBack.getCurrentPosition();
-        //int rightBackCurrentPos = rightBack.getCurrentPosition();
 
-
-        //opMode.telemetry.addData("Target",  "Running to %5d : %5d", currentLeftTarget,  currentRightTarget);
-        //opMode.telemetry.addData("Position",  "Running at %5d %5d", leftFrontCurrentPos, rightFrontCurrentPos);
-        //opMode.telemetry.update();
-
-        //Log.v("BOK", "Target " + currentLeftTarget + ", " + currentRightTarget);
-        Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " + rightFrontCurrentPos + ", " + rightFront.isBusy());
+        //Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " + rightFrontCurrentPos + ", " + rightFront.isBusy());
 
         if (leftPositive) {
             if ((leftFrontCurrentPos >= currentLeftTarget) || (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD)) {

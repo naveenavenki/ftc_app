@@ -29,6 +29,10 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_LEFT_SHOOTER_CFG  = "sl";
     private static final String MOTOR_RIGHT_SHOOTER_CFG = "sr";
     private static final String MOTOR_SWEEPER_CFG       = "sw";
+    protected static final int OPMODE_SLEEP_INTERVAL_MS   = 10;
+
+    // LinearOpMode
+    LinearOpMode currentOpMode;
 
     // Sensors
     protected ColorSensor colorSensor;
@@ -42,12 +46,12 @@ public abstract class BoKHardwareBot {
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
-    protected static final double INITIAL_SHOOTER_SERVO_POS      = 0.1;
-    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.0;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.1;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.0;
+    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.1;
     protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
-    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 1.0;
+    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.9;
     protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
-
 
     //shooter motors and sweeper motor
     private DcMotor leftShooterMotor;
@@ -67,7 +71,7 @@ public abstract class BoKHardwareBot {
         BOK_SUCCESS
     }
 
-    public BoKStatus initHardware(OpMode opMode) {
+    public BoKStatus initHardware(LinearOpMode opMode) {
         // first initialize the drive train
         BoKStatus rc = initMotors(opMode);
         if (rc == BoKStatus.BOK_SUCCESS) {
@@ -80,7 +84,7 @@ public abstract class BoKHardwareBot {
      * Initialize the sensor variables.
      * The initSensors() method of the hardware class does all the work here
      */
-    private BoKStatus initMotorsAndSensors(OpMode opMode) {
+    private BoKStatus initMotorsAndSensors(LinearOpMode opMode) {
         /*
         colorSensor = opMode.hardwareMap.colorSensor.get(COLOR_SENSOR_CFG);
         if (colorSensor == null) {
@@ -138,7 +142,7 @@ public abstract class BoKHardwareBot {
     }
 
     // Initialization of drive train is protected
-    protected abstract BoKStatus initMotors(OpMode opMode);
+    protected abstract BoKStatus initMotors(LinearOpMode opMode);
 
     // Using the drive train is public
     public abstract void setModeForMotors(DcMotor.RunMode runMode);
@@ -146,9 +150,9 @@ public abstract class BoKHardwareBot {
 
     // RUN_USING_ENCODER
     //public abstract void setupMotorEncoders(LinearOpMode opMode);
-    public abstract void setMotorEncoderTarget(LinearOpMode opMode, int leftTarget, int rightTarget);
+    public abstract void setMotorEncoderTarget(int leftTarget, int rightTarget);
 
-    public abstract boolean getCurrentPosition(OpMode opMode);
+    public abstract boolean getCurrentPosition();
 
     // Using the shooter motors (we want to control both motors at the same time)
     public void setPowerToShooter(double shooterPow){

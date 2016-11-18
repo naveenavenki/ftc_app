@@ -22,25 +22,26 @@ public class League1AutoRed extends BoKAutoCommon {
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
         // First shoot the two balls by turning on the sweeper and the ball shooter
-        //shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER, WAIT_FOR_SEC_SHOOTER);
+        shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER, WAIT_FOR_SEC_SHOOTER);
 
-        //gyroDrive(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 60, 0);
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, 90);
         // Move forward for 8 inch in 1.5 sec
-//        moveForward(opMode, robot, 8.0, 1.5);
+        moveForward(opMode, robot, 8.0, 1.5);
         // Turn 35 degrees (in 0.5 sec or less)
-//        moveTurn(opMode, robot, 45.0, true, 0.5);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, 40);
+        // moveTurn(opMode, robot, 45.0, true, 0.5);
 
         // Run to white
- //       runToWhite(opMode, robot, 5/*sec*/);
- //       turnToWhite(opMode, robot, true/*left*/, 1/*sec*/);
- //       proportionalLineFollower(opMode, robot, 15); // 15 cm; give enough time for the robot to straighten up
+        runToWhite(opMode, robot, 5/*sec*/);
+        turnToWhite(opMode, robot, true/*left*/, 1/*sec*/);
+        proportionalLineFollower(opMode, robot, 15); // 15 cm; give enough time for the robot to straighten up
 
-//        goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, 90);
 
- //       goForwardToWall(opMode, robot, 50, 4/*sec*/); // 50 cm
- //       proportionalLineFollower(opMode, robot, 8);  // 8 cm
- //       goBackFromWall(opMode, robot, 20, 0.5);
+        goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
+
+        goForwardToWall(opMode, robot, 50, 4/*sec*/); // 50 cm
+        proportionalLineFollower(opMode, robot, 8);  // 8 cm
+        goBackFromWall(opMode, robot, 20, 0.5);
 
         super.exitSoftware();
     }

@@ -38,7 +38,7 @@ public class BoKTeleop extends LinearOpMode {
         // set the initial position (both pointed down)
         robot.pusherLeftServo.setPosition(positionLeft);
         robot.pusherRightServo.setPosition(positionRight);
-        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS);
+        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Hardware initialized");
