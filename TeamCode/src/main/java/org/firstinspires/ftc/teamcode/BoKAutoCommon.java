@@ -389,7 +389,7 @@ public class BoKAutoCommon implements BoKAuto {
                                             opMode.telemetry.addData(beac.getName() + " Right: ", "RED");
                                             Log.v("BOK",beac.getName() + "Right: RED");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
-                                                robot.pusherRightServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                                robot.pusherLeftServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
                                             }
                                             else {
                                                 robot.pusherLeftServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
@@ -401,7 +401,7 @@ public class BoKAutoCommon implements BoKAuto {
                                         else {
                                             opMode.telemetry.addData(beac.getName() + "Right: ", "BLUE");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
-                                                robot.pusherLeftServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                                robot.pusherRightServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
                                             }
                                             else {
                                                 robot.pusherRightServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
