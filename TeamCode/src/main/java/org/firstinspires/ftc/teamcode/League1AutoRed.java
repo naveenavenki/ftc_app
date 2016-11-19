@@ -31,10 +31,9 @@ public class League1AutoRed extends BoKAutoCommon {
         // Turn 35 degrees (in 0.5 sec or less)
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, 45);
         opMode.sleep(100);
-        // moveTurn(opMode, robot, 45.0, true, 0.5);
 
         // Run to white
-        runToWhite(opMode, robot, 5/*sec*/);
+        runToWhite(opMode, robot, 4/*sec*/);
         opMode.sleep(250);
         //runToGray(opMode, robot, 1);
         turnToWhite(opMode, robot, true/*left*/, 2/*sec*/);

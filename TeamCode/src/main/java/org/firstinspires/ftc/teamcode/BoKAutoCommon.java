@@ -211,32 +211,6 @@ public class BoKAutoCommon implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    protected void runToGray(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
-        double current_alpha;
-        // Ensure that the opmode is still active
-        if (opMode.opModeIsActive()) {
-            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2);
-
-            // go to white line
-            current_alpha = robot.odsSensor.getLightDetected();
-            runTime.reset();
-
-            Log.v("BOK", "Alpha Gray " + current_alpha );
-            while (opMode.opModeIsActive() && (current_alpha >= (LINE_EDGE-0.1)) && (runTime.seconds() < waitForSec)) {
-                // Display the color info on the driver station
-
-                current_alpha = robot.odsSensor.getLightDetected();
-                //opMode.telemetry.addData("a: ", current_alpha + " sec: " + runTime.seconds());
-                //opMode.telemetry.update();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
-                //Log.v("BOK", "ALPHA " + current_alpha + " sec: " + runTime.seconds());
-            } // while (current_alpha < WHITE_LINE)
-
-            robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
-        } // if (opModeIsActive())
-    }
-
     protected void turnToWhite(LinearOpMode opMode, BoKHardwareBot robot, boolean turnLeft, double waitForSec) throws InterruptedException {
         double current_alpha;
         // Ensure that the opmode is still active
@@ -256,13 +230,14 @@ public class BoKAutoCommon implements BoKAuto {
                 // Display the color info on the driver station
                 //opMode.telemetry.addData("a: ", current_alpha + " sec: " + runTime.seconds());
                 //opMode.telemetry.update();
-                Log.v("BOK", "ALPHAT " + current_alpha + " sec: " + runTime.seconds());
+                //Log.v("BOK", "ALPHAT " + current_alpha + " sec: " + runTime.seconds());
 
                 current_alpha = robot.odsSensor.getLightDetected();
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
             } // while (current_alpha <= LINE_EDGE)
 
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
+            //Log.v("BOK", "ALPHATF " + current_alpha + " sec: " + runTime.seconds());
         } // if (opModeIsActive())
     }
 
@@ -290,7 +265,7 @@ public class BoKAutoCommon implements BoKAuto {
                         right_power = RIGHT_POWER_LINE_FOLLOW;
                     } else {
                         left_power = LEFT_POWER_LINE_FOLLOW;
-                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta / 2);
+                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta * 2);
                     }
                 }
                 else { // right edge
@@ -305,6 +280,7 @@ public class BoKAutoCommon implements BoKAuto {
                 }
                 robot.setPowerToMotors(left_power, right_power);
 
+                Log.v("BOK", "ALPHA: " + alpha + " DELTA: " + delta + " LEFT_POWER: " + left_power + " RIGHT: " + right_power);
                 //opMode.telemetry.addData("BoK", "ALPHA: " + alpha + " DELTA: " + delta + " LEFT_POWER: " + left_power + " RIGHT: " + right_power);
                 //opMode.telemetry.update();
 
