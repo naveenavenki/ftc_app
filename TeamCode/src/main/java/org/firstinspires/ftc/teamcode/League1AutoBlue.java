@@ -32,10 +32,10 @@ public class League1AutoBlue extends BoKAutoCommon {
         turnToWhite(opMode, robot, false/*right*/, 1/*sec*/);
         opMode.sleep(250);
         proportionalLineFollower(opMode, robot, true /*left */, 15); // 15 cm; give enough time for the robot to straighten up
-        opMode.sleep(500);
+        opMode.sleep(250);
 
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -90);
-        opMode.sleep(5000);
+        opMode.sleep(250);
 
         goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
 
