@@ -46,11 +46,11 @@ public abstract class BoKHardwareBot {
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
 
-    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.1;
-    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.0;
-    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.1;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.07;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.07;
+    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.04;
     protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
-    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.9;
+    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.95;
     protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
 
     //shooter motors and sweeper motor
@@ -58,9 +58,9 @@ public abstract class BoKHardwareBot {
     private DcMotor rightShooterMotor;
     protected DcMotor sweeperMotor;
 
-    protected static final double SHOOTER_MOTORS_POWER = 1.0;
+    protected static final double SHOOTER_MOTORS_POWER = 0.9;
     protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.9;
-    protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.2;
+    protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.5;
 
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();

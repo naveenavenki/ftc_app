@@ -95,7 +95,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
 
     public void setMotorEncoderTarget(int leftTarget, int rightTarget)
     {
-        setModeForMotors(DcMotor.RunMode.RUN_USING_ENCODER);
+        setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         leftReached = rightReached = false;
 
@@ -118,9 +118,9 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         else
             rightPositive = false;
 
-        leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
+        //leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
         //leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Log.v("BOK", "START: " + leftFront.getCurrentPosition() +", " + currentLeftTarget + ", " + rightFront.getCurrentPosition() + ", " + currentRightTarget);
