@@ -12,7 +12,7 @@ public class League1AutoRed extends BoKAutoCommon {
 
     protected static final double WAIT_FOR_SEC_SHOOTER = 8.0;
     //private static final double WAIT_FOR_SEC_LINE = 4.0;
-    protected static final int ROBOT_DISTANCE_FROM_WALL_FOR_BEACON = 10;
+    protected static final int ROBOT_DISTANCE_FROM_WALL_FOR_BEACON = 11;
     protected static final int ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON = 20;
 
     @Override
@@ -27,7 +27,7 @@ public class League1AutoRed extends BoKAutoCommon {
         shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER, WAIT_FOR_SEC_SHOOTER);
 
         // Move forward for 8 inch in 1.5 sec
-        moveForward(opMode, robot, 8.0, 4);
+        moveForward(opMode, robot, 9.0, 4);
         // Turn 35 degrees (in 0.5 sec or less)
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, 45);
         opMode.sleep(100);
@@ -45,9 +45,9 @@ public class League1AutoRed extends BoKAutoCommon {
 
         goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
 
-        //goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
-        //proportionalLineFollower(opMode, robot, false /*right edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
-        //goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
+        goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
+        proportionalLineFollower(opMode, robot, false /*right edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
+        goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
 
         super.exitSoftware();
     }

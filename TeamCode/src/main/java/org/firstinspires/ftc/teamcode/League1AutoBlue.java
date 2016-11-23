@@ -19,9 +19,9 @@ public class League1AutoBlue extends BoKAutoCommon {
         shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER, League1AutoRed.WAIT_FOR_SEC_SHOOTER);
 
         // Move forward for 8 inch in 1.5 sec
-        moveForward(opMode, robot, 8.0, 1.5);
+        moveForward(opMode, robot, 9.0, 1.5);
         // Turn 35 degrees (in 0.5 sec or less)
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, -45);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -45);
         opMode.sleep(100);
 
         // Run to white

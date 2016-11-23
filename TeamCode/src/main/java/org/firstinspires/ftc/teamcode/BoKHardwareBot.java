@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -158,6 +160,19 @@ public abstract class BoKHardwareBot {
     public void setPowerToShooter(double shooterPow){
         leftShooterMotor.setPower(shooterPow);
         rightShooterMotor.setPower(shooterPow);
+    }
+
+    public void initGyro(LinearOpMode opMode) {
+        Log.v("BOK", "Calibrating gyro");
+        gyroSensor.calibrate();
+        // make sure the gyro is calibrated before continuing
+        while (!opMode.isStopRequested() && gyroSensor.isCalibrating())  {
+            opMode.sleep(50);
+            opMode.idle();
+        }
+
+        opMode.sleep(250);
+        gyroSensor.resetZAxisIntegrator();
     }
 
     /***

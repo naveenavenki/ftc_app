@@ -49,6 +49,9 @@ public class BoKTeleopArcade extends LinearOpMode {
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Hardware initialized");
+
+        robot.initGyro(this);
+        telemetry.addData("Gyro", robot.gyroSensor.getIntegratedZValue());
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -344,6 +347,9 @@ public class BoKTeleopArcade extends LinearOpMode {
                 }
             }
 
+            telemetry.addData("Gyro: ", robot.gyroSensor.getIntegratedZValue());
+            telemetry.addData("Distance: ", robot.rangeSensor.cmUltrasonic());
+            telemetry.update();
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second
             robot.waitForTick(BoKAuto.METRONOME_TICK);
             idle(); // Always call idle() at the bottom of your while(opModeIsActive(
