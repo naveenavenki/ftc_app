@@ -86,16 +86,9 @@ public class BoKAutoCommon implements BoKAuto {
 
         robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        Log.v("BOK", "Calibrating gyro");
-        robot.gyroSensor.calibrate();
-        // make sure the gyro is calibrated before continuing
-        while (!opMode.isStopRequested() && robot.gyroSensor.isCalibrating())  {
-            opMode.sleep(50);
-            opMode.idle();
-        }
-
-        opMode.sleep(50);
-        robot.gyroSensor.resetZAxisIntegrator();
+        robot.initGyro(opMode);
+        opMode.telemetry.addData("Gyro", robot.gyroSensor.getIntegratedZValue());
+        opMode.telemetry.update();
         Log.v("BOK", "Gyro: integrated: " + robot.gyroSensor.getIntegratedZValue());
 
         // set the initial position (both pointed down)
@@ -153,7 +146,7 @@ public class BoKAutoCommon implements BoKAuto {
 
             // run until the end of the match (driver presses STOP)
             while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
-                opMode.telemetry.addData("Ball shooter: ", "%2.1f sec elapsed", runTime.seconds());
+                //opMode.telemetry.addData("Ball shooter: ", "%2.1f sec elapsed", runTime.seconds());
                 opMode.telemetry.update();
             } // while (opModeIsActive())
 
@@ -201,7 +194,7 @@ public class BoKAutoCommon implements BoKAuto {
             distance = robot.rangeSensor.cmUltrasonic();
             runTime.reset();
 
-            Log.v("BOK", "AlphaW " + current_alpha + " d: " + distance);
+            Log.v("BOK", "AlphaW " + String.format("%.2f", current_alpha) + " d: " + distance);
             while (opMode.opModeIsActive() && (current_alpha < WHITE_LINE) && (runTime.seconds() < waitForSec)) {
                 // Display the color info on the driver station
 
@@ -210,10 +203,13 @@ public class BoKAutoCommon implements BoKAuto {
                 //opMode.telemetry.addData("a: ", current_alpha + " sec: " + runTime.seconds());
                 //opMode.telemetry.update();
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
-                Log.v("BOK", "ALPHAW " + current_alpha + " d: " + distance + " sec: " + runTime.seconds());
+                Log.v("BOK", "ALPHAW " + String.format("%.2f", current_alpha) + " d: " + distance + " sec: " + String.format("%.2f", runTime.seconds()));
             } // while (current_alpha < WHITE_LINE)
 
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
+            opMode.sleep(250);
+            current_alpha = robot.odsSensor.getLightDetected();
+            Log.v("BOK", "ALPHAW Final " + String.format("%.2f", current_alpha) + " d: " + distance + " sec: " + String.format("%.2f", runTime.seconds()));
         } // if (opModeIsActive())
     }
 
@@ -221,29 +217,32 @@ public class BoKAutoCommon implements BoKAuto {
         double current_alpha;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
+            current_alpha=robot.odsSensor.getLightDetected();
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            Log.v("BOK", "AlphaT " + String.format("%.2f", current_alpha));
+
             if (turnLeft)
                 robot.setPowerToMotors(-LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2);
             else
                 robot.setPowerToMotors(LEFT_MOTOR_POWER/2, -RIGHT_MOTOR_POWER/2);
 
-            // go to white line
-            current_alpha=robot.odsSensor.getLightDetected();
             runTime.reset();
 
-            Log.v("BOK", "AlphaT " + current_alpha );
             while (opMode.opModeIsActive() && (current_alpha <= WHITE_LINE) && (runTime.seconds() < waitForSec)) {
                 // Display the color info on the driver station
                 //opMode.telemetry.addData("a: ", current_alpha + " sec: " + runTime.seconds());
                 //opMode.telemetry.update();
-                //Log.v("BOK", "ALPHAT " + current_alpha + " sec: " + runTime.seconds());
-
                 current_alpha = robot.odsSensor.getLightDetected();
+                Log.v("BOK", "ALPHAT " + String.format("%.2f",current_alpha) + " sec: " + String.format("%.2f", runTime.seconds()));
+
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
             } // while (current_alpha <= LINE_EDGE)
 
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
-            //Log.v("BOK", "ALPHATF " + current_alpha + " sec: " + runTime.seconds());
+            opMode.sleep(250);
+            current_alpha = robot.odsSensor.getLightDetected();
+            Log.v("BOK", "ALPHAT Final " +String.format("%.2f", current_alpha) + " sec: " + String.format("%.2f", runTime.seconds()));
         } // if (opModeIsActive())
     }
 
@@ -257,7 +256,8 @@ public class BoKAutoCommon implements BoKAuto {
             robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             distance = robot.rangeSensor.cmUltrasonic();
-            Log.v("BOK", "Line follower " + distance);
+            alpha = robot.odsSensor.getLightDetected();
+            Log.v("BOK", "Line follower " + distance + "a: " + String.format("%.2f", alpha));
 
             while (opMode.opModeIsActive() && (distance > distanceToWall)) {
                 double left_power, right_power;
@@ -271,7 +271,7 @@ public class BoKAutoCommon implements BoKAuto {
                         right_power = RIGHT_POWER_LINE_FOLLOW;
                     } else {
                         left_power = LEFT_POWER_LINE_FOLLOW;
-                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta * 2);
+                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta/1.5);
                     }
                 }
                 else { // right edge
@@ -286,7 +286,7 @@ public class BoKAutoCommon implements BoKAuto {
                 }
                 robot.setPowerToMotors(left_power, right_power);
 
-                Log.v("BOK", "ALPHA: " + alpha + " DELTA: " + delta + " LEFT_POWER: " + left_power + " RIGHT: " + right_power);
+                Log.v("BOK", "ALPHA: " + String.format("%.2f", alpha) + " DELTA: " + String.format("%.2f", delta) + " LEFT_POWER: " + String.format("%.2f", left_power) + " RIGHT: " + String.format("%.2f", right_power));
                 //opMode.telemetry.addData("BoK", "ALPHA: " + alpha + " DELTA: " + delta + " LEFT_POWER: " + left_power + " RIGHT: " + right_power);
                 //opMode.telemetry.update();
 
@@ -301,36 +301,51 @@ public class BoKAutoCommon implements BoKAuto {
     protected void goBackTillBeaconIsVisible(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException
     {
         boolean picIsVisible = false, foundBeacon = false;
+        double distance;
 
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(-LEFT_MOTOR_POWER/3, -RIGHT_MOTOR_POWER/3);
+            distance = robot.rangeSensor.cmUltrasonic();
 
             Log.v("BOK", "Go back!");
             runTime.reset();
             // run until the end of the match (driver presses STOP)
             while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
+
+                if (distance <= 45) {
+                    opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                    distance = robot.rangeSensor.cmUltrasonic();
+                    continue;
+                }
+
+                opMode.sleep(250);
+
                 //Log.v("BOK", "Img: " + runTime.seconds());
                 for (VuforiaTrackable beac : beacons) {
                     //OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) beac.getListener()).getPose();
                     VuforiaTrackableDefaultListener listener = (VuforiaTrackableDefaultListener)beac.getListener();
-                    OpenGLMatrix rawPose = (listener.isVisible()) ? listener.getRawPose() : null;
+                    OpenGLMatrix rawPose = listener.getRawUpdatedPose();
                     if (rawPose != null) {
                         //VectorF translation = pose.getTranslation();
-                        Log.v("BOK", "Img processing: " + runTime.seconds());
-
-                        //opMode.telemetry.addData(beac.getName() + "-Translation: ", translation);
-                        picIsVisible = true;
+                        Log.v("BOK", "Img processing: " + String.format("%.2f", runTime.seconds()));
 
                         // Convert the data in rawPose back to the format that Vuforia expects -
                         // 3x4 row major matrix. where as the OpenGLMatrix is 4x4 column major matrix.
                         Matrix34F raw = new Matrix34F();
                         float[] rawData = Arrays.copyOfRange(rawPose.transposed().getData(), 0, 12);
                         raw.setData(rawData);
+
+                        Vec2F pointCenter = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(0, 0, 0));
+                        if (((int)pointCenter.getData()[0] >= 1280) || ((int)pointCenter.getData()[1] >= 720))
+                            break;
+
                         // Now call Vuforia's projectPoint to convert 3D point in space to camera image coordinates
                         Vec2F pointUR = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_X, BEACON_AREA_UR_WRT_CENTER_OF_IMAGE_Y, 0));
                         Vec2F pointBL = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_X, BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_Y, 0));
                         //opMode.telemetry.addData(beac.getName() + "-Img point: ", pointUL.getData()[0] + ", " +  pointUL.getData()[1]);
+
+                        picIsVisible = true;
 
                         VuforiaLocalizer.CloseableFrame frame = vuforiaFTC.getFrameQueue().take(); //takes the frame at the head of the queue
                         long numImages = frame.getNumImages();
@@ -372,7 +387,6 @@ public class BoKAutoCommon implements BoKAuto {
                                         //Log.v("BOK", "Saving image");
                                         //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
 
-                                        Vec2F pointCenter = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(0, 0, 0));
                                         Log.v("BOK", "Center: " + (int)pointCenter.getData()[0] + ", " + (int)pointCenter.getData()[1]);
 
                                         Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR); // OpenCV only deals with BGR
@@ -389,7 +403,7 @@ public class BoKAutoCommon implements BoKAuto {
                                         for (p = 0; p < 10; p++) { // Red is 0 (in HSV), but we need to check between 170-179 and 0-9
                                             nRedPixels += (int) resFloat[p];
                                         }
-                                        for (p = 170; p < 180; p++) {
+                                        for (p = 160; p < 180; p++) {
                                             nRedPixels += (int) resFloat[p];
                                         }
 
@@ -397,7 +411,7 @@ public class BoKAutoCommon implements BoKAuto {
                                             foundRed = true;
 
                                         if (foundRed == true) {
-                                            opMode.telemetry.addData(beac.getName() + " Right: ", "RED");
+                                            //opMode.telemetry.addData(beac.getName() + " Right: ", "RED");
                                             Log.v("BOK", beac.getName() + " Right: RED");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
                                                 robot.pusherRightServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
@@ -410,7 +424,7 @@ public class BoKAutoCommon implements BoKAuto {
                                             //opMode.telemetry.addData("BL y:", String.valueOf(pointBL.getData()[1]));
                                         }
                                         else {
-                                            opMode.telemetry.addData(beac.getName() + "Right: ", "BLUE");
+                                            //opMode.telemetry.addData(beac.getName() + "Right: ", "BLUE");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
                                                 robot.pusherLeftServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
                                             }
