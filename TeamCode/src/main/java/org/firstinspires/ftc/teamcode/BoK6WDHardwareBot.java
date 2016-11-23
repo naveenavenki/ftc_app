@@ -38,8 +38,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     private int currentRightTarget;
     private boolean leftPositive;
     private boolean rightPositive;
-    private boolean leftReached;
-    private boolean rightReached;
+    //private boolean leftReached;
+    //private boolean rightReached;
 
     @Override
     /*
@@ -97,7 +97,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     {
         setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        leftReached = rightReached = false;
+        //leftReached = rightReached = false;
 
         currentLeftTarget = leftFront.getCurrentPosition() + leftTarget;
         currentRightTarget = rightFront.getCurrentPosition() + rightTarget;
@@ -139,29 +139,29 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         if (leftPositive) {
             if ((leftFrontCurrentPos >= currentLeftTarget) || (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD)) {
                 Log.v("BOK", "RETURNING TRUE!!");
-                leftReached = true;
-                //return true;
+                //leftReached = true;
+                return true;
             }
         }
         else {
             if ((leftFrontCurrentPos <= currentLeftTarget) || (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD))
-                leftReached = true;
-                //return true;
+                //leftReached = true;
+                return true;
         }
 
         if (rightPositive) {
             if ((rightFrontCurrentPos >= currentRightTarget) || (Math.abs(rightFrontCurrentPos - currentRightTarget) <= DISTANCE_THRESHOLD)) {
                 Log.v("BOK", "RETURNING TRUE right!!");
-                //return true;
-                rightReached = true;
+                return true;
+                //rightReached = true;
             }
         }
         else {
             if ((rightFrontCurrentPos <= currentRightTarget) || (Math.abs(rightFrontCurrentPos - currentRightTarget) <= DISTANCE_THRESHOLD))
-                rightReached = true;
-                //return true;
+                //rightReached = true;
+                return true;
         }
 
-        return rightReached && leftReached;
+        return false; //rightReached && leftReached;
     }
 }
