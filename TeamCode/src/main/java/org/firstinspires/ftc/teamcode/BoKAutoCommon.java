@@ -257,7 +257,7 @@ public class BoKAutoCommon implements BoKAuto {
 
             distance = robot.rangeSensor.cmUltrasonic();
             alpha = robot.odsSensor.getLightDetected();
-            Log.v("BOK", "Line follower " + distance + "a: " + String.format("%.2f", alpha));
+            Log.v("BOK", "Line follower " + distance + " a: " + String.format("%.2f", alpha));
 
             while (opMode.opModeIsActive() && (distance > distanceToWall)) {
                 double left_power, right_power;
@@ -271,7 +271,7 @@ public class BoKAutoCommon implements BoKAuto {
                         right_power = RIGHT_POWER_LINE_FOLLOW;
                     } else {
                         left_power = LEFT_POWER_LINE_FOLLOW;
-                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta/1.5);
+                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta*2);
                     }
                 }
                 else { // right edge
@@ -429,7 +429,7 @@ public class BoKAutoCommon implements BoKAuto {
                                                 robot.pusherLeftServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
                                             }
                                             else {
-                                                robot.pusherRightServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                                robot.pusherRightServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
                                             }
                                             Log.v("BOK",beac.getName() + "RIGHT: BLUE");
                                         }
@@ -501,8 +501,8 @@ public class BoKAutoCommon implements BoKAuto {
 
                 //opMode.telemetry.addData("BOK", "distance: " + distance + " alpha: " + current_alpha);
                 //opMode.telemetry.update();
-                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
-                //Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha + " sec " + runTime.seconds());
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha + " sec " + runTime.seconds());
 
             } // while (opModeIsActive())
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot

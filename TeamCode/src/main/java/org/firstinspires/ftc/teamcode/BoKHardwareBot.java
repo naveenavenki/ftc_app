@@ -51,9 +51,9 @@ public abstract class BoKHardwareBot {
     protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.07;
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.07;
     protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.04;
-    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
+    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.45;
     protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.95;
-    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
+    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.55;
 
     //shooter motors and sweeper motor
     private DcMotor leftShooterMotor;

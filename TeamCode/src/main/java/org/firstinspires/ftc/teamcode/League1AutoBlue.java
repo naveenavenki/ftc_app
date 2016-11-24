@@ -16,12 +16,12 @@ public class League1AutoBlue extends BoKAutoCommon {
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
         // First shoot the two balls by turning on the sweeper and the ball shooter
-        shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER, League1AutoRed.WAIT_FOR_SEC_SHOOTER);
+        shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER-0.1, League1AutoRed.WAIT_FOR_SEC_SHOOTER);
 
         // Move forward for 8 inch in 1.5 sec
         moveForward(opMode, robot, 9.0, 1.5);
         // Turn 35 degrees (in 0.5 sec or less)
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -45);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -42);
         opMode.sleep(100);
 
         // Run to white
@@ -40,7 +40,7 @@ public class League1AutoBlue extends BoKAutoCommon {
         goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
 
         goForwardToWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
-        proportionalLineFollower(opMode, robot, true/*left*/, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
+        proportionalLineFollower(opMode, robot, true/*left*/, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON-2);  // 8 cm
         goBackFromWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
 
         super.exitSoftware();
