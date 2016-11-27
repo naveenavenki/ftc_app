@@ -21,8 +21,13 @@ public class League1AutoBlue extends BoKAutoCommon {
         // Move forward for 8 inch in 1.5 sec
         moveForward(opMode, robot, 9.0, 1.5);
         // Turn 35 degrees (in 0.5 sec or less)
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -42);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -46);
         opMode.sleep(100);
+
+        moveForward(opMode, robot, 35.0, 4);
+        opMode.sleep(250);
+
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, -45);
 
         // Run to white
         runToWhite(opMode, robot, 4/*sec*/);
@@ -31,16 +36,22 @@ public class League1AutoBlue extends BoKAutoCommon {
         //runToGray(opMode, robot, 1);
         turnToWhite(opMode, robot, false/*right*/, 1/*sec*/);
         opMode.sleep(250);
+
         proportionalLineFollower(opMode, robot, true /*left */, 15); // 15 cm; give enough time for the robot to straighten up
         opMode.sleep(250);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -90);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -92);
         opMode.sleep(250);
 
         goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
 
         goForwardToWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
-        proportionalLineFollower(opMode, robot, true/*left*/, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON-2);  // 8 cm
+
+        proportionalLineFollower(opMode, robot, true/*left*/, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -92);
+        opMode.sleep(100);
+
+        goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
         goBackFromWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
 
         super.exitSoftware();

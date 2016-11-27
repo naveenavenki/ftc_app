@@ -12,8 +12,6 @@ public interface BoKAuto {
         BOK_ALLIANCE_BLUE
     }
 
-    static final int METRONOME_TICK = 40; // 40 milli-seconds
-
     static final float LEFT_MOTOR_POWER = 0.5f;
     static final float RIGHT_MOTOR_POWER = 0.525f;
 

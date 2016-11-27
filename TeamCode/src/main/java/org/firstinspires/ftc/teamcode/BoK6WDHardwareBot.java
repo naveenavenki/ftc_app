@@ -81,7 +81,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         rightBack.setPower(right);
         leftFront.setPower(left);
         rightFront.setPower(right);
-        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
     public void setModeForMotors(DcMotor.RunMode runMode)
@@ -90,7 +90,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         rightBack.setMode(runMode);
         leftFront.setMode(runMode);
         rightFront.setMode(runMode);
-        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
     public void setMotorEncoderTarget(int leftTarget, int rightTarget)
@@ -105,7 +105,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         //rightBack.setTargetPosition(rightBack.getCurrentPosition() + rightTarget);
         //leftFront.setTargetPosition(currentLeftTarget);
         //rightFront.setTargetPosition(currentRightTarget);
-        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
         //opMode.idle();
 
         if (leftTarget > 0)

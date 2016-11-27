@@ -31,7 +31,9 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_LEFT_SHOOTER_CFG  = "sl";
     private static final String MOTOR_RIGHT_SHOOTER_CFG = "sr";
     private static final String MOTOR_SWEEPER_CFG       = "sw";
-    protected static final int OPMODE_SLEEP_INTERVAL_MS   = 10;
+
+    protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
+    protected static final int OPMODE_SLEEP_INTERVAL_MS_LONG   = 100;
 
     // LinearOpMode
     LinearOpMode currentOpMode;
@@ -51,9 +53,9 @@ public abstract class BoKHardwareBot {
     protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.07;
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.07;
     protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.04;
-    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.45;
+    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
     protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.95;
-    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.55;
+    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
 
     //shooter motors and sweeper motor
     private DcMotor leftShooterMotor;
@@ -61,7 +63,8 @@ public abstract class BoKHardwareBot {
     protected DcMotor sweeperMotor;
 
     protected static final double SHOOTER_MOTORS_POWER = 0.8;
-    protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.9;
+    protected static final double SHOOTER_MOTORS_POWER_TELEOP = 1.0;
+    protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 1.0;//0.95
     protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.5;
 
     // waitForTicks

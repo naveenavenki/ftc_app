@@ -58,7 +58,6 @@ public class BoKAutoCommon implements BoKAuto {
     protected static final double LEFT_POWER_LINE_FOLLOW = 0.2;
     protected static final double RIGHT_POWER_LINE_FOLLOW = 0.225;
 
-    private static final double P_DRIVE_COEFF = 0.15;
     private static final double P_TURN_COEFF = 0.1;
     private static final double HEADING_THRESHOLD = 1;
 
@@ -165,12 +164,12 @@ public class BoKAutoCommon implements BoKAuto {
             targetEncCount = (BoK6WDHardwareBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
 
             robot.setMotorEncoderTarget((int) (targetEncCount), (int) targetEncCount);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
+            robot.setPowerToMotors(LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5);
 
             runTime.reset();
             while (opMode.opModeIsActive() && (robot.getCurrentPosition() == false) && (runTime.seconds() < waitForSec)) {
                 //opMode.telemetry.update();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             }
 
             // Stop all motion;
@@ -186,7 +185,7 @@ public class BoKAutoCommon implements BoKAuto {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
+            robot.setPowerToMotors(LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2);
             opMode.idle();
 
             // go to white line
@@ -202,12 +201,12 @@ public class BoKAutoCommon implements BoKAuto {
                 current_alpha = robot.odsSensor.getLightDetected();
                 //opMode.telemetry.addData("a: ", current_alpha + " sec: " + runTime.seconds());
                 //opMode.telemetry.update();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
-                Log.v("BOK", "ALPHAW " + String.format("%.2f", current_alpha) + " d: " + distance + " sec: " + String.format("%.2f", runTime.seconds()));
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                //Log.v("BOK", "ALPHAW " + String.format("%.2f", current_alpha) + " d: " + distance + " sec: " + String.format("%.2f", runTime.seconds()));
             } // while (current_alpha < WHITE_LINE)
 
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
-            opMode.sleep(250);
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_LONG);
             current_alpha = robot.odsSensor.getLightDetected();
             Log.v("BOK", "ALPHAW Final " + String.format("%.2f", current_alpha) + " d: " + distance + " sec: " + String.format("%.2f", runTime.seconds()));
         } // if (opModeIsActive())
@@ -234,13 +233,13 @@ public class BoKAutoCommon implements BoKAuto {
                 //opMode.telemetry.addData("a: ", current_alpha + " sec: " + runTime.seconds());
                 //opMode.telemetry.update();
                 current_alpha = robot.odsSensor.getLightDetected();
-                Log.v("BOK", "ALPHAT " + String.format("%.2f",current_alpha) + " sec: " + String.format("%.2f", runTime.seconds()));
+                //Log.v("BOK", "ALPHAT " + String.format("%.2f",current_alpha) + " sec: " + String.format("%.2f", runTime.seconds()));
 
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             } // while (current_alpha <= LINE_EDGE)
 
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
-            opMode.sleep(250);
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_LONG);
             current_alpha = robot.odsSensor.getLightDetected();
             Log.v("BOK", "ALPHAT Final " +String.format("%.2f", current_alpha) + " sec: " + String.format("%.2f", runTime.seconds()));
         } // if (opModeIsActive())
@@ -277,16 +276,16 @@ public class BoKAutoCommon implements BoKAuto {
                 else { // right edge
                     delta = (float) (LINE_EDGE - alpha); // if you are on white, delta is negative, otherwise it is positive
                     if (delta > 0) {
-                        left_power = LEFT_POWER_LINE_FOLLOW - (delta / 2);
+                        left_power = LEFT_POWER_LINE_FOLLOW - (delta*2);
                         right_power = RIGHT_POWER_LINE_FOLLOW;
                     } else {
                         left_power = LEFT_POWER_LINE_FOLLOW;
-                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta / 2);
+                        right_power = RIGHT_POWER_LINE_FOLLOW + (delta / 3);
                     }
                 }
                 robot.setPowerToMotors(left_power, right_power);
 
-                Log.v("BOK", "ALPHA: " + String.format("%.2f", alpha) + " DELTA: " + String.format("%.2f", delta) + " LEFT_POWER: " + String.format("%.2f", left_power) + " RIGHT: " + String.format("%.2f", right_power));
+                //Log.v("BOK", "ALPHA: " + String.format("%.2f", alpha) + " DELTA: " + String.format("%.2f", delta) + " LEFT_POWER: " + String.format("%.2f", left_power) + " RIGHT: " + String.format("%.2f", right_power));
                 //opMode.telemetry.addData("BoK", "ALPHA: " + alpha + " DELTA: " + delta + " LEFT_POWER: " + left_power + " RIGHT: " + right_power);
                 //opMode.telemetry.update();
 
@@ -295,6 +294,7 @@ public class BoKAutoCommon implements BoKAuto {
 
             //opMode.telemetry.addData("BoK", "ALPHA FINAL " + alpha + " Difference: " + delta + " Percent " + steer);
             //opMode.telemetry.update();
+            Log.v("BOK", "Line Final: " + String.format("%.2f", robot.odsSensor.getLightDetected()) + " gyro: " + robot.gyroSensor.getIntegratedZValue() + " d: " + robot.rangeSensor.cmUltrasonic());
         } // if (opModeIsActive())
     }
 
@@ -305,7 +305,7 @@ public class BoKAutoCommon implements BoKAuto {
 
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(-LEFT_MOTOR_POWER/3, -RIGHT_MOTOR_POWER/3);
+            robot.setPowerToMotors(-LEFT_MOTOR_POWER/3, -LEFT_MOTOR_POWER/3);
             distance = robot.rangeSensor.cmUltrasonic();
 
             Log.v("BOK", "Go back!");
@@ -314,7 +314,7 @@ public class BoKAutoCommon implements BoKAuto {
             while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
 
                 if (distance <= 45) {
-                    opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                    opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
                     distance = robot.rangeSensor.cmUltrasonic();
                     continue;
                 }
@@ -327,6 +327,7 @@ public class BoKAutoCommon implements BoKAuto {
                     VuforiaTrackableDefaultListener listener = (VuforiaTrackableDefaultListener)beac.getListener();
                     OpenGLMatrix rawPose = listener.getRawUpdatedPose();
                     if (rawPose != null) {
+                        VuforiaLocalizer.CloseableFrame frame = vuforiaFTC.getFrameQueue().take(); //takes the frame at the head of the queue
                         //VectorF translation = pose.getTranslation();
                         Log.v("BOK", "Img processing: " + String.format("%.2f", runTime.seconds()));
 
@@ -347,7 +348,6 @@ public class BoKAutoCommon implements BoKAuto {
 
                         picIsVisible = true;
 
-                        VuforiaLocalizer.CloseableFrame frame = vuforiaFTC.getFrameQueue().take(); //takes the frame at the head of the queue
                         long numImages = frame.getNumImages();
 
                         for (int i = 0; i < numImages; i++) {
@@ -446,13 +446,14 @@ public class BoKAutoCommon implements BoKAuto {
                 if ((picIsVisible == true) && (foundBeacon == true)){
                     //robot.setPowerToMotors(0, 0);
                     //robot.waitForTick(METRONOME_TICK);
-                    Log.v("BOK", "Stopping " + runTime.seconds());
+                    Log.v("BOK", "Stopping " + String.format("%.2f", runTime.seconds()) + robot.gyroSensor.getIntegratedZValue());
                     break;
                 }
                 //opMode.telemetry.update();
                 //opMode.idle();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             } // while (opMode.isOpModeActive)
+            Log.v("BOK", "Go back Final: " + String.format("%.2f", runTime.seconds()) + robot.gyroSensor.getIntegratedZValue());
         }
     }
 
@@ -474,7 +475,7 @@ public class BoKAutoCommon implements BoKAuto {
                 //opMode.telemetry.addData("BOK", "distance: " + distance);
                 //opMode.telemetry.update();
                 distance = robot.rangeSensor.cmUltrasonic();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
                 //Log.v("BOK", "goBwd: " + distance);
             } // while (opModeIsActive())
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
@@ -493,7 +494,7 @@ public class BoKAutoCommon implements BoKAuto {
             current_alpha = robot.odsSensor.getLightDetected();
             runTime.reset();
 
-            Log.v("BOK", "goForward: " + distance + ", " + current_alpha);
+            Log.v("BOK", "goForward: " + distance + ", a: " + String.format(".2f", current_alpha) + ", ang: " + robot.gyroSensor.getIntegratedZValue());
             // stop when near the white line and the distance < target distance
             while (opMode.opModeIsActive() && ((distance > targetDistance) && (current_alpha <= WHITE_LINE)) && (runTime.seconds() < waitForSec)) {
                 distance = robot.rangeSensor.cmUltrasonic();
@@ -501,8 +502,34 @@ public class BoKAutoCommon implements BoKAuto {
 
                 //opMode.telemetry.addData("BOK", "distance: " + distance + " alpha: " + current_alpha);
                 //opMode.telemetry.update();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
-                Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha + " sec " + runTime.seconds());
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                //Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha + " sec " + runTime.seconds());
+
+            } // while (opModeIsActive())
+            robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
+        } // if (opModeIsActive())
+    }
+
+    protected void goForwardTillBeacon(LinearOpMode opMode, BoKHardwareBot robot, double targetDistance, double waitForSec) throws InterruptedException
+    {
+        double distance;
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+            //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.setPowerToMotors(LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2);
+
+            distance = robot.rangeSensor.cmUltrasonic();
+            runTime.reset();
+
+            Log.v("BOK", "goForward: " + distance + ", ang: " + robot.gyroSensor.getIntegratedZValue());
+            // stop when near the white line and the distance < target distance
+            while (opMode.opModeIsActive() && (distance > targetDistance) && (runTime.seconds() < waitForSec)) {
+                distance = robot.rangeSensor.cmUltrasonic();
+
+                //opMode.telemetry.addData("BOK", "distance: " + distance + " alpha: " + current_alpha);
+                //opMode.telemetry.update();
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                //Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha + " sec " + runTime.seconds());
 
             } // while (opModeIsActive())
             robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
@@ -520,7 +547,7 @@ public class BoKAutoCommon implements BoKAuto {
      *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
      *                   If a relative angle is required, add/subtract from current heading.
      */
-    public void gyroTurn (  LinearOpMode opMode, BoKHardwareBot robot, double speed, double angle) {
+    public static void gyroTurn (  LinearOpMode opMode, BoKHardwareBot robot, double speed, double angle) {
 
         //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -528,8 +555,9 @@ public class BoKAutoCommon implements BoKAuto {
         while (opMode.opModeIsActive() && !onHeading(opMode, robot, speed, angle, P_TURN_COEFF)) {
             // Update telemetry & Allow time for other processes to run.
             opMode.telemetry.update();
-            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS);
+            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
+        Log.v("BOK", "turnF: " + robot.gyroSensor.getIntegratedZValue() + "a: " + String.format("%.2f", robot.odsSensor.getLightDetected()));
     }
 
     /**
@@ -542,7 +570,7 @@ public class BoKAutoCommon implements BoKAuto {
      * @param PCoeff    Proportional Gain coefficient
      * @return
      */
-    boolean onHeading(LinearOpMode opMode, BoKHardwareBot robot, double speed, double angle, double PCoeff) {
+    private static boolean onHeading(LinearOpMode opMode, BoKHardwareBot robot, double speed, double angle, double PCoeff) {
         double   error ;
         double   steer ;
         boolean  onTarget = false;
@@ -579,7 +607,7 @@ public class BoKAutoCommon implements BoKAuto {
         //opMode.telemetry.addData("Err/St", "%5.2f/%5.2f", error, steer);
         //opMode.telemetry.addData("Speed.", "%5.2f:%5.2f", leftSpeed, rightSpeed);
 
-        Log.v("BOK", "Err: " + error + ", Steer: " + steer);
+        //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
         //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " + String.format("%5.2f", rightSpeed));
         return onTarget;
     }
@@ -590,7 +618,7 @@ public class BoKAutoCommon implements BoKAuto {
      * @return  error angle: Degrees in the range +/- 180. Centered on the robot's frame of reference
      *          +ve error means the robot should turn LEFT (CCW) to reduce error.
      */
-    public double getError(BoKHardwareBot robot, double targetAngle) {
+    private static double getError(BoKHardwareBot robot, double targetAngle) {
 
         double robotError;
 
@@ -607,7 +635,7 @@ public class BoKAutoCommon implements BoKAuto {
      * @param PCoeff  Proportional Gain Coefficient
      * @return
      */
-    public double getSteer(double error, double PCoeff) {
+    private static double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
     }
 }
