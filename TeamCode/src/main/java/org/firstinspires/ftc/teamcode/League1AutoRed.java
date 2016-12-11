@@ -28,13 +28,13 @@ public class League1AutoRed extends BoKAutoCommon {
         // Move forward for 8 inch in 1.5 sec
         moveForward(opMode, robot, 9.0, 2);
         // Turn 35 degrees (in 0.5 sec or less)
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, 46);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 46);
         opMode.sleep(100);
 
         moveForward(opMode, robot, 35.0, 4);
         opMode.sleep(250);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, 45);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 45);
 
         // Run to white
         runToWhite(opMode, robot, 4/*sec*/);
@@ -45,20 +45,23 @@ public class League1AutoRed extends BoKAutoCommon {
 
         proportionalLineFollower(opMode, robot, false/* right */, 15); // 15 cm; give enough time for the robot to straighten up
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, 92);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, 92);
         opMode.sleep(250);
 
-        goBackTillBeaconIsVisible(opMode, robot, 4/*sec*/);
+        if (goBackTillBeaconIsVisible(opMode, robot, 4/*sec*/)) {
 
-        goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
-        proportionalLineFollower(opMode, robot, false /*right edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, 92);
+            goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
+            proportionalLineFollower(opMode, robot, false /*right edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
+            gyroTurn(opMode, robot, LEFT_MOTOR_POWER /2.5, 92);
 
-        opMode.sleep(100);
+            opMode.sleep(100);
 
-        goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
-        goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
-
+            goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
+            goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
+        }
+        else {
+            opMode.sleep(15000);
+        }
         super.exitSoftware();
     }
 }

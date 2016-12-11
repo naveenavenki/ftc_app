@@ -27,7 +27,7 @@ public class League1AutoBlue extends BoKAutoCommon {
         moveForward(opMode, robot, 35.0, 4);
         opMode.sleep(250);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, -45);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, -46);
 
         // Run to white
         runToWhite(opMode, robot, 4/*sec*/);
@@ -43,17 +43,20 @@ public class League1AutoBlue extends BoKAutoCommon {
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -92);
         opMode.sleep(250);
 
-        goBackTillBeaconIsVisible(opMode, robot, 2/*sec*/);
+        if (goBackTillBeaconIsVisible(opMode, robot, 4/*sec*/)) {
 
-        goForwardToWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
+            goForwardToWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
 
-        proportionalLineFollower(opMode, robot, true/*left*/, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/3, -92);
-        opMode.sleep(100);
+            proportionalLineFollower(opMode, robot, true/*left*/, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
+            gyroTurn(opMode, robot, LEFT_MOTOR_POWER / 3, -92);
+            opMode.sleep(100);
 
-        goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
-        goBackFromWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
-
+            goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
+            goBackFromWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
+        }
+        else {
+            opMode.sleep(15000);
+        }
         super.exitSoftware();
     }
 }

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by shiv on 11/23/2016.
  */
-@Autonomous(name="BoK Servo", group="Test")
+
 public class BoKServoBot extends LinearOpMode {
     Servo servo;
     @Override

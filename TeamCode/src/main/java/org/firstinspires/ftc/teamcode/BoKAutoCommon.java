@@ -95,6 +95,7 @@ public class BoKAutoCommon implements BoKAuto {
         robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
 
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO);
+        robot.liftServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_LIFT);
 
         Log.v("BOK", "Calling setupMotorEncoders");
 
@@ -298,9 +299,9 @@ public class BoKAutoCommon implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    protected void goBackTillBeaconIsVisible(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException
+    protected boolean goBackTillBeaconIsVisible(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException
     {
-        boolean picIsVisible = false, foundBeacon = false;
+        boolean picIsVisible = false, foundBeacon = false, imgProcessed = false;
         double distance;
 
         if (opMode.opModeIsActive()) {
@@ -381,9 +382,14 @@ public class BoKAutoCommon implements BoKAuto {
                                     if ((roi.x >= 0) && (roi.x < (rgb.getWidth()-roiPixelsX)) && (roi.y >= 0) && (roi.y < (rgb.getHeight()-roiPixelsY))) {
                                         boolean foundRed = false;
                                         int p, nRedPixels = 0;
-                                        foundBeacon = true;
 
-                                        robot.setPowerToMotors(0, 0);
+                                        if (!foundBeacon) {
+                                            foundBeacon = true;
+                                            robot.setPowerToMotors(0, 0);
+                                            break;
+                                        }
+
+                                        imgProcessed = true;
                                         //Log.v("BOK", "Saving image");
                                         //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
 
@@ -443,7 +449,7 @@ public class BoKAutoCommon implements BoKAuto {
                         break;
                     } // rawPose != null
                 } // for beacons
-                if ((picIsVisible == true) && (foundBeacon == true)){
+                if ((picIsVisible == true) && (foundBeacon == true) && (imgProcessed == true)){
                     //robot.setPowerToMotors(0, 0);
                     //robot.waitForTick(METRONOME_TICK);
                     Log.v("BOK", "Stopping " + String.format("%.2f", runTime.seconds()) + robot.gyroSensor.getIntegratedZValue());
@@ -454,7 +460,9 @@ public class BoKAutoCommon implements BoKAuto {
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             } // while (opMode.isOpModeActive)
             Log.v("BOK", "Go back Final: " + String.format("%.2f", runTime.seconds()) + robot.gyroSensor.getIntegratedZValue());
+            robot.setPowerToMotors(0, 0);
         }
+        return ((picIsVisible == true) && (foundBeacon == true) && (imgProcessed == true));
     }
 
     protected void goBackFromWall(LinearOpMode opMode, BoKHardwareBot robot, double targetDistance, double waitForSec) throws InterruptedException
@@ -593,8 +601,8 @@ public class BoKAutoCommon implements BoKAuto {
             //if (steer >= 0) steer = Range.clip(steer, 0.5, 1.0);
             //else steer = Range.clip(steer, -1.0, -0.5);
             rightSpeed  = speed * steer;
-            if (rightSpeed > 0) rightSpeed = Range.clip(rightSpeed, 0.11, 0.17);
-            else rightSpeed = Range.clip(rightSpeed, -0.17, -0.11);
+            if (rightSpeed > 0) rightSpeed = Range.clip(rightSpeed, 0.16, 0.2);
+            else rightSpeed = Range.clip(rightSpeed, -0.2, -0.16);
 
             leftSpeed   = -rightSpeed;
         }

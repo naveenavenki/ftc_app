@@ -21,6 +21,8 @@ public class League2TeleopArcade {
     private double gamePad1LeftStickY = 0;
     private double rightPower = 0;
     private double leftPower = 0;
+    private double liftPower = 0;
+    private double driveDirection = 1.0;
 
     private boolean shooterServosMinPos = false; // Shooter motors position
     private boolean shooterServosMidPos = true;
@@ -34,6 +36,7 @@ public class League2TeleopArcade {
         // set the initial position of the button pushers (both pointed down)
         robot.pusherLeftServo.setPosition(positionLeft);
         robot.pusherRightServo.setPosition(positionRight);
+        robot.liftServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_LIFT);
 
         // set the initial position of the shooter servo
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP);
@@ -55,8 +58,8 @@ public class League2TeleopArcade {
                 leftPower = 0;
                 rightPower = 0;
             } else {
-                leftPower = gamePad1LeftStickY*1.5;
-                rightPower = gamePad1LeftStickY*1.5;
+                leftPower = gamePad1LeftStickY*1.0;
+                rightPower = gamePad1LeftStickY*1.0;
                 if (!goForBeacon) {
                     if (leftPower < 0) {
                         leftPower = Range.clip(leftPower, -1.0, -0.3);
@@ -73,24 +76,34 @@ public class League2TeleopArcade {
                 }
                 else {
                     if (leftPower < 0) {
-                        leftPower = Range.clip(leftPower, -0.2, -0.15);
+                        leftPower = leftPower*0.25;
+                        //leftPower = Range.clip(leftPower, -0.15, -0.1);
                     }
                     else {
-                        leftPower = Range.clip(leftPower, 0.2, 0.25);
+                        leftPower = leftPower*0.25;
+                        //leftPower = Range.clip(leftPower, 0.2, 0.25);
                     }
 
                     if (rightPower < 0) {
-                        rightPower = Range.clip(rightPower, -0.2, -0.15);
+                        rightPower = rightPower*0.25;
+                        //rightPower = Range.clip(rightPower, -0.15, -0.1);
                     }
                     else {
-                        rightPower = Range.clip(rightPower, 0.2, 0.25);
+                        rightPower = rightPower*0.25;
+                        //rightPower = Range.clip(rightPower, 0.2, 0.25);
                     }
 
                 }
             }
 
+
             if ((gamePad1RightStickX < 0.05) && (gamePad1RightStickX > -0.05)) {
-                robot.setPowerToMotors(leftPower, rightPower); // drive straight
+                if (driveDirection == 1) {
+                    robot.setPowerToMotors(leftPower, rightPower); // drive straight
+                }
+                else {
+                    robot.setPowerToMotors(-rightPower, -leftPower); // drive backwards                }
+                }
             } else if (gamePad1RightStickX > 0.05) { // direction is right
                 // 1. We are throttling up and turning right (forward right)
                 //    left power is +ve, right power is -ve
@@ -102,7 +115,12 @@ public class League2TeleopArcade {
                 //else {  // we are throttling down: backward right
                 //    rightPower = (-1 * gamePad1RightStickX) * rightPower; // left power is -ve, right power is +ve
                 //}
-                robot.setPowerToMotors(leftPower, rightPower);
+                if (driveDirection == 1) {
+                    robot.setPowerToMotors(leftPower, rightPower); // drive straight
+                }
+                else {
+                    robot.setPowerToMotors(-rightPower, -leftPower); // drive backwards                }
+                }
             } else { // direction is left (< -0.05)
                 // 1. We are throttling up and turning left (forward left)
                 //    left power is -ve (RightStickX is -ve), right power is +ve
@@ -114,7 +132,12 @@ public class League2TeleopArcade {
                 //else { // we are throttling down, backward left
                 //    leftPower = gamePad1RightStickX * leftPower; // left power is +ve (RightStickX is -ve), right power is -ve
                 //}
-                robot.setPowerToMotors(leftPower, rightPower);
+                if (driveDirection == 1) {
+                    robot.setPowerToMotors(leftPower, rightPower); // drive straight
+                }
+                else {
+                    robot.setPowerToMotors(-rightPower, -leftPower); // drive backwards                }
+                }
             }
 
             //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f", gamePad1LeftStickY, gamePad1RightStickX);
@@ -172,11 +195,9 @@ public class League2TeleopArcade {
                     robot.pusherRightServo.setPosition(positionRight);
                 }
             }
-            if (opMode.gamepad2.back){
+            if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right){
                 robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_REVERSE);
             }
-
-
 
             if (opMode.gamepad2.dpad_down){
                 if(!shooterServosMinPos){
@@ -202,6 +223,26 @@ public class League2TeleopArcade {
                 if (goForBeacon)
                     goForBeacon = false;
             }
+            if (opMode.gamepad2.right_trigger > 0.2){
+                liftPower = 1.0;
+            }
+            else if(opMode.gamepad2.left_trigger > 0.2) {
+                liftPower = -1.0;
+            }
+            else {
+                liftPower = 0;
+            }
+            if (opMode.gamepad1.x) {
+                robot.liftServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_LIFT);
+                driveDirection = -1.0;
+            }
+            if (opMode.gamepad1.b) {
+                driveDirection = 1.0;
+            }
+            if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right) {
+                robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_REVERSE);
+            }
+            robot.liftMotor.setPower(liftPower);
 
             opMode.telemetry.addData("Shooter Angle", robot.shooterServo.getPosition());
             opMode.telemetry.addData("Gyro: ", robot.gyroSensor.getIntegratedZValue());

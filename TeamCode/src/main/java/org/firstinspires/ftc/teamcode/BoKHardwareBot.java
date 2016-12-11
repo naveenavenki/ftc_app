@@ -31,6 +31,8 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_LEFT_SHOOTER_CFG  = "sl";
     private static final String MOTOR_RIGHT_SHOOTER_CFG = "sr";
     private static final String MOTOR_SWEEPER_CFG       = "sw";
+    private static final String MOTOR_LIFT_CFG          = "lift";
+    private static final String SERVO_LIFT_CFG          = "lifts";
 
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     protected static final int OPMODE_SLEEP_INTERVAL_MS_LONG   = 100;
@@ -49,6 +51,7 @@ public abstract class BoKHardwareBot {
     protected Servo shooterServo;
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
+    protected Servo liftServo;
 
     protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.07;
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.07;
@@ -56,15 +59,18 @@ public abstract class BoKHardwareBot {
     protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
     protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.95;
     protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
+    protected static final double INITIAL_SERVO_POS_LIFT         = 1.0;
+    protected static final double FINAL_SERVO_POS_LIFT           = 0.5;
 
     //shooter motors and sweeper motor
     private DcMotor leftShooterMotor;
     private DcMotor rightShooterMotor;
     protected DcMotor sweeperMotor;
+    protected DcMotor liftMotor;
 
     protected static final double SHOOTER_MOTORS_POWER = 0.8;
     protected static final double SHOOTER_MOTORS_POWER_TELEOP = 1.0;
-    protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 1.0;//0.95
+    protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.95;
     protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.5;
 
     // waitForTicks
@@ -139,9 +145,20 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
+        liftMotor = opMode.hardwareMap.dcMotor.get(MOTOR_LIFT_CFG);
+        if (liftMotor == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
+        liftServo = opMode.hardwareMap.servo.get(SERVO_LIFT_CFG);
+        if (liftServo == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
         sweeperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);      // start the sweeper motor for ball intake
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
+        liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         return BoKStatus.BOK_SUCCESS;
     }
