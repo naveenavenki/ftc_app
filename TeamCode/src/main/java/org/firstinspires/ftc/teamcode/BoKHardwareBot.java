@@ -59,7 +59,6 @@ public abstract class BoKHardwareBot {
     protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
     protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.95;
     protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
-    protected static final double INITIAL_SERVO_POS_LIFT         = 1.0;
     protected static final double FINAL_SERVO_POS_LIFT           = 0.5;
 
     //shooter motors and sweeper motor

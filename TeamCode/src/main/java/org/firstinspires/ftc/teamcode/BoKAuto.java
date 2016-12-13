@@ -13,7 +13,7 @@ public interface BoKAuto {
     }
 
     static final float LEFT_MOTOR_POWER = 0.5f;
-    static final float RIGHT_MOTOR_POWER = 0.525f;
+    static final float RIGHT_MOTOR_POWER = 0.5f;
 
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue);
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException;

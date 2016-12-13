@@ -496,7 +496,7 @@ public class BoKAutoCommon implements BoKAuto {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2);
+            robot.setPowerToMotors(LEFT_MOTOR_POWER/2.5, RIGHT_MOTOR_POWER/2.5);
 
             distance = robot.rangeSensor.cmUltrasonic();
             current_alpha = robot.odsSensor.getLightDetected();
