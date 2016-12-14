@@ -33,6 +33,7 @@ public class League1AutoBlue extends BoKAutoCommon {
         // Move forward for 8 inch in 1.5 sec
         moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 14, 2);
         // Turn 35 degrees (in 0.5 sec or less)
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, -43);
         opMode.sleep(100);
 
         moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 4);
