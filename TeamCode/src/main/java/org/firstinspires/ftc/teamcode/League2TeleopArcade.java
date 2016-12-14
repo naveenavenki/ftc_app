@@ -23,6 +23,7 @@ public class League2TeleopArcade {
     private double leftPower = 0;
     private double liftPower = 0;
     private double driveDirection = 1.0;
+    private double shooterMotorsSpeed = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL;
 
     private boolean shooterServosMinPos = false; // Shooter motors position
     private boolean shooterServosMidPos = true;
@@ -148,7 +149,7 @@ public class League2TeleopArcade {
             //Log.v("BOK", "Power: " + String.format("%.2f", leftPower) + ", " + String.format("%.2f", rightPower));
 
             if (opMode.gamepad2.right_bumper){
-                robot.setPowerToShooter(BoKHardwareBot.SHOOTER_MOTORS_POWER_TELEOP);
+                robot.setPowerToShooter(shooterMotorsSpeed);
             }
 
             if (opMode.gamepad2.left_bumper){
@@ -242,11 +243,16 @@ public class League2TeleopArcade {
             if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right) {
                 robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_REVERSE);
             }
+            if (opMode.gamepad1.left_bumper) {
+                shooterMotorsSpeed = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL;
+            }
+            if (opMode.gamepad1.right_bumper) {
+                shooterMotorsSpeed = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL + 0.1;
+            }
             robot.liftMotor.setPower(liftPower);
 
             opMode.telemetry.addData("Shooter Angle", robot.shooterServo.getPosition());
-            opMode.telemetry.addData("Gyro: ", robot.gyroSensor.getIntegratedZValue());
-            opMode.telemetry.addData("Distance: ", robot.rangeSensor.cmUltrasonic());
+            opMode.telemetry.addData("Shooter Motors", shooterMotorsSpeed);
             opMode.telemetry.update();
 
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second

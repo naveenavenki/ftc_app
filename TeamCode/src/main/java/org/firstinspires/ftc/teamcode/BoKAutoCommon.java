@@ -155,7 +155,7 @@ public class BoKAutoCommon implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    protected void moveForward(LinearOpMode opMode, BoKHardwareBot robot, double inchesForward, double waitForSec) throws InterruptedException {
+    protected void moveForward(LinearOpMode opMode, BoKHardwareBot robot, double leftPower, double rightPower, double inchesForward, double waitForSec) throws InterruptedException {
         double degreesOfWheelTurn, degreesOfMotorTurn, targetEncCount;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -165,7 +165,7 @@ public class BoKAutoCommon implements BoKAuto {
             targetEncCount = (BoK6WDHardwareBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
 
             robot.setMotorEncoderTarget((int) (targetEncCount), (int) targetEncCount);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5);
+            robot.setPowerToMotors(leftPower, rightPower);
 
             runTime.reset();
             while (opMode.opModeIsActive() && (robot.getCurrentPosition() == false) && (runTime.seconds() < waitForSec)) {
@@ -181,8 +181,8 @@ public class BoKAutoCommon implements BoKAuto {
         }
     }
 
-    protected void runToWhite(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
-        double current_alpha, distance;
+    protected boolean runToWhite(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+        double current_alpha = 0, distance;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -211,6 +211,7 @@ public class BoKAutoCommon implements BoKAuto {
             current_alpha = robot.odsSensor.getLightDetected();
             Log.v("BOK", "ALPHAW Final " + String.format("%.2f", current_alpha) + " d: " + distance + " sec: " + String.format("%.2f", runTime.seconds()));
         } // if (opModeIsActive())
+        return (current_alpha >= WHITE_LINE);
     }
 
     protected void turnToWhite(LinearOpMode opMode, BoKHardwareBot robot, boolean turnLeft, double waitForSec) throws InterruptedException {
@@ -319,7 +320,6 @@ public class BoKAutoCommon implements BoKAuto {
                     distance = robot.rangeSensor.cmUltrasonic();
                     continue;
                 }
-
                 opMode.sleep(250);
 
                 //Log.v("BOK", "Img: " + runTime.seconds());
@@ -471,7 +471,7 @@ public class BoKAutoCommon implements BoKAuto {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(-LEFT_MOTOR_POWER/2, -RIGHT_MOTOR_POWER/2);
+            robot.setPowerToMotors(-LEFT_MOTOR_POWER, -RIGHT_MOTOR_POWER);
             distance = robot.rangeSensor.cmUltrasonic();
             runTime.reset();
 

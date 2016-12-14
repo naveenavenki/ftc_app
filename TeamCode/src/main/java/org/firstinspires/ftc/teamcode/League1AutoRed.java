@@ -12,7 +12,7 @@ public class League1AutoRed extends BoKAutoCommon {
 
     protected static final double WAIT_FOR_SEC_SHOOTER = 4.0;
     protected static final int ROBOT_DISTANCE_FROM_WALL_FOR_BEACON = 16;
-    protected static final int ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON = 20;
+    protected static final int ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON = 32;
 
     @Override
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
@@ -22,22 +22,34 @@ public class League1AutoRed extends BoKAutoCommon {
     @Override
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
+        double shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL;
+        double voltage12V = robot.voltageSensor.getVoltage();
+        Log.v("BOK", "Battery voltage: " + voltage12V);
+        if (voltage12V >= 13.0) {
+            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL - 0.1;
+        }
+        else if (voltage12V < 12.4) {
+            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL + 0.1;
+        }
+
         // First shoot the two balls by turning on the sweeper and the ball shooter
-        shootBall(opMode, robot, BoKHardwareBot.SHOOTER_MOTORS_POWER, WAIT_FOR_SEC_SHOOTER);
+        shootBall(opMode, robot, shooterMotorsPower, WAIT_FOR_SEC_SHOOTER);
 
         // Move forward for 8 inch in 1.5 sec
-        moveForward(opMode, robot, 10.5, 2);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 10.5, 2);
         // Turn 35 degrees (in 0.5 sec or less)
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 46);
         opMode.sleep(100);
 
-        moveForward(opMode, robot, 42.0, 4);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 4);
         opMode.sleep(250);
 
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 45);
 
         // Run to white
-        runToWhite(opMode, robot, 4/*sec*/);
+        if (runToWhite(opMode, robot, 4/*sec*/) == false) {
+            super.exitSoftware();
+        }
         opMode.sleep(250);
 
         turnToWhite(opMode, robot, true/*left*/, 2/*sec*/);
@@ -58,6 +70,9 @@ public class League1AutoRed extends BoKAutoCommon {
 
             goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
             goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
+
+            gyroTurn(opMode, robot, LEFT_MOTOR_POWER, -175);
+            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 40.0, 4);
         }
         else {
             opMode.sleep(15000);

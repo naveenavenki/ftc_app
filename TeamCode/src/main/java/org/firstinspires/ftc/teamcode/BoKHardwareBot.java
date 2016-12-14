@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -68,10 +69,11 @@ public abstract class BoKHardwareBot {
     protected DcMotor sweeperMotor;
     protected DcMotor liftMotor;
 
-    protected static final double SHOOTER_MOTORS_POWER = 0.8;
-    protected static final double SHOOTER_MOTORS_POWER_TELEOP = 1.0;
+    protected static final double SHOOTER_MOTORS_POWER_NORMAL = 0.8;
     protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.95;
     protected static final double SWEEPER_MOTOR_POWER_REVERSE = -0.5;
+
+    protected VoltageSensor voltageSensor;
 
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();
@@ -155,6 +157,10 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
+        voltageSensor = opMode.hardwareMap.voltageSensor.get("Motor Controller Up Right");
+        if (voltageSensor == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
         sweeperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);      // start the sweeper motor for ball intake
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
