@@ -31,12 +31,12 @@ public class League1AutoBlue extends BoKAutoCommon {
         shootBall(opMode, robot, shooterMotorsPower, League1AutoRed.WAIT_FOR_SEC_SHOOTER);
 
         // Move forward for 8 inch in 1.5 sec
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 14, 2);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 12, 2);
         // Turn 35 degrees (in 0.5 sec or less)
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, -43);
         opMode.sleep(100);
 
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 4);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 3);
         opMode.sleep(250);
 
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, -45);
@@ -69,7 +69,7 @@ public class League1AutoBlue extends BoKAutoCommon {
             goBackFromWall(opMode, robot, League1AutoRed.ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 1);
 
             gyroTurn(opMode, robot, LEFT_MOTOR_POWER, -175);
-            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 40.0, 4);
+            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 45.0, 4);
         }
         else {
             opMode.sleep(15000);

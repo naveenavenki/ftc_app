@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  */
 public class League1AutoRed extends BoKAutoCommon {
 
-    protected static final double WAIT_FOR_SEC_SHOOTER = 4.0;
+    protected static final double WAIT_FOR_SEC_SHOOTER = 5.0;
     protected static final int ROBOT_DISTANCE_FROM_WALL_FOR_BEACON = 16;
     protected static final int ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON = 32;
 
@@ -41,7 +41,7 @@ public class League1AutoRed extends BoKAutoCommon {
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 46);
         opMode.sleep(100);
 
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 4);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 3);
         opMode.sleep(250);
 
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 45);
@@ -72,7 +72,7 @@ public class League1AutoRed extends BoKAutoCommon {
             goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
 
             gyroTurn(opMode, robot, LEFT_MOTOR_POWER, -175);
-            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 40.0, 4);
+            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 45.0, 4);
         }
         else {
             opMode.sleep(15000);

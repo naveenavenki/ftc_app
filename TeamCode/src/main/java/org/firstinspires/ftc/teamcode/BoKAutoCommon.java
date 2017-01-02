@@ -96,6 +96,7 @@ public class BoKAutoCommon implements BoKAuto {
 
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO);
         robot.liftServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_LIFT);
+        robot.gateServo.setPosition(robot.FINAL_SERVO_POS_GATE);
 
         Log.v("BOK", "Calling setupMotorEncoders");
 
@@ -121,7 +122,7 @@ public class BoKAutoCommon implements BoKAuto {
         beacons.get(3).setName("Gears");
 
         /** Start tracking the data sets we care about. */
-        beacons.activate();
+        //beacons.activate();
         Log.v("BOK", "Done initializing Vuforia");
     }
 
@@ -306,6 +307,9 @@ public class BoKAutoCommon implements BoKAuto {
         double distance;
 
         if (opMode.opModeIsActive()) {
+            beacons.activate();
+
+
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToMotors(-LEFT_MOTOR_POWER/3, -LEFT_MOTOR_POWER/3);
             distance = robot.rangeSensor.cmUltrasonic();
@@ -560,6 +564,12 @@ public class BoKAutoCommon implements BoKAuto {
         //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // keep looping while we are still active, and not on heading.
+        while (opMode.opModeIsActive() && !onHeading(opMode, robot, speed, angle, P_TURN_COEFF)) {
+            // Update telemetry & Allow time for other processes to run.
+            opMode.telemetry.update();
+            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+        Log.v("BOK", "turnF: " + robot.gyroSensor.getIntegratedZValue() + "a: " + String.format("%.2f", robot.odsSensor.getLightDetected()));
         while (opMode.opModeIsActive() && !onHeading(opMode, robot, speed, angle, P_TURN_COEFF)) {
             // Update telemetry & Allow time for other processes to run.
             opMode.telemetry.update();

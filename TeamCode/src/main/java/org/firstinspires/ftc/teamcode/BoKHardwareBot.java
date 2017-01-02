@@ -34,6 +34,7 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_SWEEPER_CFG       = "sw";
     private static final String MOTOR_LIFT_CFG          = "lift";
     private static final String SERVO_LIFT_CFG          = "lifts";
+    private static final String SERVO_GATE_CFG          = "gate";
 
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     protected static final int OPMODE_SLEEP_INTERVAL_MS_LONG   = 100;
@@ -53,15 +54,18 @@ public abstract class BoKHardwareBot {
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
     protected Servo liftServo;
+    protected Servo gateServo;
 
     protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.07;
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.07;
-    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.04;
-    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.5;
-    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.95;
-    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.5;
+    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.35;
+    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.85;
+    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.8;
+    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.3;
     protected static final double INITIAL_SERVO_POS_LIFT         = 0.9;
     protected static final double FINAL_SERVO_POS_LIFT           = 0.5;
+    protected static final double INITIAL_SERVO_POS_GATE         = 0.0;
+    protected static final double FINAL_SERVO_POS_GATE           = 0.7;
 
     //shooter motors and sweeper motor
     private DcMotor leftShooterMotor;
@@ -154,6 +158,11 @@ public abstract class BoKHardwareBot {
 
         liftServo = opMode.hardwareMap.servo.get(SERVO_LIFT_CFG);
         if (liftServo == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
+        gateServo = opMode.hardwareMap.servo.get(SERVO_GATE_CFG);
+        if (gateServo == null) {
             return BoKStatus.BOK_FAILURE;
         }
 

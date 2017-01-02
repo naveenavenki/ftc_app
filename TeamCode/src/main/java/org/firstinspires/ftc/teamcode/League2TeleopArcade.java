@@ -150,6 +150,7 @@ public class League2TeleopArcade {
 
             if (opMode.gamepad2.right_bumper){
                 robot.setPowerToShooter(shooterMotorsSpeed);
+                robot.gateServo.setPosition(robot.FINAL_SERVO_POS_GATE);
             }
 
             if (opMode.gamepad2.left_bumper){
@@ -177,6 +178,7 @@ public class League2TeleopArcade {
 
             if (opMode.gamepad2.y){
                 robot.setPowerToShooter(0);
+                robot.gateServo.setPosition(robot.INITIAL_SERVO_POS_GATE);
             }
             if (opMode.gamepad2.a)
             {
