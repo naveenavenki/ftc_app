@@ -54,14 +54,14 @@ public class BoKTeleopTank extends LinearOpMode {
             leftGamepad1 = -gamepad1.left_stick_y;
             rightGamepad1 = -gamepad1.right_stick_y;
 
-            robot.setPowerToMotors(leftGamepad1, rightGamepad1);
+            robot.setPowerToDTMotors(leftGamepad1, rightGamepad1);
 
             telemetry.addData("left",  "%.2f", leftGamepad1);
             telemetry.addData("right", "%.2f", rightGamepad1);
             telemetry.update();
 
             if(gamepad2.right_bumper){
-                robot.setPowerToShooter(1);
+                robot.setPowerToShooterMotors(1);
             }
 
             if(gamepad2.left_bumper){
@@ -136,7 +136,7 @@ public class BoKTeleopTank extends LinearOpMode {
             }
 
             if(gamepad2.y){
-                robot.setPowerToShooter(0);
+                robot.setPowerToShooterMotors(0);
             }
             if(gamepad2.a)
             {

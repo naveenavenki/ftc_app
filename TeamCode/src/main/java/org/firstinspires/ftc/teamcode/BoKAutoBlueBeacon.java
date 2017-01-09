@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  */
-@Autonomous(name="BoK Auto RED", group="BoK6WD")
+@Autonomous(name="BoK Auto BLUE Beacon", group="BoK6WD")
 //@Disabled
-public class BoKAutoRed extends LinearOpMode
+public class BoKAutoBlueBeacon extends LinearOpMode
 {
     protected BoKHardwareBot robot;
 
@@ -28,8 +28,8 @@ public class BoKAutoRed extends LinearOpMode
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();
 
-        League1AutoRed test = new League1AutoRed();
-        test.initSoftware(this, robot, BoKAuto.BoKAlliance.BOK_ALLIANCE_RED);
+        LeagueAutoBlueBeacon test = new LeagueAutoBlueBeacon();
+        test.initSoftware(this, robot, BoKAuto.BoKAlliance.BOK_ALLIANCE_BLUE);
 
         telemetry.addData("Status", "Software initialized");
         telemetry.update();

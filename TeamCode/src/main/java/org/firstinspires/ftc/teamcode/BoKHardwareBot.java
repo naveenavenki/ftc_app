@@ -22,7 +22,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  */
 public abstract class BoKHardwareBot {
     // Constants
-    private static final String COLOR_SENSOR_CFG        = "color";
+    //private static final String COLOR_SENSOR_CFG        = "color";
     private static final String GYRO_SENSOR_CFG         = "gy";
     private static final String ODS_SENSOR_CFG          = "ods";
     private static final String RANGE_SENSOR_CFG        = "rs";
@@ -32,9 +32,10 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_LEFT_SHOOTER_CFG  = "sl";
     private static final String MOTOR_RIGHT_SHOOTER_CFG = "sr";
     private static final String MOTOR_SWEEPER_CFG       = "sw";
-    private static final String MOTOR_LIFT_CFG          = "lift";
-    private static final String SERVO_LIFT_CFG          = "lifts";
-    private static final String SERVO_GATE_CFG          = "gate";
+    private static final String MOTOR_CAP_LIFT_CFG      = "lift";
+    private static final String SERVO_CAP_LIFT_CFG      = "lifts";
+    private static final String SERVO_PART_LIFT_GATE_CFG= "gate";
+    private static final String MOTOR_CTRL_UP_RIGHT_CFG = "Motor Controller Up Right";
 
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     protected static final int OPMODE_SLEEP_INTERVAL_MS_LONG   = 100;
@@ -49,29 +50,29 @@ public abstract class BoKHardwareBot {
     protected ModernRoboticsI2cRangeSensor rangeSensor;
 
 
-    //servos: shooter and button pushers
+    //servos: shooter, button pushers, cap claw lock, part lift gate
     protected Servo shooterServo;
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
-    protected Servo liftServo;
-    protected Servo gateServo;
+    protected Servo clawLockServo;
+    protected Servo partLiftGateServo;
 
-    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.07;
-    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.07;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.08;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.08;
     protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.35;
     protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.85;
     protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.8;
     protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.3;
-    protected static final double INITIAL_SERVO_POS_LIFT         = 0.9;
-    protected static final double FINAL_SERVO_POS_LIFT           = 0.5;
-    protected static final double INITIAL_SERVO_POS_GATE         = 0.0;
-    protected static final double FINAL_SERVO_POS_GATE           = 0.7;
+    protected static final double INITIAL_SERVO_POS_CAP_CLAW     = 0.9;
+    protected static final double FINAL_SERVO_POS_CAP_CLAW       = 0.5;
+    protected static final double INITIAL_SERVO_POS_PART_GATE    = 0.0;
+    protected static final double FINAL_SERVO_POS_PART_GATE      = 0.84;
 
-    //shooter motors and sweeper motor
+    //shooter motors, sweeper motor, and cap ball lift motor
     private DcMotor leftShooterMotor;
     private DcMotor rightShooterMotor;
     protected DcMotor sweeperMotor;
-    protected DcMotor liftMotor;
+    protected DcMotor capLiftMotor;
 
     protected static final double SHOOTER_MOTORS_POWER_NORMAL = 0.8;
     protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.95;
@@ -88,9 +89,27 @@ public abstract class BoKHardwareBot {
         BOK_SUCCESS
     }
 
+    /*
+     * Drive Train support for the robot. The robot can use any drive train as long as
+     * the following methods are defined. Note that the methods are declared abstract here!
+     */
+
+    // Initialization of drive train is protected
+    protected abstract BoKStatus initDriveTrainMotors(LinearOpMode opMode);
+
+    // Using the drive train (DT) is public (teleop opMode)
+    public abstract void setModeForDTMotors(DcMotor.RunMode runMode);
+    public abstract void setPowerToDTMotors(double leftPower, double rightPower);
+
+    // Setting up the drive train motors encoders (autonomous opMode)
+    public abstract void setDTMotorEncoderTarget(int leftTarget, int rightTarget);
+
+    // Return true if the drive train has reached its target, false otherwise
+    public abstract boolean getDTCurrentPosition();
+
     public BoKStatus initHardware(LinearOpMode opMode) {
         // first initialize the drive train
-        BoKStatus rc = initMotors(opMode);
+        BoKStatus rc = initDriveTrainMotors(opMode);
         if (rc == BoKStatus.BOK_SUCCESS) {
             rc = initMotorsAndSensors(opMode);
         }
@@ -151,48 +170,37 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
-        liftMotor = opMode.hardwareMap.dcMotor.get(MOTOR_LIFT_CFG);
-        if (liftMotor == null) {
+        capLiftMotor = opMode.hardwareMap.dcMotor.get(MOTOR_CAP_LIFT_CFG);
+        if (capLiftMotor == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        liftServo = opMode.hardwareMap.servo.get(SERVO_LIFT_CFG);
-        if (liftServo == null) {
+        clawLockServo = opMode.hardwareMap.servo.get(SERVO_CAP_LIFT_CFG);
+        if (clawLockServo == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        gateServo = opMode.hardwareMap.servo.get(SERVO_GATE_CFG);
-        if (gateServo == null) {
+        partLiftGateServo = opMode.hardwareMap.servo.get(SERVO_PART_LIFT_GATE_CFG);
+        if (partLiftGateServo == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        voltageSensor = opMode.hardwareMap.voltageSensor.get("Motor Controller Up Right");
+        voltageSensor = opMode.hardwareMap.voltageSensor.get(MOTOR_CTRL_UP_RIGHT_CFG);
         if (voltageSensor == null) {
             return BoKStatus.BOK_FAILURE;
         }
+
+        // set up the robot attachment motors
         sweeperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);      // start the sweeper motor for ball intake
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
-        liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        capLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         return BoKStatus.BOK_SUCCESS;
     }
 
-    // Initialization of drive train is protected
-    protected abstract BoKStatus initMotors(LinearOpMode opMode);
-
-    // Using the drive train is public
-    public abstract void setModeForMotors(DcMotor.RunMode runMode);
-    public abstract void setPowerToMotors(double leftPower, double rightPower);
-
-    // RUN_USING_ENCODER
-    //public abstract void setupMotorEncoders(LinearOpMode opMode);
-    public abstract void setMotorEncoderTarget(int leftTarget, int rightTarget);
-
-    public abstract boolean getCurrentPosition();
-
     // Using the shooter motors (we want to control both motors at the same time)
-    public void setPowerToShooter(double shooterPow){
+    public void setPowerToShooterMotors(double shooterPow){
         leftShooterMotor.setPower(shooterPow);
         rightShooterMotor.setPower(shooterPow);
     }

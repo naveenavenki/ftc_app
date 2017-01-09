@@ -16,8 +16,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     protected static final double   COUNTS_PER_MOTOR_REV    = 1120;   // AndyMark 40 Motor Encoder
     protected static final double   DRIVE_GEAR_REDUCTION    = 1.33;   // For 360 degrees wheel turn, motor shaft moves 480 degrees (approx)
     protected static final double   WHEEL_DIAMETER_INCHES   = 4.0;    // For calculating circumference
-    protected static final double   WHEEL_BASE              = 15;     // In inches (approx)
-    protected static final double   COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
+    //protected static final double   COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
     private static final int DISTANCE_THRESHOLD             = 10;
 
     // Constants
@@ -46,7 +45,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
      * Initialize the drive system variables.
      * The init() method of the hardware class does all the work here
      */
-    protected BoKStatus initMotors(LinearOpMode opMode) {
+    protected BoKStatus initDriveTrainMotors(LinearOpMode opMode) {
         currentOpMode = opMode;
 
         leftBack = opMode.hardwareMap.dcMotor.get(LEFT_BACK_MOTOR_NAME);
@@ -76,7 +75,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         return BoKStatus.BOK_SUCCESS;
     }
 
-    public void setPowerToMotors(double left, double right) {
+    public void setPowerToDTMotors(double left, double right) {
         leftBack.setPower(left);
         rightBack.setPower(right);
         leftFront.setPower(left);
@@ -84,7 +83,7 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
-    public void setModeForMotors(DcMotor.RunMode runMode)
+    public void setModeForDTMotors(DcMotor.RunMode runMode)
     {
         leftBack.setMode(runMode);
         rightBack.setMode(runMode);
@@ -93,18 +92,16 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
-    public void setMotorEncoderTarget(int leftTarget, int rightTarget)
+    public void setDTMotorEncoderTarget(int leftTarget, int rightTarget)
     {
-        setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // We are NOT using RUN_USING_ENCODER or RUN_TO_POSITION
+        setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         leftReached = rightReached = false;
 
         currentLeftTarget = leftFront.getCurrentPosition() + leftTarget;
         currentRightTarget = rightFront.getCurrentPosition() + rightTarget;
-        //leftBack.setTargetPosition(leftBack.getCurrentPosition() + leftTarget);
-        //rightBack.setTargetPosition(rightBack.getCurrentPosition() + rightTarget);
-        //leftFront.setTargetPosition(currentLeftTarget);
-        //rightFront.setTargetPosition(currentRightTarget);
+
         currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
         //opMode.idle();
 
@@ -118,16 +115,11 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
         else
             rightPositive = false;
 
-        //leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS);
-        //leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Log.v("BOK", "START: " + leftFront.getCurrentPosition() +", " + currentLeftTarget + ", " + rightFront.getCurrentPosition() + ", " + currentRightTarget);
     }
 
     // Returns true if target is reached
-    public boolean getCurrentPosition()
+    public boolean getDTCurrentPosition()
     {
         int leftFrontCurrentPos = leftFront.getCurrentPosition();
         int rightFrontCurrentPos = rightFront.getCurrentPosition();

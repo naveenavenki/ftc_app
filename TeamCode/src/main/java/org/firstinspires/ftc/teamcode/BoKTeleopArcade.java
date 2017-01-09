@@ -22,7 +22,7 @@ public class BoKTeleopArcade extends LinearOpMode {
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();
 
-        League2TeleopArcade test = new League2TeleopArcade();
+        LeagueTeleopArcade test = new LeagueTeleopArcade();
         test.initSoftware(this, robot, BoKAuto.BoKAlliance.BOK_ALLIANCE_RED);
 
         // Wait for the game to start (driver presses PLAY)

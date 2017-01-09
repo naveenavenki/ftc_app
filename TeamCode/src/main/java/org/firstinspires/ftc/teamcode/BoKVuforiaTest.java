@@ -70,8 +70,8 @@ public class BoKVuforiaTest implements BoKAuto {
     private void runToWhite(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
-            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
+            robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.setPowerToDTMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
 
             // run until the end of the match (driver presses STOP)
             while (opMode.opModeIsActive()) {
@@ -95,7 +95,7 @@ public class BoKVuforiaTest implements BoKAuto {
                     current_green = robot.colorSensor.green();
                 } // while (current_red < RED_THRESHOLD)
 
-                robot.setPowerToMotors(0.0f, 0.0f);
+                robot.setPowerToDTMotors(0.0f, 0.0f);
                 // Allow time for other processes to run.
                 opMode.idle();
                 break;
@@ -107,8 +107,8 @@ public class BoKVuforiaTest implements BoKAuto {
         boolean picIsVisible = false;
 
         if (opMode.opModeIsActive()) {
-            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(-LEFT_MOTOR_POWER/3.5, RIGHT_MOTOR_POWER/3.5);
+            robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/3.5, RIGHT_MOTOR_POWER/3.5);
             opMode.telemetry.addData("Status: ", "turn till pic 2");
 
             // run until the end of the match (driver presses STOP)
@@ -126,7 +126,7 @@ public class BoKVuforiaTest implements BoKAuto {
 
                 }
                 if (picIsVisible == true) {
-                    robot.setPowerToMotors(0, 0);
+                    robot.setPowerToDTMotors(0, 0);
                     break;
                 }
                 opMode.telemetry.update();
@@ -144,16 +144,16 @@ public class BoKVuforiaTest implements BoKAuto {
 
                         float x = translation.get(0);
                         if ((x > -10) && (x < 10)) {
-                            robot.setPowerToMotors(0, 0);
+                            robot.setPowerToDTMotors(0, 0);
                             facingBeacon = true;
                             break;
                         }
 
                         if (x > 0) {
-                            robot.setPowerToMotors(+LEFT_MOTOR_POWER/3.5, -RIGHT_MOTOR_POWER/3.5);
+                            robot.setPowerToDTMotors(+LEFT_MOTOR_POWER/3.5, -RIGHT_MOTOR_POWER/3.5);
                         }
                         else {
-                            robot.setPowerToMotors(-LEFT_MOTOR_POWER/3.5, +RIGHT_MOTOR_POWER/3.5);
+                            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/3.5, +RIGHT_MOTOR_POWER/3.5);
                         }
 
 

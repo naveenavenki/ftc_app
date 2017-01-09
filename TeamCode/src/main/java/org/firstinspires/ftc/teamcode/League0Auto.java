@@ -54,8 +54,8 @@ public class League0Auto implements BoKAuto {
     private void runToRedOrBlue(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
-            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
+            robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.setPowerToDTMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
             robot.sweeperMotor.setPower(-0.9); // start the sweeper in reverse
             runTime.reset();
 /*
@@ -89,9 +89,9 @@ public class League0Auto implements BoKAuto {
     private void shootBall(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
-            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToMotors(0, 0); // Do not move the robot
-            robot.setPowerToShooter(SHOOTER_MOTOR_POWER);   // start the ball shooter
+            robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.setPowerToDTMotors(0, 0); // Do not move the robot
+            robot.setPowerToShooterMotors(SHOOTER_MOTOR_POWER);   // start the ball shooter
             robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);   // start the sweeper
             runTime.reset();
 
@@ -101,7 +101,7 @@ public class League0Auto implements BoKAuto {
                 opMode.telemetry.update();
             } // while (opModeIsActive())
 
-            robot.setPowerToShooter(0); // stop the ball shooter
+            robot.setPowerToShooterMotors(0); // stop the ball shooter
             robot.sweeperMotor.setPower(0); // stop the sweeper
         } // if (opModeIsActive())
     }
@@ -114,7 +114,7 @@ public class League0Auto implements BoKAuto {
 //            robot.setPowerToMotors(LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER);
             //robot.setPowerToSweeper(-1); // start the sweeper in reverse
             runTime.reset();
-            robot.setPowerToMotors(-0.3,-0.3);
+            robot.setPowerToDTMotors(-0.3,-0.3);
 
             // run till red or blue line or if the user presses stop
             while (opMode.opModeIsActive()) {
@@ -134,7 +134,7 @@ public class League0Auto implements BoKAuto {
                 } // while (opModeIsActive())
 
 
-                robot.setPowerToMotors(0.0f, 0.0f); // stop the robot
+                robot.setPowerToDTMotors(0.0f, 0.0f); // stop the robot
                 break; // done
             } // while (opModeIsActive())
         } // if (opModeIsActive())
