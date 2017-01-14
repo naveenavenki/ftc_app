@@ -14,8 +14,13 @@ public class LeagueTeleopArcade {
     protected BoKHardwareBot robot;
     protected BoKAuto.BoKAlliance alliance;
 
-    private double  posLeftPusher  = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
-    private double  posRightPusher = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
+    private double posLeftPusher  = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
+    private double posRightPusher = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
+    private double GAME_STICK_DEAD_ZONE      = 0.05;
+    private double DT_POWER_LOW_THRESHOLD    = 0.3;
+    private double DT_POWER_HIGH_THRESHOLD   = 1;
+    private double DT_POWER_REDUCTION_FACTOR = 0.25;
+    private double CAPBALL_LIFT_DEAD_ZONE    = 0.2;
 
     private double gamePad1RightStickX = 0;
     private double gamePad1LeftStickY = 0;
@@ -23,7 +28,7 @@ public class LeagueTeleopArcade {
     private double rightDTPower = 0;
     private double leftDTPower = 0;
 
-    private double capLiftMotorPower = 0;
+    private double capLiftPower = 0;
     private double driveDirection = 1.0;
     private double shooterMotorsSpeed = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL;
 
@@ -62,55 +67,57 @@ public class LeagueTeleopArcade {
             gamePad1RightStickX = opMode.gamepad1.right_stick_x;
 
             // Run wheels in tank mode
-            if ((gamePad1LeftStickY < 0.05) && (gamePad1LeftStickY > -0.05)) {
+
+            // Left joystick is for throttle
+            if ((gamePad1LeftStickY < GAME_STICK_DEAD_ZONE) && (gamePad1LeftStickY > -GAME_STICK_DEAD_ZONE)) {
                 leftDTPower = 0;
                 rightDTPower = 0;
             } else {
-                leftDTPower = gamePad1LeftStickY*1.0;
-                rightDTPower = gamePad1LeftStickY*1.0;
+                leftDTPower = gamePad1LeftStickY;
+                rightDTPower = gamePad1LeftStickY;
                 if (!goForBeacon) {
                     if (leftDTPower < 0) {
-                        leftDTPower = Range.clip(leftDTPower, -1.0, -0.3);
+                        leftDTPower = Range.clip(leftDTPower, -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
                     }
                     else {
-                        leftDTPower = Range.clip(leftDTPower, 0.3, 1.0);
+                        leftDTPower = Range.clip(leftDTPower, DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
                     }
                     if (rightDTPower < 0) {
-                        rightDTPower = Range.clip(rightDTPower, -1.0, -0.3);
+                        rightDTPower = Range.clip(rightDTPower, -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
                     }
                     else {
-                        rightDTPower = Range.clip(rightDTPower, 0.3, 1.0);
+                        rightDTPower = Range.clip(rightDTPower, DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
                     }
                 }
-                else {
-                    leftDTPower = leftDTPower *0.25;
-                    rightDTPower = rightDTPower *0.25;
+                else { // going for beacon (or with cap-ball lift): SLOW DOWN
+                    leftDTPower = leftDTPower * DT_POWER_REDUCTION_FACTOR;
+                    rightDTPower = rightDTPower * DT_POWER_REDUCTION_FACTOR;
                 }
             }
 
-
-            if ((gamePad1RightStickX < 0.05) && (gamePad1RightStickX > -0.05)) {
+            // Right joystick is for steering
+            if ((gamePad1RightStickX < GAME_STICK_DEAD_ZONE) && (gamePad1RightStickX > -GAME_STICK_DEAD_ZONE)) {
                 if (driveDirection == 1) {
-                    robot.setPowerToDTMotors(leftDTPower, rightDTPower); // drive straight
+                    robot.setPowerToDTMotors(leftDTPower, rightDTPower);  // drive straight
                 }
                 else {
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // drive backwards
+                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // drive straight backwards
                 }
-            } else if (gamePad1RightStickX > 0.05) { // direction is right
+            } else if (gamePad1RightStickX > GAME_STICK_DEAD_ZONE) { // direction is right
                 rightDTPower = (-1 * gamePad1RightStickX) * rightDTPower; // left power is +ve, right power is -ve
                 if (driveDirection == 1) {
-                    robot.setPowerToDTMotors(leftDTPower, rightDTPower); // drive straight
+                    robot.setPowerToDTMotors(leftDTPower, rightDTPower);   // turn right
                 }
                 else {
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // drive backwards
+                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // turn right backwards by swapping left and right power
                 }
             } else { // direction is left (< -0.05)
                 leftDTPower = gamePad1RightStickX * leftDTPower; // left power is -ve (RightStickX is -ve), right power is +ve
                 if (driveDirection == 1) {
-                    robot.setPowerToDTMotors(leftDTPower, rightDTPower); // drive straight
+                    robot.setPowerToDTMotors(leftDTPower, rightDTPower); // turn left
                 }
                 else {
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // drive backwards
+                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // turn left backwards by swapping left and right power
                 }
             }
 
@@ -217,14 +224,14 @@ public class LeagueTeleopArcade {
                 }
             }
 
-            if (opMode.gamepad2.right_trigger > 0.2){
-                capLiftMotorPower = BoKTeleop.CAPBALL_LIFT_POWER;
+            if (opMode.gamepad2.right_trigger > CAPBALL_LIFT_DEAD_ZONE){
+                capLiftPower = BoKTeleop.CAPBALL_LIFT_POWER;
             }
-            else if(opMode.gamepad2.left_trigger > 0.2) {
-                capLiftMotorPower = -BoKTeleop.CAPBALL_LIFT_POWER;
+            else if(opMode.gamepad2.left_trigger > CAPBALL_LIFT_DEAD_ZONE) {
+                capLiftPower = -BoKTeleop.CAPBALL_LIFT_POWER;
             }
             else {
-                capLiftMotorPower = 0;
+                capLiftPower = 0;
             }
             if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right) {
                 robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_REVERSE);
@@ -266,7 +273,7 @@ public class LeagueTeleopArcade {
             }
 
 
-            robot.capLiftMotor.setPower(capLiftMotorPower);
+            robot.capLiftMotor.setPower(capLiftPower);
 
             opMode.telemetry.addData("Shooter Angle", robot.shooterServo.getPosition());
             opMode.telemetry.addData("Shooter Motors", shooterMotorsSpeed);

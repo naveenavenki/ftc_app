@@ -28,7 +28,7 @@ public class BoKAutoRedBeacon extends LinearOpMode
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();
 
-        LeagueAutoRedBeacon test = new LeagueAutoRedBeacon();
+        BoKAuto test = new LeagueAutoRedBeacon();  // use interface (polymorphism)
         test.initSoftware(this, robot, BoKAuto.BoKAlliance.BOK_ALLIANCE_RED);
 
         telemetry.addData("Status", "Software initialized");

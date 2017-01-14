@@ -10,9 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  */
 public class LeagueAutoRedBeacon extends BoKAutoCommon {
 
-    protected static final double WAIT_FOR_SEC_SHOOTER = 5.0;
-    protected static final int ROBOT_DISTANCE_FROM_WALL_FOR_BEACON = 16;
-    protected static final int ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON = 32;
+    private static final double MOVE_FORWARD_FROM_WALL = 10.5; // in inches
+    private static final double INITIAL_TURN_ANGLE     = 46;   // in degrees (to the left)
+    private static final double TURN_ANGLE_TO_WHITE    = 45;   // in degrees (to the left)
+    private static final double MOVE_FORWARD_TO_LINE   = 42.0; // in inches
+    private static final double TURN_ANGLE_FOR_BEACON  = 90;   // in degrees (to the left)
+    private static final double TURN_ANGLE_FOR_PARK    = -175;
 
     @Override
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
@@ -25,58 +28,62 @@ public class LeagueAutoRedBeacon extends BoKAutoCommon {
         double shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL;
         double voltage12V = robot.voltageSensor.getVoltage();
         Log.v("BOK", "Battery voltage: " + voltage12V);
-        if (voltage12V >= 13.0) {
-            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL - 0.1;
+        if (voltage12V >= ROBOT_BATTERY_LEVEL_HIGH_THRESHOLD) {
+            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL - SHOOTER_MOTOR_POWER_CHANGE;
         }
-        else if (voltage12V < 12.4) {
-            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL + 0.1;
+        else if (voltage12V < ROBOT_BATTERY_LEVEL_MED_THRESHOLD) {
+            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL + SHOOTER_MOTOR_POWER_CHANGE;
         }
 
         // First shoot the two balls by turning on the sweeper and the ball shooter
         shootBall(opMode, robot, shooterMotorsPower, WAIT_FOR_SEC_SHOOTER);
 
-        // Move forward for 8 inch in 1.5 sec
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 10.5, 2);
-        // Turn 35 degrees (in 0.5 sec or less)
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 46);
-        opMode.sleep(100);
+        // Move forward using encoders
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
+        // Turn using gyro
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, INITIAL_TURN_ANGLE);
+        opMode.sleep(SLEEP_100_MS);
 
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/1.5, RIGHT_MOTOR_POWER/1.5, 42.0, 3);
-        opMode.sleep(250);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
+        opMode.sleep(SLEEP_250_MS);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, 45);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, TURN_ANGLE_TO_WHITE);
 
         // Run to white
-        if (runToWhite(opMode, robot, 4/*sec*/) == false) {
+        if (runToWhite(opMode, robot, THREE_SECONDS) == false) {
             super.exitSoftware();
         }
-        opMode.sleep(250);
+        opMode.sleep(SLEEP_250_MS);
 
-        turnToWhite(opMode, robot, true/*left*/, 2/*sec*/);
-        opMode.sleep(250);
+        turnToWhite(opMode, robot, true/*left*/, TWO_SECONDS);
+        opMode.sleep(SLEEP_250_MS);
 
-        proportionalLineFollower(opMode, robot, false/* right */, 15); // 15 cm; give enough time for the robot to straighten up
+        // Give enough time for the robot to straighten up using proportional line following
+        proportionalLineFollower(opMode, robot, false/* right */, ROBOT_DISTANCE_FROM_WALL_INITIAL);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, 90);
-        opMode.sleep(250);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
+        opMode.sleep(SLEEP_250_MS);
 
-        if (goBackTillBeaconIsVisible(opMode, robot, 4/*sec*/)) {
+        if (goBackTillBeaconIsVisible(opMode, robot, FOUR_SECONDS)) {
+            // Beacon is visible, go forward towards fall
+            goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, TWO_SECONDS);
+            // Give enough time for the robot to straighten up using proportional line following
+            proportionalLineFollower(opMode, robot, false /*right edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);
+            // Turn using gyro
+            gyroTurn(opMode, robot, LEFT_MOTOR_POWER /POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
 
-            goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, 2/*sec*/); // 8 cm
-            proportionalLineFollower(opMode, robot, false /*right edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);  // 8 cm
-            gyroTurn(opMode, robot, LEFT_MOTOR_POWER /2.5, 90);
+            opMode.sleep(SLEEP_100_MS);
 
-            opMode.sleep(100);
+            // Go forward, hit the beacon, come back
+            goForwardTillBeacon(opMode, robot, ROBOT_DISTANCE_TO_PUSH_THE_BEACON, TWO_SECONDS);
+            goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, ONE_SECOND);
 
-            goForwardTillBeacon(opMode, robot, 9, 2/*sec*/); // 8 cm
-            goBackFromWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_AFTER_BEACON, 0.5);
-
-            gyroTurn(opMode, robot, LEFT_MOTOR_POWER, -175);
-            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 45.0, 4);
+            // turn for parking
+            gyroTurn(opMode, robot, LEFT_MOTOR_POWER, TURN_ANGLE_FOR_PARK);
+            // move forward to park
+            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
         }
-        else {
-            opMode.sleep(15000);
-        }
+
         super.exitSoftware();
     }
 }

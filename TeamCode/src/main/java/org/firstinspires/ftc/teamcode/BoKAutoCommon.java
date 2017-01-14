@@ -42,7 +42,7 @@ import java.util.Arrays;
 /**
  * Created by Krishna Saxena on 11/15/2016.
  */
-public class BoKAutoCommon implements BoKAuto {
+public abstract class BoKAutoCommon implements BoKAuto {
     protected AppUtil appUtil = AppUtil.getInstance();
 
     protected BoKAlliance alliance;
@@ -128,9 +128,7 @@ public class BoKAutoCommon implements BoKAuto {
     }
 
     @Override
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
-        // Do nothing
-    }
+    public abstract void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException;
 
     public void exitSoftware()
     {
