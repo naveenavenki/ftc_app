@@ -512,6 +512,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                             }
                                         }
                                         else {
+                                            Log.v("BOK",beac.getName() + " RIGHT: BLUE");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
                                                 robot.pusherLeftServo.setPosition(
                                                       BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);

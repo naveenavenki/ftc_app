@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
  * Created by Krishna Saxena on 10/14/2016.
+ * Define all the CONSTANTS used for autonomous mode.
  */
 public interface BoKAuto {
 
@@ -11,6 +12,12 @@ public interface BoKAuto {
         BOK_ALLIANCE_RED,
         BOK_ALLIANCE_BLUE
     }
+
+
+    static final float WHITE_LINE = 0.4f;
+    static final float LINE_EDGE = 0.25f;
+    static final double LEFT_POWER_LINE_FOLLOW = 0.2;
+    static final double RIGHT_POWER_LINE_FOLLOW = 0.225;
 
     static final float LEFT_MOTOR_POWER = 0.5f;
     static final float RIGHT_MOTOR_POWER = 0.5f;
