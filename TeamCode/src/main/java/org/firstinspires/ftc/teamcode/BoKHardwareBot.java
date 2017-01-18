@@ -19,9 +19,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
+ * This class implements all of the non drive train functionality. It deals with initializing
+ * the servos, the non drive train DC motors, and the sensors.
  */
 public abstract class BoKHardwareBot {
-    // Constants
+
+    // Constants strings from the robot config
     //private static final String COLOR_SENSOR_CFG        = "color";
     private static final String GYRO_SENSOR_CFG         = "gy";
     private static final String ODS_SENSOR_CFG          = "ods";
@@ -192,8 +195,10 @@ public abstract class BoKHardwareBot {
 
         // set up the robot attachment motors
         sweeperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);      // start the sweeper motor for ball intake
-        rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE); // reverse the right ball shooter
+        // start the sweeper motor for particle intake
+        sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        // reverse the right particle shooter motor
+        rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         capLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         return BoKStatus.BOK_SUCCESS;

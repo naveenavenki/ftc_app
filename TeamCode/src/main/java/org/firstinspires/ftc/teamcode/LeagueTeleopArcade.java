@@ -10,17 +10,13 @@ import com.qualcomm.robotcore.util.Range;
  * Created by Krishna Saxena on 11/26/2016.
  */
 
-public class LeagueTeleopArcade {
+public class LeagueTeleopArcade implements BoKTeleop {
     protected BoKHardwareBot robot;
     protected BoKAuto.BoKAlliance alliance;
 
     private double posLeftPusher  = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT;
     private double posRightPusher = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
-    private double GAME_STICK_DEAD_ZONE      = 0.05;
-    private double DT_POWER_LOW_THRESHOLD    = 0.3;
-    private double DT_POWER_HIGH_THRESHOLD   = 1;
-    private double DT_POWER_REDUCTION_FACTOR = 0.25;
-    private double CAPBALL_LIFT_DEAD_ZONE    = 0.2;
+
 
     private double gamePad1RightStickX = 0;
     private double gamePad1LeftStickY = 0;
@@ -37,7 +33,8 @@ public class LeagueTeleopArcade {
 
     private boolean goForBeacon = false;
 
-    public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAuto.BoKAlliance redOrBlue) {
+    public void initSoftware(LinearOpMode opMode,
+                             BoKHardwareBot robot, BoKAuto.BoKAlliance redOrBlue) {
         // In teleop, do NOT use encoder
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -69,7 +66,8 @@ public class LeagueTeleopArcade {
             // Run wheels in tank mode
 
             // Left joystick is for throttle
-            if ((gamePad1LeftStickY < GAME_STICK_DEAD_ZONE) && (gamePad1LeftStickY > -GAME_STICK_DEAD_ZONE)) {
+            if ((gamePad1LeftStickY < GAME_STICK_DEAD_ZONE) &&
+                    (gamePad1LeftStickY > -GAME_STICK_DEAD_ZONE)) {
                 leftDTPower = 0;
                 rightDTPower = 0;
             } else {
@@ -77,16 +75,20 @@ public class LeagueTeleopArcade {
                 rightDTPower = gamePad1LeftStickY;
                 if (!goForBeacon) {
                     if (leftDTPower < 0) {
-                        leftDTPower = Range.clip(leftDTPower, -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
+                        leftDTPower = Range.clip(leftDTPower,
+                                -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
                     }
                     else {
-                        leftDTPower = Range.clip(leftDTPower, DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
+                        leftDTPower = Range.clip(leftDTPower,
+                                DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
                     }
                     if (rightDTPower < 0) {
-                        rightDTPower = Range.clip(rightDTPower, -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
+                        rightDTPower = Range.clip(rightDTPower,
+                                -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
                     }
                     else {
-                        rightDTPower = Range.clip(rightDTPower, DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
+                        rightDTPower = Range.clip(rightDTPower,
+                                DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
                     }
                 }
                 else { // going for beacon (or with cap-ball lift): SLOW DOWN
@@ -96,37 +98,41 @@ public class LeagueTeleopArcade {
             }
 
             // Right joystick is for steering
-            if ((gamePad1RightStickX < GAME_STICK_DEAD_ZONE) && (gamePad1RightStickX > -GAME_STICK_DEAD_ZONE)) {
+            if ((gamePad1RightStickX < GAME_STICK_DEAD_ZONE) &&
+                    (gamePad1RightStickX > -GAME_STICK_DEAD_ZONE)) {
                 if (driveDirection == 1) {
                     robot.setPowerToDTMotors(leftDTPower, rightDTPower);  // drive straight
                 }
                 else {
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // drive straight backwards
+                    // drive straight backwards
+                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
                 }
             } else if (gamePad1RightStickX > GAME_STICK_DEAD_ZONE) { // direction is right
-                rightDTPower = (-1 * gamePad1RightStickX) * rightDTPower; // left power is +ve, right power is -ve
+                // left power is +ve, right power is -ve
+                rightDTPower = (-1 * gamePad1RightStickX) * rightDTPower;
                 if (driveDirection == 1) {
                     robot.setPowerToDTMotors(leftDTPower, rightDTPower);   // turn right
                 }
                 else {
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // turn right backwards by swapping left and right power
+                    // turn right backwards by swapping left and right power
+                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
                 }
             } else { // direction is left (< -0.05)
-                leftDTPower = gamePad1RightStickX * leftDTPower; // left power is -ve (RightStickX is -ve), right power is +ve
+                // left power is -ve (RightStickX is -ve), right power is +ve
+                leftDTPower = gamePad1RightStickX * leftDTPower;
                 if (driveDirection == 1) {
                     robot.setPowerToDTMotors(leftDTPower, rightDTPower); // turn left
                 }
                 else {
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower); // turn left backwards by swapping left and right power
+                    // turn left backwards by swapping left and right power
+                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
                 }
             }
 
-            //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f", gamePad1LeftStickY, gamePad1RightStickX);
+            //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
+            // gamePad1LeftStickY, gamePad1RightStickX);
             //telemetry.addData("Power:", "left: %.2f" + " right: %.2f", leftDTPower, rightDTPower);
             //telemetry.update();
-
-            //Log.v("BOK", "Throttle: " + String.format("%.2f", gamePad1LeftStickY) + " Direction: " + String.format("%.2f", gamePad1RightStickX));
-            //Log.v("BOK", "Power: " + String.format("%.2f", leftDTPower) + ", " + String.format("%.2f", rightDTPower));
 
             /*
              * Game pad 2 controls
@@ -174,7 +180,7 @@ public class LeagueTeleopArcade {
 
             if (opMode.gamepad2.y){
                 robot.setPowerToShooterMotors(0);
-                robot.partLiftGateServo.setPosition(robot.INITIAL_SERVO_POS_PART_GATE);
+                robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
             }
 
             if (opMode.gamepad2.a)
@@ -212,7 +218,8 @@ public class LeagueTeleopArcade {
                 if(!shooterServosMinPos){
                     shooterServosMinPos=true;
                     shooterServosMidPos=false;
-                    robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP-0.07);
+                    robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP-
+                            SHOOTER_ANGLE_REDUCTION);
                 }
 
             }
@@ -225,10 +232,10 @@ public class LeagueTeleopArcade {
             }
 
             if (opMode.gamepad2.right_trigger > CAPBALL_LIFT_DEAD_ZONE){
-                capLiftPower = BoKTeleop.CAPBALL_LIFT_POWER;
+                capLiftPower = CAPBALL_LIFT_POWER;
             }
             else if(opMode.gamepad2.left_trigger > CAPBALL_LIFT_DEAD_ZONE) {
-                capLiftPower = -BoKTeleop.CAPBALL_LIFT_POWER;
+                capLiftPower = -CAPBALL_LIFT_POWER;
             }
             else {
                 capLiftPower = 0;
@@ -280,7 +287,7 @@ public class LeagueTeleopArcade {
             opMode.telemetry.update();
 
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second
-            robot.waitForTick(BoKTeleop.METRONOME_TICK);
+            robot.waitForTick(METRONOME_TICK);
             opMode.idle(); // Always call idle() at the bottom of your while(opModeIsActive(
         }
     }

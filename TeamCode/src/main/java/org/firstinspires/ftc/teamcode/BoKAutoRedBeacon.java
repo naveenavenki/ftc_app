@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
+ * Registers the opMode with the driver station.
+ * It uses BoK6WDHardwareBot and LeagueAutoRedBeacon objects.
  */
 @Autonomous(name="BoK Auto RED Beacon", group="BoK6WD")
 //@Disabled

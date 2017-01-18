@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
  * Created by Krishna Saxena on 10/5/2016.
+ * Implements runSoftware method so that we can move the robot when alliance color is red
  */
 public class LeagueAutoBlueBeacon extends BoKAutoCommon {
 
@@ -24,26 +25,24 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
     @Override
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
     {
-        double shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL;
-        double voltage12V = robot.voltageSensor.getVoltage();
-        Log.v("BOK", "Battery voltage: " + voltage12V);
-        if (voltage12V >= ROBOT_BATTERY_LEVEL_HIGH_THRESHOLD) {
-            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL - SHOOTER_MOTOR_POWER_CHANGE;
-        }
-        else if (voltage12V < ROBOT_BATTERY_LEVEL_MED_THRESHOLD) {
-            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL + SHOOTER_MOTOR_POWER_CHANGE;
-        }
+        double shooterMotorsPower = getShooterMotorsPowerBasedOnBatteryLevel(robot);
 
         // First shoot the two balls by turning on the sweeper and the ball shooter
         shootBall(opMode, robot, shooterMotorsPower, LeagueAutoRedBeacon.WAIT_FOR_SEC_SHOOTER);
 
         // Move forward using encoder
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
+        moveForward(opMode, robot,
+                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
+                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
+
         // Turn using gyro
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, INITIAL_TURN_ANGLE);
         opMode.sleep(SLEEP_100_MS);
+
         // Move forward using encoder
-        moveForward(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
+        moveForward(opMode, robot,
+                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
+                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
         opMode.sleep(SLEEP_250_MS);
 
         gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, TURN_ANGLE_TO_WHITE);
@@ -61,15 +60,21 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
         proportionalLineFollower(opMode, robot, true /*left */, ROBOT_DISTANCE_FROM_WALL_INITIAL);
         opMode.sleep(SLEEP_250_MS);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
+        gyroTurn(opMode, robot,
+                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
         opMode.sleep(SLEEP_250_MS);
 
         if (goBackTillBeaconIsVisible(opMode, robot, FOUR_SECONDS)) {
             // Beacon is visible, go forward towards fall
             goForwardToWall(opMode, robot, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON, TWO_SECONDS);
 
-            proportionalLineFollower(opMode, robot, true/*left*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);
-            gyroTurn(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
+            // Give enough time for the robot to straighten up using proportional line following
+            proportionalLineFollower(opMode, robot,
+                    true/*left edge*/, ROBOT_DISTANCE_FROM_WALL_FOR_BEACON);
+
+            // Turn using gyro
+            gyroTurn(opMode, robot,
+                    LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
             opMode.sleep(SLEEP_100_MS);
 
             // Go forward, hit the beacon, come back
@@ -79,8 +84,9 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
             // turn for parking
             gyroTurn(opMode, robot, LEFT_MOTOR_POWER, TURN_ANGLE_FOR_PARK);
             // move forward to park
-            moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
-        }
+            moveForward(opMode, robot,
+                    LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
+        } // if goBackTillBeaconIsVisible
 
         super.exitSoftware();
     }
