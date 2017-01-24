@@ -36,7 +36,7 @@ public class League0Auto implements BoKAuto {
     }
 
     @Override
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
         // set the initial position (both pointed down)
         //robot.setLeftPusherPos(positionLeft);
@@ -51,7 +51,7 @@ public class League0Auto implements BoKAuto {
         ultrasonicTest(opMode, robot, 0.5);
     }
 
-    private void runToRedOrBlue(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void runToRedOrBlue(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -86,7 +86,7 @@ public class League0Auto implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    private void shootBall(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void shootBall(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -107,7 +107,7 @@ public class League0Auto implements BoKAuto {
     }
 
 
-    private void ultrasonicTest(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) throws InterruptedException {
+    private void ultrasonicTest(LinearOpMode opMode, BoKHardwareBot robot, double waitForSec) {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 //            robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

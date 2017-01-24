@@ -26,13 +26,14 @@ public class BoKTeleopTank extends LinearOpMode {
     //private boolean rampUpRight = true;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         robot = new BoK6WDHardwareBot();
         //robot = new BoK4WDHardwareBot();
 
         if (BoKHardwareBot.BoKStatus.BOK_FAILURE == robot.initHardware(this))
         {
-            throw new InterruptedException("Hardware not initialized");
+            //throw new InterruptedException("Hardware not initialized");
+            return;
         }
 
         // set the initial position (both pointed down)

@@ -90,7 +90,7 @@ public class BoKOpenCVTest implements BoKAuto {
     }
 
     @Override
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) {
         while (opMode.opModeIsActive()) {
 
             for (VuforiaTrackable beac : beacons) {
@@ -111,7 +111,12 @@ public class BoKOpenCVTest implements BoKAuto {
                     Vec2F pointBL = Tool.projectPoint(vuforiaFTC.getCameraCalibration(), raw, new Vec3F(BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_X, BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_Y, 0));
                     //opMode.telemetry.addData(beac.getName() + "-Img point: ", pointUL.getData()[0] + ", " +  pointUL.getData()[1]);
 
-                    VuforiaLocalizer.CloseableFrame frame = vuforiaFTC.getFrameQueue().take() ;//takes the frame at the head of the queue
+                    VuforiaLocalizer.CloseableFrame frame;
+                    try {
+                        frame = vuforiaFTC.getFrameQueue().take();//takes the frame at the head of the queue
+                    } catch (InterruptedException e) {
+                        break;
+                    }
                     long numImages = frame.getNumImages();
                     for (int i = 0; i < numImages; i++) {
                         if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {

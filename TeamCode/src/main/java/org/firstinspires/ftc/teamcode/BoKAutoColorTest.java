@@ -17,12 +17,12 @@ public class BoKAutoColorTest implements BoKAuto {
     }
 
     @Override
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) {
         runToRed(opMode, robot);
         runToBlue(opMode, robot);
     }
 
-    private void runToRed(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void runToRed(LinearOpMode opMode, BoKHardwareBot robot) {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -54,7 +54,7 @@ public class BoKAutoColorTest implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    private void runToBlue(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
+    private void runToBlue(LinearOpMode opMode, BoKHardwareBot robot)
     {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -88,7 +88,7 @@ public class BoKAutoColorTest implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    private void followRedLine_Right(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
+    private void followRedLine_Right(LinearOpMode opMode, BoKHardwareBot robot)
     {
         if (opMode.opModeIsActive()) {
             robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

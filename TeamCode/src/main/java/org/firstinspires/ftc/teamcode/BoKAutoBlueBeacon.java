@@ -15,7 +15,7 @@ public class BoKAutoBlueBeacon extends LinearOpMode
     protected BoKHardwareBot robot;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         robot = new BoK6WDHardwareBot();
 
         /*
@@ -23,7 +23,9 @@ public class BoKAutoBlueBeacon extends LinearOpMode
          * The init() method of the hardware class does all the work here
          */
         if (BoKHardwareBot.BoKStatus.BOK_FAILURE == robot.initHardware(this)) {
-            throw new InterruptedException("Hardware not initialized!");
+            telemetry.addData("Status", "Hardware NOT initialized");
+            telemetry.update();
+            return;
         }
 
         // Send telemetry message to signify robot waiting;

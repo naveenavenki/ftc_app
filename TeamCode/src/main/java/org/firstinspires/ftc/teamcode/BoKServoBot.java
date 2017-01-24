@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class BoKServoBot extends LinearOpMode {
     Servo servo;
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         servo = hardwareMap.servo.get("ps");
 
         waitForStart();

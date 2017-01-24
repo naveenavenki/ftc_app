@@ -103,9 +103,10 @@ public abstract class BoKAutoCommon implements BoKAuto {
         robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
 
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO-0.1);
+        /*
         robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
         robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
-
+*/
         alliance = redOrBlue;
 
         Log.v("BOK", "Initializing Vuforia");
@@ -136,7 +137,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
     @Override
     public abstract void runSoftware(LinearOpMode opMode,
-                                     BoKHardwareBot robot) throws InterruptedException;
+                                     BoKHardwareBot robot);
 
     public void exitSoftware()
     {
@@ -163,7 +164,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // Shoot particles for as long as necessary by turning on the lift and the shooter
     protected void shootBall(LinearOpMode opMode, BoKHardwareBot robot,
                              double shooterMotorsPower,
-                             double waitForSec) throws InterruptedException {
+                             double waitForSec)  {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
@@ -191,7 +192,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // underlying drive train implementation
     protected void moveForward(LinearOpMode opMode, BoKHardwareBot robot,
                                double leftPower, double rightPower, double inchesForward,
-                               double waitForSec) throws InterruptedException {
+                               double waitForSec) {
         double degreesOfWheelTurn, degreesOfMotorTurn, targetEncCount;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -221,7 +222,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // Again, note that we use the abstract class BoKHardwareBot to completely separate out the
     // underlying drive train implementation
     protected boolean runToWhite(LinearOpMode opMode, BoKHardwareBot robot,
-                                 double waitForSec) throws InterruptedException {
+                                 double waitForSec) {
         double current_alpha = 0, distance;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -258,7 +259,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
     // Algorithm to cross the white line and position the robot on either the left or right edge
     protected void turnToWhite(LinearOpMode opMode, BoKHardwareBot robot,
-                               boolean turnLeft, double waitForSec) throws InterruptedException {
+                               boolean turnLeft, double waitForSec) {
         double current_alpha;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
@@ -296,7 +297,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // Proportional Line Following algorithm for either the left or right edge
     protected void proportionalLineFollower(LinearOpMode opMode, BoKHardwareBot robot,
                                             boolean left,
-                                            double distanceToWall) throws InterruptedException
+                                            double distanceToWall)
     {
         double alpha, distance;
         float delta;
@@ -355,7 +356,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
     // Algorithm that uses Vuforia to move the robot back till the image of the beacon is visible
     protected boolean goBackTillBeaconIsVisible(LinearOpMode opMode, BoKHardwareBot robot,
-                                                double waitForSec) throws InterruptedException
+                                                double waitForSec)
     {
         boolean picIsVisible = false, foundBeacon = false, imgProcessed = false;
         double distance;
@@ -388,8 +389,13 @@ public abstract class BoKAutoCommon implements BoKAuto {
                             (VuforiaTrackableDefaultListener)beac.getListener();
                     OpenGLMatrix rawPose = listener.getRawUpdatedPose();
                     if (rawPose != null) {
+                        VuforiaLocalizer.CloseableFrame frame;
                         // takes the frame at the head of the queue
-                        VuforiaLocalizer.CloseableFrame frame = vuforiaFTC.getFrameQueue().take();
+                        try {
+                            frame = vuforiaFTC.getFrameQueue().take();
+                        } catch (InterruptedException e) {
+                            break;
+                        }
                         Log.v("BOK", "Img processing: " + String.format("%.2f", runTime.seconds()));
 
                         // Convert the data in rawPose back to the format that Vuforia expects -
@@ -477,7 +483,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                         Imgproc.rectangle(img, new Point(roi.x, roi.y),
                                                 new Point(roi.x + roiPixelsX, roi.y + roiPixelsY),
                                                 new Scalar(255, 255, 255));
-                                        Imgcodecs.imwrite("/sdcard/FIRST/myImageO.png", img);
+                                        //Imgcodecs.imwrite("/sdcard/FIRST/myImageO.png", img);
                                         Mat subMask = mask.submat(roi);
                                         subMask.setTo(new Scalar(255));
 
@@ -552,7 +558,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // Algorithm to go back from wall using the range sensor
     protected void goBackFromWall(LinearOpMode opMode, BoKHardwareBot robot,
                                   double targetDistance,
-                                  double waitForSec) throws InterruptedException
+                                  double waitForSec)
     {
         double distance;
         // Ensure that the opmode is still active
@@ -582,7 +588,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // Algorithm to go forward to the wall but stop when we reach the white line
     protected void goForwardToWall(LinearOpMode opMode, BoKHardwareBot robot,
                                    double targetDistance,
-                                   double waitForSec) throws InterruptedException
+                                   double waitForSec)
     {
         double distance, current_alpha;
         // Ensure that the opmode is still active
@@ -616,7 +622,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // Push the beacon making sure that we do not get too close to the wall using the range sensor.
     protected void goForwardTillBeacon(LinearOpMode opMode, BoKHardwareBot robot,
                                        double targetDistance,
-                                       double waitForSec) throws InterruptedException
+                                       double waitForSec)
     {
         double distance;
         // Ensure that the opmode is still active

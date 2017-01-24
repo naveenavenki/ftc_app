@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 //@Autonomous(name="BoK Auto CV", group="BoK6WD")
 public class BoKAutoCVTest extends LinearOpMode {
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         /*
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here

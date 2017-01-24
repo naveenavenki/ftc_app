@@ -46,5 +46,5 @@ public interface BoKAuto {
     static final long SLEEP_250_MS = 250;
 
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue);
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException;
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot);
 }

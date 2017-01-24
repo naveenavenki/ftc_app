@@ -12,9 +12,9 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
 
     private static final double MOVE_FORWARD_FROM_WALL = 12; // in inches
     private static final double INITIAL_TURN_ANGLE    = -43; // in degrees (to the right)
-    private static final double TURN_ANGLE_TO_WHITE   = -45; // in degrees (to the right)
+    private static final double TURN_ANGLE_TO_WHITE   = -44; // in degrees (to the right)
     private static final double MOVE_FORWARD_TO_LINE  = 42.0;// in inches
-    private static final double TURN_ANGLE_FOR_BEACON = -90; // in degrees (to the right)
+    private static final double TURN_ANGLE_FOR_BEACON = -89; // in degrees (to the right)
     private static final double TURN_ANGLE_FOR_PARK   = -175;
 
     @Override
@@ -23,7 +23,7 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
     }
 
     @Override
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
         double shooterMotorsPower = getShooterMotorsPowerBasedOnBatteryLevel(robot);
 
@@ -85,7 +85,7 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
             gyroTurn(opMode, robot, LEFT_MOTOR_POWER, TURN_ANGLE_FOR_PARK);
             // move forward to park
             moveForward(opMode, robot,
-                    LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
+                    LEFT_MOTOR_POWER*2, RIGHT_MOTOR_POWER*2, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
         } // if goBackTillBeaconIsVisible
 
         super.exitSoftware();

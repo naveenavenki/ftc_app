@@ -41,7 +41,7 @@ public class BoKVuforiaTest implements BoKAuto {
     }
 
     @Override
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
         opMode.telemetry.addData("Status", "Run to white");
         opMode.idle();
@@ -67,7 +67,7 @@ public class BoKVuforiaTest implements BoKAuto {
         }
     }
 
-    private void runToWhite(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void runToWhite(LinearOpMode opMode, BoKHardwareBot robot) {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -103,7 +103,7 @@ public class BoKVuforiaTest implements BoKAuto {
         } // if (opModeIsActive())
     }
 
-    private void turnTillPicIsVisible(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
+    private void turnTillPicIsVisible(LinearOpMode opMode, BoKHardwareBot robot) {
         boolean picIsVisible = false;
 
         if (opMode.opModeIsActive()) {

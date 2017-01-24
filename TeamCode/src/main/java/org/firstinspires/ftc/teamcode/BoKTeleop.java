@@ -18,5 +18,5 @@ public interface BoKTeleop {
     static final double SHOOTER_ANGLE_REDUCTION   = 0.07;
 
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAuto.BoKAlliance redOrBlue);
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException;
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot);
 }
