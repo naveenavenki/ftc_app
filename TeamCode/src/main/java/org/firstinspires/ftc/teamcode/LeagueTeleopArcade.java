@@ -32,6 +32,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
     private boolean shooterServosMidPos = true;
 
     private boolean goForBeacon = false;
+    private boolean endGame = false;
 
     public void initSoftware(LinearOpMode opMode,
                              BoKHardwareBot robot, BoKAuto.BoKAlliance redOrBlue) {
@@ -52,7 +53,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
         opMode.telemetry.update();
     }
 
-    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot) throws InterruptedException {
+    public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)  {
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
             /*
@@ -202,6 +203,21 @@ public class LeagueTeleopArcade implements BoKTeleop {
                 }
             }
 
+            if (endGame) {
+                double gamePad2LeftStickY = -opMode.gamepad2.left_stick_y;
+                if (gamePad2LeftStickY > CAPBALL_LIFT_DEAD_ZONE){
+                    capLiftPower = CAPBALL_LIFT_POWER;
+                }
+                else if(gamePad2LeftStickY < -CAPBALL_LIFT_DEAD_ZONE) {
+                    capLiftPower = -CAPBALL_LIFT_POWER;
+                }
+                else {
+                    capLiftPower = 0;
+                }
+
+                robot.capLiftMotor.setPower(capLiftPower);
+            }
+
             /*
              * Game pad 2 controls (continued)
              * dpad_left/right: reverse sweeper motor
@@ -231,19 +247,6 @@ public class LeagueTeleopArcade implements BoKTeleop {
                 }
             }
 
-            if (opMode.gamepad2.right_trigger > CAPBALL_LIFT_DEAD_ZONE){
-                capLiftPower = CAPBALL_LIFT_POWER;
-            }
-            else if(opMode.gamepad2.left_trigger > CAPBALL_LIFT_DEAD_ZONE) {
-                capLiftPower = -CAPBALL_LIFT_POWER;
-            }
-            else {
-                capLiftPower = 0;
-            }
-            if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right) {
-                robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_REVERSE);
-            }
-
             /*
             * Game pad 1 controls
             * Left Joystick: Throttle
@@ -267,6 +270,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
             if (opMode.gamepad1.x) {
                 robot.clawLockServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_CAP_CLAW);
                 driveDirection = -1.0;
+                endGame = true;
             }
             if (opMode.gamepad1.b) {
                 driveDirection = 1.0;
@@ -279,16 +283,12 @@ public class LeagueTeleopArcade implements BoKTeleop {
                 shooterMotorsSpeed = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL + 0.1;
             }
 
-
-            robot.capLiftMotor.setPower(capLiftPower);
-
             opMode.telemetry.addData("Shooter Angle", robot.shooterServo.getPosition());
             opMode.telemetry.addData("Shooter Motors", shooterMotorsSpeed);
             opMode.telemetry.update();
 
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second
             robot.waitForTick(METRONOME_TICK);
-            opMode.idle(); // Always call idle() at the bottom of your while(opModeIsActive(
         }
     }
 }
