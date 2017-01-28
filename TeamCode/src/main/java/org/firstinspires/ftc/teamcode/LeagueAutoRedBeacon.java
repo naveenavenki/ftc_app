@@ -12,10 +12,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 public class LeagueAutoRedBeacon extends BoKAutoCommon {
 
     private static final double MOVE_FORWARD_FROM_WALL = 10.5; // in inches
-    private static final double INITIAL_TURN_ANGLE     = 46;   // in degrees (to the left)
-    private static final double TURN_ANGLE_TO_WHITE    = 45;   // in degrees (to the left)
+    private static final double INITIAL_TURN_ANGLE     = 44;   // in degrees (to the left)
+    private static final double TURN_ANGLE_TO_WHITE    = 44;   // in degrees (to the left)
     private static final double MOVE_FORWARD_TO_LINE   = 42.0; // in inches
-    private static final double TURN_ANGLE_FOR_BEACON  = 90;   // in degrees (to the left)
+    private static final double TURN_ANGLE_FOR_BEACON  = 89;   // in degrees (to the left)
     private static final double TURN_ANGLE_FOR_PARK    = -179;
 
     @Override
@@ -36,7 +36,7 @@ public class LeagueAutoRedBeacon extends BoKAutoCommon {
                 LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
                 RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
         // Turn using gyro
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, INITIAL_TURN_ANGLE);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, INITIAL_TURN_ANGLE);
         opMode.sleep(SLEEP_100_MS);
 
         moveForward(opMode, robot,
@@ -44,7 +44,7 @@ public class LeagueAutoRedBeacon extends BoKAutoCommon {
                 RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
         opMode.sleep(SLEEP_250_MS);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, TURN_ANGLE_TO_WHITE);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2.5, TURN_ANGLE_TO_WHITE);
 
         // Run to white
         if (runToWhite(opMode, robot, THREE_SECONDS) == false) {

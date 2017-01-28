@@ -103,9 +103,10 @@ public abstract class BoKAutoCommon implements BoKAuto {
         robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
 
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO-0.1);
+        /*
         robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
         robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
-
+*/
         alliance = redOrBlue;
 
         Log.v("BOK", "Initializing Vuforia");
@@ -168,7 +169,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
         if (opMode.opModeIsActive()) {
 
             robot.setPowerToDTMotors(0, 0); // Do not move the robot
-            robot.partLiftGateServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PART_GATE);
+            //robot.partLiftGateServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PART_GATE);
             robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO);
             robot.setPowerToShooterMotors(shooterMotorsPower);
             robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);
@@ -365,7 +366,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
             beacons.activate();
 
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/3, -LEFT_MOTOR_POWER/3);
+            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/3, -RIGHT_MOTOR_POWER/3);
             distance = robot.rangeSensor.cmUltrasonic();
 
             Log.v("BOK", "Go back!");

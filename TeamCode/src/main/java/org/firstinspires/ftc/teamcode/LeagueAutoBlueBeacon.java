@@ -32,20 +32,20 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
 
         // Move forward using encoder
         moveForward(opMode, robot,
-                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
-                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
+                LEFT_MOTOR_POWER / POWER_REDUCTION_FACTOR_FWD,
+                RIGHT_MOTOR_POWER / POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
 
         // Turn using gyro
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, INITIAL_TURN_ANGLE);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER / POWER_REDUCTION_FACTOR_TURN, INITIAL_TURN_ANGLE);
         opMode.sleep(SLEEP_100_MS);
 
         // Move forward using encoder
         moveForward(opMode, robot,
-                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
-                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
+                LEFT_MOTOR_POWER / POWER_REDUCTION_FACTOR_FWD,
+                RIGHT_MOTOR_POWER / POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
         opMode.sleep(SLEEP_250_MS);
 
-        gyroTurn(opMode, robot, LEFT_MOTOR_POWER/2, TURN_ANGLE_TO_WHITE);
+        gyroTurn(opMode, robot, LEFT_MOTOR_POWER / 2, TURN_ANGLE_TO_WHITE);
 
         // Run to white
         if (runToWhite(opMode, robot, THREE_SECONDS) == false) {
@@ -61,7 +61,7 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
         opMode.sleep(SLEEP_250_MS);
 
         gyroTurn(opMode, robot,
-                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
+                LEFT_MOTOR_POWER / POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
         opMode.sleep(SLEEP_250_MS);
 
         if (goBackTillBeaconIsVisible(opMode, robot, FOUR_SECONDS)) {
@@ -74,7 +74,7 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
 
             // Turn using gyro
             gyroTurn(opMode, robot,
-                    LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
+                    LEFT_MOTOR_POWER / POWER_REDUCTION_FACTOR_TURN, TURN_ANGLE_FOR_BEACON);
             opMode.sleep(SLEEP_100_MS);
 
             // Go forward, hit the beacon, come back
@@ -85,7 +85,7 @@ public class LeagueAutoBlueBeacon extends BoKAutoCommon {
             gyroTurn(opMode, robot, LEFT_MOTOR_POWER, TURN_ANGLE_FOR_PARK);
             // move forward to park
             moveForward(opMode, robot,
-                    LEFT_MOTOR_POWER*2, RIGHT_MOTOR_POWER*2, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
+                    LEFT_MOTOR_POWER * 2, RIGHT_MOTOR_POWER * 2, MOVE_FORWARD_TO_PARK, FOUR_SECONDS);
         } // if goBackTillBeaconIsVisible
 
         super.exitSoftware();

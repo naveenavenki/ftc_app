@@ -42,9 +42,9 @@ public class LeagueTeleopArcade implements BoKTeleop {
         // set the initial position of the button pushers (both pointed down)
         robot.pusherLeftServo.setPosition(posLeftPusher);
         robot.pusherRightServo.setPosition(posRightPusher);
-        robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
+       /* robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
         robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
-
+*/
         // set the initial position of the shooter servo
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP);
 
@@ -153,7 +153,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
             */
             if (opMode.gamepad2.right_bumper){
                 robot.setPowerToShooterMotors(shooterMotorsSpeed);
-                robot.partLiftGateServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PART_GATE);
+                //robot.partLiftGateServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PART_GATE);
             }
 
             if (opMode.gamepad2.left_bumper){
@@ -181,7 +181,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
 
             if (opMode.gamepad2.y){
                 robot.setPowerToShooterMotors(0);
-                robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
+                //robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
             }
 
             if (opMode.gamepad2.a)
@@ -215,7 +215,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
                     capLiftPower = 0;
                 }
 
-                robot.capLiftMotor.setPower(capLiftPower);
+               // robot.capLiftMotor.setPower(capLiftPower);
             }
 
             /*
@@ -268,7 +268,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
             }
 
             if (opMode.gamepad1.x) {
-                robot.clawLockServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_CAP_CLAW);
+                //robot.clawLockServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_CAP_CLAW);
                 driveDirection = -1.0;
                 endGame = true;
             }
