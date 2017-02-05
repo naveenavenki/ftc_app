@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  * Registers the opMode with the driver station.
- * It uses BoK6WDHardwareBot and LeagueAutoRedBeacon objects.
+ * It uses BoK4MotorsDTBot and LeagueAutoRedBeacon objects.
  */
 @TeleOp(name="BoK TeleOpMecanum", group="BoKMecanum")
 public class BoKTeleopMecanum extends LinearOpMode {
@@ -22,7 +22,7 @@ public class BoKTeleopMecanum extends LinearOpMode {
 
     @Override
     public void runOpMode()  {
-        robot = new BoK6WDHardwareBot();
+        robot = new BoKMecanumWDHardwareBot();
 
         /*
          * Initialize the drive system variables.

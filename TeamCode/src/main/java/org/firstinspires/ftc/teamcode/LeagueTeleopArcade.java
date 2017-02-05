@@ -18,8 +18,8 @@ public class LeagueTeleopArcade implements BoKTeleop {
     private double posRightPusher = BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT;
 
 
-    private double gamePad1RightStickX = 0;
-    private double gamePad1LeftStickY = 0;
+    protected double gamePad1RightStickX = 0;
+    protected double gamePad1LeftStickY = 0;
 
     private double rightDTPower = 0;
     private double leftDTPower = 0;
@@ -56,85 +56,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)  {
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
-            /*
-             * Gamepad1: Driver 1 controls the robot using the left joystick for throttle and
-             * the right joystick for steering
-             */
-            // NOTE: the left joystick goes negative when pushed upwards
-            gamePad1LeftStickY = -opMode.gamepad1.left_stick_y;
-            gamePad1RightStickX = opMode.gamepad1.right_stick_x;
-
-            // Run wheels in tank mode
-
-            // Left joystick is for throttle
-            if ((gamePad1LeftStickY < GAME_STICK_DEAD_ZONE) &&
-                    (gamePad1LeftStickY > -GAME_STICK_DEAD_ZONE)) {
-                leftDTPower = 0;
-                rightDTPower = 0;
-            } else {
-                leftDTPower = gamePad1LeftStickY;
-                rightDTPower = gamePad1LeftStickY;
-                if (!goForBeacon) {
-                    if (leftDTPower < 0) {
-                        leftDTPower = Range.clip(leftDTPower,
-                                -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
-                    }
-                    else {
-                        leftDTPower = Range.clip(leftDTPower,
-                                DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
-                    }
-                    if (rightDTPower < 0) {
-                        rightDTPower = Range.clip(rightDTPower,
-                                -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
-                    }
-                    else {
-                        rightDTPower = Range.clip(rightDTPower,
-                                DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
-                    }
-                }
-                else { // going for beacon (or with cap-ball lift): SLOW DOWN
-                    leftDTPower = leftDTPower * DT_POWER_REDUCTION_FACTOR;
-                    rightDTPower = rightDTPower * DT_POWER_REDUCTION_FACTOR;
-                }
-            }
-
-            // Right joystick is for steering
-            if ((gamePad1RightStickX < GAME_STICK_DEAD_ZONE) &&
-                    (gamePad1RightStickX > -GAME_STICK_DEAD_ZONE)) {
-                if (driveDirection == 1) {
-                    robot.setPowerToDTMotors(leftDTPower, rightDTPower);  // drive straight
-                }
-                else {
-                    // drive straight backwards
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
-                }
-            } else if (gamePad1RightStickX > GAME_STICK_DEAD_ZONE) { // direction is right
-                // left power is +ve, right power is -ve
-                rightDTPower = (-1 * gamePad1RightStickX) * rightDTPower;
-                if (driveDirection == 1) {
-                    robot.setPowerToDTMotors(leftDTPower, rightDTPower);   // turn right
-                }
-                else {
-                    // turn right backwards by swapping left and right power
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
-                }
-            } else { // direction is left (< -0.05)
-                // left power is -ve (RightStickX is -ve), right power is +ve
-                leftDTPower = gamePad1RightStickX * leftDTPower;
-                if (driveDirection == 1) {
-                    robot.setPowerToDTMotors(leftDTPower, rightDTPower); // turn left
-                }
-                else {
-                    // turn left backwards by swapping left and right power
-                    robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
-                }
-            }
-
-            //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
-            // gamePad1LeftStickY, gamePad1RightStickX);
-            //telemetry.addData("Power:", "left: %.2f" + " right: %.2f", leftDTPower, rightDTPower);
-            //telemetry.update();
-
+            moveRobot(opMode, robot);
             /*
              * Game pad 2 controls
              * right bumper: turn ON shooter motors and open the particle lift gate
@@ -289,6 +211,87 @@ public class LeagueTeleopArcade implements BoKTeleop {
 
             // Pause for metronome tick.  40 mS each cycle = update 25 times a second
             robot.waitForTick(METRONOME_TICK);
+        }
+    }
+
+    public void moveRobot(LinearOpMode opMode, BoKHardwareBot robot) {
+        /*
+         * Gamepad1: Driver 1 controls the robot using the left joystick for throttle and
+         * the right joystick for steering
+         */
+        // NOTE: the left joystick goes negative when pushed upwards
+        gamePad1LeftStickY = -opMode.gamepad1.left_stick_y;
+        gamePad1RightStickX = opMode.gamepad1.right_stick_x;
+
+        //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
+        // gamePad1LeftStickY, gamePad1RightStickX);
+        //telemetry.addData("Power:", "left: %.2f" + " right: %.2f", leftDTPower, rightDTPower);
+        //telemetry.update();
+
+        // Run wheels in tank mode
+
+        // Left joystick is for throttle
+        if ((gamePad1LeftStickY < GAME_STICK_DEAD_ZONE) &&
+                (gamePad1LeftStickY > -GAME_STICK_DEAD_ZONE)) {
+            leftDTPower = 0;
+            rightDTPower = 0;
+        } else {
+            leftDTPower = gamePad1LeftStickY;
+            rightDTPower = gamePad1LeftStickY;
+            if (!goForBeacon) {
+                if (leftDTPower < 0) {
+                    leftDTPower = Range.clip(leftDTPower,
+                            -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
+                }
+                else {
+                    leftDTPower = Range.clip(leftDTPower,
+                            DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
+                }
+                if (rightDTPower < 0) {
+                    rightDTPower = Range.clip(rightDTPower,
+                            -DT_POWER_HIGH_THRESHOLD, -DT_POWER_LOW_THRESHOLD);
+                }
+                else {
+                    rightDTPower = Range.clip(rightDTPower,
+                            DT_POWER_LOW_THRESHOLD, DT_POWER_HIGH_THRESHOLD);
+                }
+            }
+            else { // going for beacon (or with cap-ball lift): SLOW DOWN
+                leftDTPower = leftDTPower * DT_POWER_REDUCTION_FACTOR;
+                rightDTPower = rightDTPower * DT_POWER_REDUCTION_FACTOR;
+            }
+        }
+
+        // Right joystick is for steering
+        if ((gamePad1RightStickX < GAME_STICK_DEAD_ZONE) &&
+                (gamePad1RightStickX > -GAME_STICK_DEAD_ZONE)) {
+            if (driveDirection == 1) {
+                robot.setPowerToDTMotors(leftDTPower, rightDTPower);  // drive straight
+            }
+            else {
+                // drive straight backwards
+                robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
+            }
+        } else if (gamePad1RightStickX > GAME_STICK_DEAD_ZONE) { // direction is right
+            // left power is +ve, right power is -ve
+            rightDTPower = (-1 * gamePad1RightStickX) * rightDTPower;
+            if (driveDirection == 1) {
+                robot.setPowerToDTMotors(leftDTPower, rightDTPower);   // turn right
+            }
+            else {
+                // turn right backwards by swapping left and right power
+                robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
+            }
+        } else { // direction is left (< -0.05)
+            // left power is -ve (RightStickX is -ve), right power is +ve
+            leftDTPower = gamePad1RightStickX * leftDTPower;
+            if (driveDirection == 1) {
+                robot.setPowerToDTMotors(leftDTPower, rightDTPower); // turn left
+            }
+            else {
+                // turn left backwards by swapping left and right power
+                robot.setPowerToDTMotors(-rightDTPower, -leftDTPower);
+            }
         }
     }
 }

@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Krishna Saxena on 9/24/2016.
  * Extends BoKHardwareBot to implement the 6 Wheel Drive train with 4 DC Motors.
  */
-public class BoK6WDHardwareBot extends BoKHardwareBot {
+public class BoK4MotorsDTBot extends BoKHardwareBot {
 
     // CONSTANTS
     // 280 cycles per revolution (CPR); It is a quadrature encoder producing 4 Pulses per Cycle.
@@ -24,16 +24,16 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     private static final int DISTANCE_THRESHOLD             = 10;
 
     // CONSTANTS (strings from the robot config)
-    //private static final String LEFT_BACK_MOTOR_NAME   = "lb";
+    private static final String LEFT_BACK_MOTOR_NAME   = "lb";
     private static final String LEFT_FRONT_MOTOR_NAME  = "lf";
-    //private static final String RIGHT_BACK_MOTOR_NAME  = "rb";
+    private static final String RIGHT_BACK_MOTOR_NAME  = "rb";
     private static final String RIGHT_FRONT_MOTOR_NAME = "rf";
 
     // Drive train motors
-    //private DcMotor leftBack;
-    private DcMotor leftFront;
-    //private DcMotor rightBack;
-    private DcMotor rightFront;
+    protected DcMotor leftBack;
+    protected DcMotor leftFront;
+    protected DcMotor rightBack;
+    protected DcMotor rightFront;
 
     // Encoder variables
     private int currentLeftTarget;
@@ -51,27 +51,27 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
     protected BoKStatus initDriveTrainMotors(LinearOpMode opMode) {
         currentOpMode = opMode;
 
-        /*leftBack = opMode.hardwareMap.dcMotor.get(LEFT_BACK_MOTOR_NAME);
+        leftBack = opMode.hardwareMap.dcMotor.get(LEFT_BACK_MOTOR_NAME);
         if (leftBack == null) {
             return BoKStatus.BOK_FAILURE;
-        }*/
+        }
 
         leftFront = opMode.hardwareMap.dcMotor.get(LEFT_FRONT_MOTOR_NAME);
         if (leftFront == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        /*rightBack = opMode.hardwareMap.dcMotor.get(RIGHT_BACK_MOTOR_NAME);
+        rightBack = opMode.hardwareMap.dcMotor.get(RIGHT_BACK_MOTOR_NAME);
         if (rightBack == null) {
             return BoKStatus.BOK_FAILURE;
-        }*/
+        }
 
         rightFront = opMode.hardwareMap.dcMotor.get(RIGHT_FRONT_MOTOR_NAME);
         if (rightFront == null) {
             return BoKStatus.BOK_FAILURE;
         }
 
-        //leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Drive train is initialized, initialize sensors
@@ -85,8 +85,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
      * 3. set motor encoder target
      */
     public void setPowerToDTMotors(double left, double right) {
-        //leftBack.setPower(left);
-        //rightBack.setPower(right);
+        leftBack.setPower(left);
+        rightBack.setPower(right);
         leftFront.setPower(left);
         rightFront.setPower(right);
         currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
@@ -94,8 +94,8 @@ public class BoK6WDHardwareBot extends BoKHardwareBot {
 
     public void setModeForDTMotors(DcMotor.RunMode runMode)
     {
-        //leftBack.setMode(runMode);
-        //rightBack.setMode(runMode);
+        leftBack.setMode(runMode);
+        rightBack.setMode(runMode);
         leftFront.setMode(runMode);
         rightFront.setMode(runMode);
         currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);

@@ -19,4 +19,5 @@ public interface BoKTeleop {
 
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAuto.BoKAlliance redOrBlue);
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot);
+    public void moveRobot(LinearOpMode opMode, BoKHardwareBot robot);
 }

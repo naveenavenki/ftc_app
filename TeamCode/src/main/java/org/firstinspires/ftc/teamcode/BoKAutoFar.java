@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 /**
  * Created by Krishna Saxena on 9/24/2016.
  * Registers the opMode with the driver station.
- * It uses BoK6WDHardwareBot and LeagueAutoBlueBeacon objects.
+ * It uses BoK4MotorsDTBot and LeagueAutoBlueBeacon objects.
  */
 @Autonomous(name="BoK Auto Far", group="BoK6WD")
 //@Disabled
@@ -16,7 +16,7 @@ public class BoKAutoFar extends LinearOpMode
 
     @Override
     public void runOpMode()  {
-        robot = new BoK6WDHardwareBot();
+        robot = new BoK4MotorsDTBot();
 
         /*
          * Initialize the drive system variables.

@@ -34,7 +34,6 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.Arrays;
@@ -197,10 +196,10 @@ public abstract class BoKAutoCommon implements BoKAuto {
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
-            degreesOfWheelTurn = (360.0 / (Math.PI * BoK6WDHardwareBot.WHEEL_DIAMETER_INCHES)) *
+            degreesOfWheelTurn = (360.0 / (Math.PI * BoK4MotorsDTBot.WHEEL_DIAMETER_INCHES)) *
                     inchesForward;
-            degreesOfMotorTurn = BoK6WDHardwareBot.DRIVE_GEAR_REDUCTION * degreesOfWheelTurn;
-            targetEncCount = (BoK6WDHardwareBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
+            degreesOfMotorTurn = BoK4MotorsDTBot.DRIVE_GEAR_REDUCTION * degreesOfWheelTurn;
+            targetEncCount = (BoK4MotorsDTBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
 
             robot.setDTMotorEncoderTarget((int) (targetEncCount), (int) targetEncCount);
             robot.setPowerToDTMotors(leftPower, rightPower);

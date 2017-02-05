@@ -65,8 +65,8 @@ public abstract class BoKHardwareBot {
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.65;
     protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.35;
     protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.85;
-    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.8;
-    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.3;
+    protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.3;
+    protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.8;
     protected static final double INITIAL_SERVO_POS_CAP_CLAW     = 0.9;
     protected static final double FINAL_SERVO_POS_CAP_CLAW       = 0.5;
     protected static final double INITIAL_SERVO_POS_PART_GATE    = 0.0;

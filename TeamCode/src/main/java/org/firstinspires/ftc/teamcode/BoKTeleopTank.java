@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
@@ -27,7 +26,7 @@ public class BoKTeleopTank extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        robot = new BoK6WDHardwareBot();
+        robot = new BoK4MotorsDTBot();
         //robot = new BoK4WDHardwareBot();
 
         if (BoKHardwareBot.BoKStatus.BOK_FAILURE == robot.initHardware(this))
