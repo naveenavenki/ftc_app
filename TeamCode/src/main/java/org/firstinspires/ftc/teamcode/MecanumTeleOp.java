@@ -35,18 +35,23 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
         gamePad1LeftStickX = opMode.gamepad1.left_stick_x;
         gamePad1RightStickX = opMode.gamepad1.right_stick_x;
 
+        motorPowerFR = 0;
+        motorPowerFL = 0;
+        motorPowerBR = 0;
+        motorPowerBL = 0;
 
         //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
         // gamePad1LeftStickY, gamePad1RightStickX);
-        //telemetry.addData("Power:", "left: %.2f" + " right: %.2f", leftDTPower, rightDTPower);
         //telemetry.update();
+        //Log.v("BOK","moveRobot: " + String.format("%.2f", gamePad1LeftStickY) + ", " +
+        //        String.format("%.2f", gamePad1LeftStickX) + ", " +
+        //        String.format("%.2f", gamePad1RightStickX));
 
         // Run mecanum wheels
 
-        // Left joystick is for throttle
-        if (((Math.abs(gamePad1LeftStickY) > GAME_STICK_DEAD_ZONE) &&
-                (Math.abs(gamePad1LeftStickY) < -GAME_STICK_DEAD_ZONE)) ||
-                (Math.abs(gamePad1LeftStickX) > GAME_STICK_DEAD_ZONE) &&
+        if (((Math.abs(gamePad1LeftStickY) > GAME_STICK_DEAD_ZONE) ||
+                (Math.abs(gamePad1LeftStickY) < -GAME_STICK_DEAD_ZONE)) &&
+                (Math.abs(gamePad1LeftStickX) > GAME_STICK_DEAD_ZONE) ||
                 (Math.abs(gamePad1LeftStickX) < -GAME_STICK_DEAD_ZONE) )
         {
             motorPowerFR = gamePad1LeftStickY - gamePad1LeftStickX;
@@ -54,20 +59,14 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
             motorPowerBR = -gamePad1LeftStickY - gamePad1LeftStickX;
             motorPowerBL = gamePad1LeftStickY - gamePad1LeftStickX;
 
-            Log.v("BOK","FL:" + motorPowerFL + "FR: " + motorPowerFR + "BL: " + motorPowerBL +
-                    "BR: " + motorPowerBR);
-
-            robotWithMecanumWheels.setPowerToMecanumDTMotors(
-                    motorPowerFL,
-                    motorPowerBL,
-                    motorPowerFR,
-                    motorPowerBR);
-
-
+            Log.v("BOK","FL:" + String.format("%.2f", motorPowerFL) +
+                    "FR: " + String.format("%.2f", motorPowerFR) +
+                    "BL: " + String.format("%.2f", motorPowerBL) +
+                    "BR: " + String.format("%.2f", motorPowerBR));
         }
 
-        // Right joystick is for steering
-        else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) &&
+        // Right joystick is for turning
+        else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) ||
                 (gamePad1RightStickX < -GAME_STICK_DEAD_ZONE))
         {
             motorPowerFR = -gamePad1RightStickX;
@@ -75,19 +74,18 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
             motorPowerBR = gamePad1RightStickX;
             motorPowerBL = gamePad1RightStickX;
 
-            Log.v("BOK","FL:" + motorPowerFL + "FR: " + motorPowerFR + "BL: " + motorPowerBL +
-                    "BR: " + motorPowerBR);
-
-            robotWithMecanumWheels.setPowerToMecanumDTMotors(
-                    motorPowerFL,
-                    motorPowerBL,
-                    motorPowerFR,
-                    motorPowerBR);
+            Log.v("BOK","Turn: FL:" + String.format("%.2f", motorPowerFL) +
+                    "FR: " + String.format("%.2f", motorPowerFR) +
+                    "BL: " + String.format("%.2f", motorPowerBL) +
+                    "BR: " + String.format("%.2f", motorPowerBR));
         }
-        else {
-            robotWithMecanumWheels.setPowerToMecanumDTMotors(0, 0, 0, 0);
 
-        }
+
+        robotWithMecanumWheels.setPowerToMecanumDTMotors(
+                motorPowerFL,
+                motorPowerBL,
+                motorPowerFR,
+                motorPowerBR);
     }
 
 }
