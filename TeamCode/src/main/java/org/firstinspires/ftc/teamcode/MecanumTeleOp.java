@@ -49,8 +49,8 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
 
         // Run mecanum wheels
 
-        if (((Math.abs(gamePad1LeftStickY) > GAME_STICK_DEAD_ZONE) ||
-                (Math.abs(gamePad1LeftStickY) < -GAME_STICK_DEAD_ZONE)) &&
+        if ((Math.abs(gamePad1LeftStickY) > GAME_STICK_DEAD_ZONE) ||
+                (Math.abs(gamePad1LeftStickY) < -GAME_STICK_DEAD_ZONE) ||
                 (Math.abs(gamePad1LeftStickX) > GAME_STICK_DEAD_ZONE) ||
                 (Math.abs(gamePad1LeftStickX) < -GAME_STICK_DEAD_ZONE) )
         {

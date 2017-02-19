@@ -71,8 +71,8 @@ public class BoK4MotorsDTBot extends BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
-        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Drive train is initialized, initialize sensors
         return BoKStatus.BOK_SUCCESS;
