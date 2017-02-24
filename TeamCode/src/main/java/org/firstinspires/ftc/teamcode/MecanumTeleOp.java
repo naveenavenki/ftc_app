@@ -17,10 +17,10 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
     BoK4MotorsDTBot robotWithMecanumWheels;
 
     protected double gamePad1LeftStickX;
-    private double motorPowerFR;
-    private double motorPowerFL;
-    private double motorPowerBR;
-    private double motorPowerBL;
+    private double motorPowerLF;
+    private double motorPowerLB;
+    private double motorPowerRF;
+    private double motorPowerRB;
 
     public void moveRobot(LinearOpMode opMode, BoKHardwareBot robot) {
 
@@ -35,10 +35,10 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
         gamePad1LeftStickX = opMode.gamepad1.left_stick_x;
         gamePad1RightStickX = opMode.gamepad1.right_stick_x;
 
-        motorPowerFR = 0;
-        motorPowerFL = 0;
-        motorPowerBR = 0;
-        motorPowerBL = 0;
+        motorPowerLF = 0;
+        motorPowerLB = 0;
+        motorPowerRF = 0;
+        motorPowerRB = 0;
 
         //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
         // gamePad1LeftStickY, gamePad1RightStickX);
@@ -54,38 +54,35 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
                 (Math.abs(gamePad1LeftStickX) > GAME_STICK_DEAD_ZONE) ||
                 (Math.abs(gamePad1LeftStickX) < -GAME_STICK_DEAD_ZONE) )
         {
-            motorPowerFR = gamePad1LeftStickY - (-gamePad1LeftStickX);
-            motorPowerFL = -gamePad1LeftStickY - (-gamePad1LeftStickX);
-            motorPowerBR = gamePad1LeftStickY - gamePad1LeftStickX;
-            motorPowerBL = -gamePad1LeftStickY - gamePad1LeftStickX;
+            motorPowerLF = -gamePad1LeftStickY - (-gamePad1LeftStickX);
+            motorPowerLB = -gamePad1LeftStickY - gamePad1LeftStickX;
+            motorPowerRF = gamePad1LeftStickY - (-gamePad1LeftStickX);
+            motorPowerRB = gamePad1LeftStickY - gamePad1LeftStickX;
 
-            Log.v("BOK","FL:" + String.format("%.2f", motorPowerFL) +
-                    "FR: " + String.format("%.2f", motorPowerFR) +
-                    "BL: " + String.format("%.2f", motorPowerBL) +
-                    "BR: " + String.format("%.2f", motorPowerBR));
+            Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF) +
+                    "LB: " + String.format("%.2f", motorPowerLB) +
+                    "RF: " + String.format("%.2f", motorPowerRF) +
+                    "RB: " + String.format("%.2f", motorPowerRB));
         }
 
         // Right joystick is for turning
         else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) ||
                 (gamePad1RightStickX < -GAME_STICK_DEAD_ZONE))
         {
-            motorPowerFR = gamePad1RightStickX;
-            motorPowerFL = gamePad1RightStickX;
-            motorPowerBR = gamePad1RightStickX;
-            motorPowerBL = gamePad1RightStickX;
+            motorPowerLF = motorPowerLB = gamePad1RightStickX;
+            motorPowerRF = motorPowerRB = gamePad1RightStickX;
 
-            Log.v("BOK","Turn: FL:" + String.format("%.2f", motorPowerFL) +
-                    "FR: " + String.format("%.2f", motorPowerFR) +
-                    "BL: " + String.format("%.2f", motorPowerBL) +
-                    "BR: " + String.format("%.2f", motorPowerBR));
+            Log.v("BOK","Turn: LF:" + String.format("%.2f", motorPowerLF) +
+                    "LB: " + String.format("%.2f", motorPowerLB) +
+                    "RF: " + String.format("%.2f", motorPowerRF) +
+                    "RB: " + String.format("%.2f", motorPowerRB));
         }
 
-
         robotWithMecanumWheels.setPowerToDTMotors(
-                motorPowerFL,
-                motorPowerBL,
-                motorPowerFR,
-                motorPowerBR);
+                motorPowerLF,
+                motorPowerLB,
+                motorPowerRF,
+                motorPowerRB);
     }
 
 }

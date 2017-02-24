@@ -23,13 +23,24 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
         //double shooterMotorsPower = getShooterMotorsPowerBasedOnBatteryLevel(robot);
-        moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 15, 4);
-        alignToWall(opMode,robot,30.0,10.0);
-        //robot.gyroSensor.resetZAxisIntegrator();
+        // Move forward using encoders
+        moveForward(opMode, robot,
+                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
+                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
 
-        //gyroTurn(opMode, robot,LEFT_MOTOR_POWER,45);
+        robot.gyroSensor.resetZAxisIntegrator();
+        gyroTurn(opMode, robot,LEFT_MOTOR_POWER, 45);
+
+        moveForward(opMode, robot,
+                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
+                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, THREE_SECONDS);
+
+        alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
+        alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
+
+        //alignToWall(opMode,robot,30.0,10.0);
         //opMode.sleep(100);
-        runToWhiteSideways(opMode, robot, 5.0);
+        runToWhiteSideways(opMode, robot, 0.5, 0.5, true, 5.0);
 
         // detect beacom color
         detectBeaconColor(opMode, robot, 2.0);

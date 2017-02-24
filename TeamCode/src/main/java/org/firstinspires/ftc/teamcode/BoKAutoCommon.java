@@ -51,7 +51,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     protected AppUtil appUtil = AppUtil.getInstance();
 
     protected BoKAlliance alliance;
-    private VuforiaLocalizer vuforiaFTC;
+    protected VuforiaLocalizer vuforiaFTC;
 
     private static final int MIN_DISTANCE_FOR_IMAGE = 45; //cm
 
@@ -61,13 +61,13 @@ public abstract class BoKAutoCommon implements BoKAuto {
     private static final int BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_X = 40;
     private static final int BEACON_AREA_BL_WRT_CENTER_OF_IMAGE_Y = 200;
 
-    private static final double P_TURN_COEFF = 0.1;
-    private static final double HEADING_THRESHOLD = 1;
-    private static final double TURN_SPEED_LOW  = 0.16;
-    private static final double TURN_SPEED_HIGH = 0.2;
+    protected static final double P_TURN_COEFF = 0.1;
+    protected static final double HEADING_THRESHOLD = 1;
+    protected static final double TURN_SPEED_LOW  = 0.16;
+    protected static final double TURN_SPEED_HIGH = 0.2;
 
-    private VuforiaTrackables beacons;
-    private ElapsedTime runTime  = new ElapsedTime();
+    protected VuforiaTrackables beacons;
+    protected ElapsedTime runTime  = new ElapsedTime();
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity()) {
         @Override
@@ -186,21 +186,25 @@ public abstract class BoKAutoCommon implements BoKAuto {
         } // if (opModeIsActive())
     }
 
+    protected double getTargetEncCount(double inchesForward) {
+        double degreesOfWheelTurn, degreesOfMotorTurn;
+        degreesOfWheelTurn = (360.0 / (Math.PI * BoK4MotorsDTBot.WHEEL_DIAMETER_INCHES)) *
+                inchesForward;
+        degreesOfMotorTurn = BoK4MotorsDTBot.DRIVE_GEAR_REDUCTION * degreesOfWheelTurn;
+        return (BoK4MotorsDTBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
+    }
+
     // Algorithm to move forward using encoder sensor on the DC motors on the drive train
     // Note that we use the abstract class BoKHardwareBot to completely separate out the
     // underlying drive train implementation
     protected void moveForward(LinearOpMode opMode, BoKHardwareBot robot,
                                double leftPower, double rightPower, double inchesForward,
                                double waitForSec) {
-        double degreesOfWheelTurn, degreesOfMotorTurn, targetEncCount;
+
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
-            degreesOfWheelTurn = (360.0 / (Math.PI * BoK4MotorsDTBot.WHEEL_DIAMETER_INCHES)) *
-                    inchesForward;
-            degreesOfMotorTurn = BoK4MotorsDTBot.DRIVE_GEAR_REDUCTION * degreesOfWheelTurn;
-            targetEncCount = (BoK4MotorsDTBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
-
+            double targetEncCount = getTargetEncCount(inchesForward);
             robot.setDTMotorEncoderTarget((int) (targetEncCount), (int) targetEncCount);
             robot.setPowerToDTMotors(leftPower, rightPower);
 
@@ -693,7 +697,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
      * @param PCoeff    Proportional Gain coefficient
      * @return
      */
-    private boolean onHeading(LinearOpMode opMode, BoKHardwareBot robot, double speed,
+    protected boolean onHeading(LinearOpMode opMode, BoKHardwareBot robot, double speed,
                               double angle, double PCoeff) {
         double   error ;
         double   steer ;
@@ -740,7 +744,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
      * @return  error angle: Degrees in the range +/- 180. Centered on the robot's frame of
      *          reference; +ve error means the robot should turn LEFT (CCW) to reduce error.
      */
-    private double getError(BoKHardwareBot robot, double targetAngle) {
+    protected double getError(BoKHardwareBot robot, double targetAngle) {
 
         double robotError;
 
@@ -757,7 +761,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
      * @param PCoeff  Proportional Gain Coefficient
      * @return
      */
-    private double getSteer(double error, double PCoeff) {
+    protected double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
     }
 }

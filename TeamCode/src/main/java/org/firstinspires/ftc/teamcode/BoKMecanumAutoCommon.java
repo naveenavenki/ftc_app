@@ -49,128 +49,13 @@ import java.util.Arrays;
  * 2. initialize OpenCV
  * 3. set up servos and DC motors for autonomous
  */
-public abstract class BoKMecanumAutoCommon implements BoKAuto {
-    protected AppUtil appUtil = AppUtil.getInstance();
-
-    protected BoKAlliance alliance;
-    private VuforiaLocalizer vuforiaFTC;
-
-    private static final double P_TURN_COEFF = 0.1;
-    private static final double HEADING_THRESHOLD = 1;
-    private static final double TURN_SPEED_LOW  = 0.16;
-    private static final double TURN_SPEED_HIGH = 0.2;
-
-    private VuforiaTrackables beacons;
-    private ElapsedTime runTime  = new ElapsedTime();
-
-    private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity()) {
-        @Override
-        public void onManagerConnected(int status) {
-            super.onManagerConnected(status);
-        }
-    };
-
+public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
 
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
+        super.initSoftware(opMode, robot, redOrBlue);
 
-        Log.v("BOK", "Initializing OpenCV");
-        // Initialize OpenCV
-        if (!OpenCVLoader.initDebug()) {
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0,
-                    appUtil.getActivity(), loaderCallback);
-        }
-        else {
-            loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
-
-        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        robot.initGyro(opMode);
-        // let the drive team know if the gyro initialized correctly
-        opMode.telemetry.addData("Gyro", robot.gyroSensor.getIntegratedZValue());
-        opMode.telemetry.update();
-        Log.v("BOK", "Gyro: integrated: " + robot.gyroSensor.getIntegratedZValue());
-
-        // set the initial position (both pointed down)
-        robot.pusherLeftServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_LEFT);
-        robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
-
-        robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO-0.1);
-        /*
-        robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
-        robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
-        */
-        alliance = redOrBlue;
-
-        // Initialize Vuforia
-        VuforiaLocalizer.Parameters parameters =
-                new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-
-        // Vuforia License Key
-        parameters.vuforiaLicenseKey = "ASodJvL/////AAAAGa9Isk5Oa0brtCRz7Z0fQngHmf2Selfx3RDk3MzjmK9DFWkQRsg1dH8Q8VvU/9L9nr9krXa+2nY5zoK6moC4UpRIg+gRsnG5M504q50Dd+z8DDATBaamc8t5qa8OeLjFKQ/+blHLbe8tjXSdVdl/xxGdowpeuQ18dnlf129q5NjM7Z9s/M8l693yEl28b+/LLJ4SiFLBTXwkEpVblemfJKZVHO5I8JmGmQ4jcwCWFIMCFxPRbCeDVqdCeqQzFa3BcCiuuGUgZDBCaidiW0/pzEFzdXcVCQfJPMgdZUWkPAk0QXVC8zYXaweeLuAONyTDkanRiyzqZbDVpJhVHaLBsUaC3OmZ/Xo+ThguyX3tNs3G";
-
-        parameters.cameraMonitorFeedback = VuforiaLocalizer.Parameters.CameraMonitorFeedback.AXES;
-        vuforiaFTC = ClassFactory.createVuforiaLocalizer(parameters);
-
-        Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS, 1);
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
-        vuforiaFTC.setFrameQueueCapacity(1); // change the frame queue capacity to 1
-
-        beacons = vuforiaFTC.loadTrackablesFromAsset("FTC_2016-17");
-        beacons.get(0).setName("Wheels");
-        beacons.get(1).setName("Tools");
-        beacons.get(2).setName("Legos");
-        beacons.get(3).setName("Gears");
         beacons.activate();
         Log.v("BOK", "Done initializing Vuforia");
-    }
-
-    @Override
-    public abstract void runSoftware(LinearOpMode opMode,
-                                     BoKHardwareBot robot);
-
-    // Algorithm to control the speed for shooter motors based on battery level
-    protected double getShooterMotorsPowerBasedOnBatteryLevel(BoKHardwareBot robot) {
-        double voltage12V = robot.voltageSensor.getVoltage();
-        double shooterMotorsPower =  BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL ;
-
-        Log.v("BOK", "Battery voltage: " + voltage12V);
-        if (voltage12V >= ROBOT_BATTERY_LEVEL_HIGH_THRESHOLD) {
-            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL -
-                    SHOOTER_MOTOR_POWER_CHANGE;
-        }
-        else if (voltage12V < ROBOT_BATTERY_LEVEL_MED_THRESHOLD) {
-            shooterMotorsPower = BoKHardwareBot.SHOOTER_MOTORS_POWER_NORMAL +
-                    SHOOTER_MOTOR_POWER_CHANGE;
-        }
-        return shooterMotorsPower;
-    }
-
-    // Shoot particles for as long as necessary by turning on the lift and the shooter
-    protected void shootBall(LinearOpMode opMode, BoKHardwareBot robot,
-                             double shooterMotorsPower,
-                             double waitForSec)  {
-        // Ensure that the opmode is still active
-        if (opMode.opModeIsActive()) {
-
-            robot.setPowerToDTMotors(0, 0, 0, 0); // Do not move the robot
-            //robot.partLiftGateServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PART_GATE);
-            robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO);
-            robot.setPowerToShooterMotors(shooterMotorsPower);
-            robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);
-            runTime.reset();
-
-            // run until we either press STOP or run out of time
-            while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
-                //opMode.telemetry.addData("Ball shooter: ",
-                // "%2.1f sec elapsed", runTime.seconds());
-                opMode.telemetry.update();
-            } // while (opModeIsActive())
-
-            robot.setPowerToShooterMotors(0.0f); // stop the ball shooter
-            robot.sweeperMotor.setPower(0.0f); // stop the sweeper
-        } // if (opModeIsActive())
     }
 
     // Algorithm to move forward using encoder sensor on the DC motors on the drive train
@@ -179,14 +64,10 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
     protected void moveForward(LinearOpMode opMode, BoKHardwareBot robot,
                                double leftPower, double rightPower,  double inchesForward,
                                double waitForSec) {
-        double degreesOfWheelTurn, degreesOfMotorTurn, targetEncCount;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
-            degreesOfWheelTurn = (360.0 / (Math.PI * BoK4MotorsDTBot.WHEEL_DIAMETER_INCHES)) *
-                    inchesForward;
-            degreesOfMotorTurn = BoK4MotorsDTBot.DRIVE_GEAR_REDUCTION * degreesOfWheelTurn;
-            targetEncCount = (BoK4MotorsDTBot.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
+            double targetEncCount = getTargetEncCount(inchesForward);
 
             robot.setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
             robot.setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
@@ -204,17 +85,21 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
         }
     }
 
-    // Algorithm to run to white line using the Optical Distance Sensor
-    // Again, note that we use the abstract class BoKHardwareBot to completely separate out the
-    // underlying drive train implementation
+    // Algorithm to run to white line sideways using the Optical Distance Sensor
     protected boolean runToWhiteSideways(LinearOpMode opMode, BoKHardwareBot robot,
-                                 double waitForSec) {
+                                         double leftPower, double rightPower,
+                                         boolean right, double waitForSec) {
         double current_alpha = 0, distance = 0;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
-            //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToDTMotors(+LEFT_MOTOR_POWER/2, -LEFT_MOTOR_POWER/2,
-                                     +RIGHT_MOTOR_POWER/2, -RIGHT_MOTOR_POWER/2);
+            if (right) {
+                robot.setPowerToDTMotors(+leftPower, -leftPower,
+                        +rightPower, -rightPower);
+            }
+            else {
+                robot.setPowerToDTMotors(-leftPower, +leftPower,
+                        -rightPower, +rightPower);
+            }
             opMode.idle();
 
             // go to white line
@@ -230,7 +115,7 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
                 current_alpha = robot.odsSensor.getLightDetected();
 
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-                Log.v("BOK", "ALPHAW " + String.format("%.2f", current_alpha));
+                //Log.v("BOK", "ALPHAW " + String.format("%.2f", current_alpha));
                 // distance + " sec: " + String.format("%.2f", runTime.seconds()));
             } // while (current_alpha < WHITE_LINE)
 
@@ -245,10 +130,79 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
     }
 
     protected void alignToWall(LinearOpMode opMode, BoKHardwareBot robot, double distance,
-                               double waitForSec){
+                               double speed, boolean right, double waitForSec) {
+        byte[] rangeRight;
+        byte[] rangeLeft;
+
+        // keep looping while we are still active, and not on heading.
+        while (opMode.opModeIsActive() &&
+                !onFacingWall(opMode, robot, speed, distance, right, P_TURN_COEFF)) {
+            // Update telemetry & Allow time for other processes to run.
+            opMode.telemetry.update();
+            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+
+        rangeRight = robot.rsRightReader.read(0x04, 2);
+        rangeLeft = robot.rsLeftReader.read(0x04, 2);
+        Log.v("BOK", "alignR: " + (rangeRight[0] & 0xFF));
+        Log.v("BOK", "alignL: " + (rangeLeft[0] & 0xFF));
+    }
+
+    protected boolean onFacingWall(LinearOpMode opMode, BoKHardwareBot robot, double speed,
+                                double distance, boolean right, double PCoeff) {
+        double   error ;
+        double   steer ;
+        boolean  onTarget = false;
+        double   leftSpeed;
+        double   rightSpeed;
+        double   cmCurrent;
+        if (right) {
+            byte[] rangeRight = robot.rsRightReader.read(0x04, 2);
+            cmCurrent = rangeRight[0] & 0xFF;
+        }
+        else {
+            byte[] rangeLeft = robot.rsLeftReader.read(0x04, 2);
+            cmCurrent = rangeLeft[0] & 0xFF;
+        }
+
+        // determine turn power based on +/- error
+        error = cmCurrent - distance;
+        if (Math.abs(error) <= (Math.abs(distance)/2))
+            speed /= 2;
+
+        if (Math.abs(error) <= HEADING_THRESHOLD) {
+            steer = 0.0;
+            leftSpeed  = 0.0;
+            rightSpeed = 0.0;
+            onTarget = true;
+        }
+        else {
+            steer = getSteer(error, PCoeff);
+
+            rightSpeed  = speed * steer;
+            if (rightSpeed > 0)
+                rightSpeed = Range.clip(rightSpeed, TURN_SPEED_LOW, TURN_SPEED_HIGH);
+            else
+                rightSpeed = Range.clip(rightSpeed, -TURN_SPEED_HIGH, -TURN_SPEED_LOW);
+
+            leftSpeed   = -rightSpeed;
+        }
+
+        // Send desired speeds to motors.
+        robot.setPowerToDTMotors(leftSpeed, -leftSpeed, -rightSpeed, rightSpeed);
+
+        //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
+        //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
+        // String.format("%5.2f", rightSpeed));
+        return onTarget;
+    }
+
+    protected void alignToWall(LinearOpMode opMode, BoKHardwareBot robot, double distance,
+                                   double waitForSec) {
+        byte[] rangeLeft;
+        byte[] rangeRight;
+
         if (opMode.opModeIsActive()) {
-            byte[] rangeLeft;
-            byte[] rangeRight;
 
             rangeLeft = robot.rsLeftReader.read(0x04, 2);
             rangeRight = robot.rsRightReader.read(0x04, 2);
@@ -439,15 +393,18 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
 
     // Algorithm to go back from wall using the range sensor
     protected void goBackFromWall(LinearOpMode opMode, BoKHardwareBot robot,
-                                  double targetDistance,
+                                  double targetDistance, double leftPower, double rightPower,
                                   double waitForSec)
     {
         double distance = 0;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
-            //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER, -RIGHT_MOTOR_POWER);
-            //distance = robot.rangeSensorLeft.cmUltrasonic();
+            byte[] rangeLeft;
+            rangeLeft = robot.rsLeftReader.read(0x04, 2);
+
+            robot.setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
+
+            distance = rangeLeft[0] & 0xFF;
             runTime.reset();
 
             Log.v("BOK", "goBackward: " + distance);
@@ -455,66 +412,32 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
             while (opMode.opModeIsActive() &&
                     (distance < targetDistance) &&
                     (runTime.seconds() < waitForSec)) {
-                //distance = robot.rangeSensorLeft.cmUltrasonic();
+                rangeLeft = robot.rsLeftReader.read(0x04, 2);
+                distance = rangeLeft[0] & 0xFF;
 
                 //opMode.telemetry.addData("BOK", "distance: " + distance);
                 //opMode.telemetry.update();
-                //distance = robot.rangeSensorLeft.cmUltrasonic();
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
                 //Log.v("BOK", "goBwd: " + distance);
             } // while (opModeIsActive())
-            robot.setPowerToDTMotors(0.0f, 0.0f); // stop the robot
-        } // if (opModeIsActive())
-    }
-
-    // Algorithm to go forward to the wall but stop when we reach the white line
-    protected void goForwardToWall(LinearOpMode opMode, BoKHardwareBot robot,
-                                   double targetDistance,
-                                   double waitForSec)
-    {
-        double distance = 0, current_alpha;
-        // Ensure that the opmode is still active
-        if (opMode.opModeIsActive()) {
-            //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/2, LEFT_MOTOR_POWER/2,
-                                      RIGHT_MOTOR_POWER/2, -RIGHT_MOTOR_POWER/2);
-
-            //distance = robot.rangeSensorLeft.cmUltrasonic();
-            current_alpha = robot.odsSensor.getLightDetected();
-            runTime.reset();
-
-            Log.v("BOK", "goForward: " + distance + ", a: " + String.format(".2f", current_alpha) +
-                    ", ang: " + robot.gyroSensor.getIntegratedZValue());
-            // stop when near the white line and the distance < target distance
-            while (opMode.opModeIsActive() &&
-                    ((distance > targetDistance) &&
-                     (current_alpha <= WHITE_LINE)) &&
-                     (runTime.seconds() < waitForSec)) {
-                //distance = robot.rangeSensorLeft.cmUltrasonic();
-                current_alpha = robot.odsSensor.getLightDetected();
-
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-                //Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha +
-                // " sec " + runTime.seconds());
-
-            } // while (opModeIsActive())
-            robot.setPowerToDTMotors(0,0,0,0); // stop the robot
+            robot.setPowerToDTMotors(0.0f, 0.0f, 0.0f, 0.0f); // stop the robot
         } // if (opModeIsActive())
     }
 
     // Push the beacon making sure that we do not get too close to the wall using the range sensor.
     protected void goForwardTillBeacon(LinearOpMode opMode, BoKHardwareBot robot,
-                                       double targetDistance,
+                                       double targetDistance, double leftPower, double rightPower,
                                        double waitForSec)
     {
         double distance = 0;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
-            //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/2, LEFT_MOTOR_POWER/2,
-                                      RIGHT_MOTOR_POWER/2, -RIGHT_MOTOR_POWER/2);
+            byte[] rangeLeft;
+            rangeLeft = robot.rsLeftReader.read(0x04, 2);
 
-            //distance = robot.rangeSensorLeft.cmUltrasonic();
+            robot.setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
+
+            distance = rangeLeft[0] & 0xFF;
             runTime.reset();
 
             Log.v("BOK", "goForward: " + distance + ", ang: " +
@@ -523,50 +446,16 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
             while (opMode.opModeIsActive() &&
                     (distance > targetDistance) &&
                     (runTime.seconds() < waitForSec)) {
-                //distance = robot.rangeSensorLeft.cmUltrasonic();
-
+                rangeLeft = robot.rsLeftReader.read(0x04, 2);
+                distance = rangeLeft[0] & 0xFF;
 
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
                 //Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha +
                 // " sec " + runTime.seconds());
 
             } // while (opModeIsActive())
-            robot.setPowerToDTMotors(0,0, 0, 0); // stop the robot
+            robot.setPowerToDTMotors(0, 0, 0, 0); // stop the robot
         } // if (opModeIsActive())
-    }
-
-    // Code copied from the sample PushbotAutoDriveByGyro_Linear
-    /**
-     *  Method to spin on central axis to point in a new direction.
-     *  Move will stop if either of these conditions occur:
-     *  1) Move gets to the heading (angle)
-     *  2) Driver stops the opmode running.
-     *
-     * @param speed Desired speed of turn.
-     * @param angle      Absolute Angle (in Degrees) relative to last gyro reset.
-     *                   0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
-     *                   If a relative angle is required, add/subtract from current heading.
-     */
-    public void gyroTurn( LinearOpMode opMode, BoKHardwareBot robot, double speed, double angle) {
-
-        //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        // keep looping while we are still active, and not on heading.
-        while (opMode.opModeIsActive() && !onHeading(opMode, robot, speed, angle, P_TURN_COEFF)) {
-            // Update telemetry & Allow time for other processes to run.
-            opMode.telemetry.update();
-            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-        }
-
-        Log.v("BOK", "turnF: " + robot.gyroSensor.getIntegratedZValue() + "a: " +
-                String.format("%.2f", robot.odsSensor.getLightDetected()));
-        while (opMode.opModeIsActive() && !onHeading(opMode, robot, speed, angle, P_TURN_COEFF)) {
-            // Update telemetry & Allow time for other processes to run.
-            opMode.telemetry.update();
-            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-        }
-        Log.v("BOK", "turnF: " + robot.gyroSensor.getIntegratedZValue() + "a: " +
-                String.format("%.2f", robot.odsSensor.getLightDetected()));
     }
 
     /**
@@ -579,7 +468,7 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
      * @param PCoeff    Proportional Gain coefficient
      * @return
      */
-    private boolean onHeading(LinearOpMode opMode, BoKHardwareBot robot, double speed,
+    protected boolean onHeading(LinearOpMode opMode, BoKHardwareBot robot, double speed,
                               double angle, double PCoeff) {
         double   error ;
         double   steer ;
@@ -611,39 +500,12 @@ public abstract class BoKMecanumAutoCommon implements BoKAuto {
         }
 
         // Send desired speeds to motors.
-        robot.setPowerToDTMotors(leftSpeed, leftSpeed, rightSpeed, rightSpeed);
+        robot.setPowerToDTMotors(leftSpeed, -leftSpeed, -rightSpeed, rightSpeed);
 
-        //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
-        //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
-        // String.format("%5.2f", rightSpeed));
+        Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
+        Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
+              String.format("%5.2f", rightSpeed));
         return onTarget;
     }
 
-    /**
-     * getError determines the error between the target angle and the robot's current heading
-     * @param   targetAngle
-     *          Desired angle (relative to global reference established at last Gyro Reset).
-     * @return  error angle: Degrees in the range +/- 180. Centered on the robot's frame of
-     *          reference; +ve error means the robot should turn LEFT (CCW) to reduce error.
-     */
-    private double getError(BoKHardwareBot robot, double targetAngle) {
-
-        double robotError;
-
-        // calculate error in -179 to +180 range  (
-        robotError = targetAngle - robot.gyroSensor.getIntegratedZValue();
-        while (robotError > 180)  robotError -= 360;
-        while (robotError <= -180) robotError += 360;
-        return robotError;
-    }
-
-    /**
-     * returns desired steering force.  +/- 1 range.  +ve = steer left
-     * @param error   Error angle in robot relative degrees
-     * @param PCoeff  Proportional Gain Coefficient
-     * @return
-     */
-    private double getSteer(double error, double PCoeff) {
-        return Range.clip(error * PCoeff, -1, 1);
-    }
-}
+ }
