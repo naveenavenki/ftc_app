@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.Range;
 
 public class MecanumTeleOp extends LeagueTeleopArcade {
 
-    BoKMecanumWDHardwareBot robotWithMecanumWheels;
+    BoK4MotorsDTBot robotWithMecanumWheels;
 
     protected double gamePad1LeftStickX;
     private double motorPowerFR;
@@ -24,14 +24,14 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
 
     public void moveRobot(LinearOpMode opMode, BoKHardwareBot robot) {
 
-        robotWithMecanumWheels = (BoKMecanumWDHardwareBot)robot;
+        robotWithMecanumWheels = (BoK4MotorsDTBot)robot;
 
         /*
          * Gamepad1: Driver 1 controls the robot using the left joystick for throttle and
          * the right joystick for steering
          */
         // NOTE: the left joystick goes negative when pushed upwards
-        gamePad1LeftStickY = -opMode.gamepad1.left_stick_y;
+        gamePad1LeftStickY = opMode.gamepad1.left_stick_y;
         gamePad1LeftStickX = opMode.gamepad1.left_stick_x;
         gamePad1RightStickX = opMode.gamepad1.right_stick_x;
 
@@ -54,10 +54,10 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
                 (Math.abs(gamePad1LeftStickX) > GAME_STICK_DEAD_ZONE) ||
                 (Math.abs(gamePad1LeftStickX) < -GAME_STICK_DEAD_ZONE) )
         {
-            motorPowerFR = gamePad1LeftStickY - gamePad1LeftStickX;
-            motorPowerFL = -gamePad1LeftStickY - gamePad1LeftStickX;
-            motorPowerBR = -gamePad1LeftStickY - gamePad1LeftStickX;
-            motorPowerBL = gamePad1LeftStickY - gamePad1LeftStickX;
+            motorPowerFR = gamePad1LeftStickY - (-gamePad1LeftStickX);
+            motorPowerFL = -gamePad1LeftStickY - (-gamePad1LeftStickX);
+            motorPowerBR = gamePad1LeftStickY - gamePad1LeftStickX;
+            motorPowerBL = -gamePad1LeftStickY - gamePad1LeftStickX;
 
             Log.v("BOK","FL:" + String.format("%.2f", motorPowerFL) +
                     "FR: " + String.format("%.2f", motorPowerFR) +
@@ -69,8 +69,8 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
         else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) ||
                 (gamePad1RightStickX < -GAME_STICK_DEAD_ZONE))
         {
-            motorPowerFR = -gamePad1RightStickX;
-            motorPowerFL = -gamePad1RightStickX;
+            motorPowerFR = gamePad1RightStickX;
+            motorPowerFL = gamePad1RightStickX;
             motorPowerBR = gamePad1RightStickX;
             motorPowerBL = gamePad1RightStickX;
 
@@ -81,7 +81,7 @@ public class MecanumTeleOp extends LeagueTeleopArcade {
         }
 
 
-        robotWithMecanumWheels.setPowerToMecanumDTMotors(
+        robotWithMecanumWheels.setPowerToDTMotors(
                 motorPowerFL,
                 motorPowerBL,
                 motorPowerFR,

@@ -92,6 +92,15 @@ public class BoK4MotorsDTBot extends BoKHardwareBot {
         currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
+    public void setPowerToDTMotors(double leftFrontPower, double leftBackPower,
+                                   double rightFrontPower, double rightBackPower) {
+        leftBack.setPower(leftBackPower);
+        rightBack.setPower(rightBackPower);
+        leftFront.setPower(leftFrontPower);
+        rightFront.setPower(rightFrontPower);
+        currentOpMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
+    }
+
     public void setModeForDTMotors(DcMotor.RunMode runMode)
     {
         leftBack.setMode(runMode);
@@ -136,8 +145,8 @@ public class BoK4MotorsDTBot extends BoKHardwareBot {
         int leftFrontCurrentPos = leftFront.getCurrentPosition();
         int rightFrontCurrentPos = rightFront.getCurrentPosition();
 
-        //Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " +
-        // rightFrontCurrentPos + ", " + rightFront.isBusy());
+        Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " +
+                     rightFrontCurrentPos + ", " + rightFront.isBusy());
 
         if (leftPositive) {
             if ((leftFrontCurrentPos >= currentLeftTarget) ||

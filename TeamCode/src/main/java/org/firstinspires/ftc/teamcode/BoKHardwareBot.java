@@ -10,6 +10,10 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -29,7 +33,8 @@ public abstract class BoKHardwareBot {
     private static final String GYRO_SENSOR_CFG         = "gy";
 
     private static final String ODS_SENSOR_CFG          = "ods";
-    private static final String RANGE_SENSOR_CFG        = "rs";
+    private static final String RANGE_SENSOR_LEFT_CFG   = "rsl";
+    private static final String RANGE_SENSOR_RIGHT_CFG  = "rsr";
     private static final String SERVO_SHOOTER_CFG       = "ss";
     private static final String SERVO_PUSHER_LEFT_CFG   = "pl";
     private static final String SERVO_PUSHER_RIGHT_CFG  = "pr";
@@ -51,8 +56,10 @@ public abstract class BoKHardwareBot {
     protected ColorSensor colorSensor;
     protected ModernRoboticsI2cGyro gyroSensor;
     protected OpticalDistanceSensor odsSensor;
-    protected ModernRoboticsI2cRangeSensor rangeSensor;
-
+    protected I2cDevice rangeSensorLeft;
+    protected I2cDevice rangeSensorRight;
+    protected I2cDeviceSynch rsLeftReader;
+    protected I2cDeviceSynch rsRightReader;
 
     //servos: shooter, button pushers, cap claw lock, part lift gate
     protected Servo shooterServo;
@@ -104,6 +111,8 @@ public abstract class BoKHardwareBot {
     // Using the drive train (DT) is public (teleop opMode)
     public abstract void setModeForDTMotors(DcMotor.RunMode runMode);
     public abstract void setPowerToDTMotors(double leftPower, double rightPower);
+    public abstract void setPowerToDTMotors(double leftFrontPower, double leftBackPower,
+                                            double rightFrontPower, double rightBackPower);
 
     // Setting up the drive train motors encoders (autonomous opMode)
     public abstract void setDTMotorEncoderTarget(int leftTarget, int rightTarget);
@@ -141,10 +150,20 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
-        rangeSensor = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_CFG);
-        if (rangeSensor == null) {
+        rangeSensorLeft = opMode.hardwareMap.i2cDevice.get(RANGE_SENSOR_LEFT_CFG);
+        if (rangeSensorLeft == null) {
             return BoKStatus.BOK_FAILURE;
         }
+        rangeSensorRight = opMode.hardwareMap.i2cDevice.get(RANGE_SENSOR_RIGHT_CFG);
+        if (rangeSensorRight == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
+        rsLeftReader = new I2cDeviceSynchImpl(rangeSensorLeft, I2cAddr.create8bit(0x2a), false);
+        rsRightReader = new I2cDeviceSynchImpl(rangeSensorRight, I2cAddr.create8bit(0x28), false);
+        rsLeftReader.engage();
+        rsRightReader.engage();
+
         shooterServo = opMode.hardwareMap.servo.get(SERVO_SHOOTER_CFG);
         if (shooterServo == null) {
           return BoKStatus.BOK_FAILURE;

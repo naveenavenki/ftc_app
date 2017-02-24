@@ -14,7 +14,7 @@ public interface BoKAuto {
     }
 
 
-    static final float WHITE_LINE = 0.4f;
+    static final float WHITE_LINE = 0.3f;
     static final float LINE_EDGE = 0.25f;
     static final double LEFT_POWER_LINE_FOLLOW = 0.2;
     static final double RIGHT_POWER_LINE_FOLLOW = 0.225;

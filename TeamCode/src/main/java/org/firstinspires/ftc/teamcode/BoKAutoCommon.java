@@ -222,7 +222,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
     // underlying drive train implementation
     protected boolean runToWhite(LinearOpMode opMode, BoKHardwareBot robot,
                                  double waitForSec) {
-        double current_alpha = 0, distance;
+        double current_alpha = 0, distance = 0;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -231,14 +231,14 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
             // go to white line
             current_alpha = robot.odsSensor.getLightDetected();
-            distance = robot.rangeSensor.cmUltrasonic();
+            //distance = robot.rangeSensorLeft.cmUltrasonic();
             runTime.reset();
 
             Log.v("BOK", "AlphaW " + String.format("%.2f", current_alpha) + " d: " + distance);
             while (opMode.opModeIsActive() &&
                     (current_alpha < WHITE_LINE) && (runTime.seconds() < waitForSec)) {
 
-                distance = robot.rangeSensor.cmUltrasonic();
+                //distance = robot.rangeSensorLeft.cmUltrasonic();
                 current_alpha = robot.odsSensor.getLightDetected();
 
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
@@ -298,20 +298,20 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                             boolean left,
                                             double distanceToWall)
     {
-        double alpha, distance;
+        double alpha, distance = 0;
         float delta;
 
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            distance = robot.rangeSensor.cmUltrasonic();
+            //distance = robot.rangeSensorLeft.cmUltrasonic();
             alpha = robot.odsSensor.getLightDetected();
             Log.v("BOK", "Line follower " + distance + " a: " + String.format("%.2f", alpha));
 
             while (opMode.opModeIsActive() && (distance > distanceToWall)) {
                 double left_power, right_power;
-                distance = robot.rangeSensor.cmUltrasonic();
+                //distance = robot.rangeSensorLeft.cmUltrasonic();
                 alpha = robot.odsSensor.getLightDetected();
 
                 if (left) {
@@ -348,8 +348,8 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
             Log.v("BOK", "Line Final: " + String.format("%.2f",
                     robot.odsSensor.getLightDetected()) + " gyro: " +
-                    robot.gyroSensor.getIntegratedZValue() + " d: " +
-                    robot.rangeSensor.cmUltrasonic());
+                    robot.gyroSensor.getIntegratedZValue() + " d: " );//+
+                    //robot.rangeSensorLeft.cmUltrasonic());
         } // if (opModeIsActive())
     }
 
@@ -358,7 +358,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                                 double waitForSec)
     {
         boolean picIsVisible = false, foundBeacon = false, imgProcessed = false;
-        double distance;
+        double distance = 0;
 
         if (opMode.opModeIsActive()) {
             /** Start tracking the data sets we care about. */
@@ -366,7 +366,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/3, -RIGHT_MOTOR_POWER/3);
-            distance = robot.rangeSensor.cmUltrasonic();
+            //distance = robot.rangeSensorLeft.cmUltrasonic();
 
             Log.v("BOK", "Go back!");
             runTime.reset();
@@ -375,7 +375,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
                 if (distance <= MIN_DISTANCE_FOR_IMAGE) {
                     opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-                    distance = robot.rangeSensor.cmUltrasonic();
+                    //distance = robot.rangeSensorLeft.cmUltrasonic();
                     continue;
                 }
                 opMode.sleep(SLEEP_250_MS);
@@ -509,22 +509,22 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                             Log.v("BOK", beac.getName() + " Right: RED");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
                                                 robot.pusherRightServo.setPosition(
-                                                      BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
                                             }
                                             else {
                                                 robot.pusherLeftServo.setPosition(
-                                                      BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
                                             }
                                         }
                                         else {
                                             Log.v("BOK",beac.getName() + " RIGHT: BLUE");
                                             if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
                                                 robot.pusherLeftServo.setPosition(
-                                                      BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
                                             }
                                             else {
                                                 robot.pusherRightServo.setPosition(
-                                                      BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
                                             }
                                         }
                                     } // if roi is within the window
@@ -559,12 +559,12 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                   double targetDistance,
                                   double waitForSec)
     {
-        double distance;
+        double distance = 0;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToDTMotors(-LEFT_MOTOR_POWER, -RIGHT_MOTOR_POWER);
-            distance = robot.rangeSensor.cmUltrasonic();
+            //distance = robot.rangeSensorLeft.cmUltrasonic();
             runTime.reset();
 
             Log.v("BOK", "goBackward: " + distance);
@@ -572,11 +572,11 @@ public abstract class BoKAutoCommon implements BoKAuto {
             while (opMode.opModeIsActive() &&
                     (distance < targetDistance) &&
                     (runTime.seconds() < waitForSec)) {
-                distance = robot.rangeSensor.cmUltrasonic();
+                //distance = robot.rangeSensorLeft.cmUltrasonic();
 
                 //opMode.telemetry.addData("BOK", "distance: " + distance);
                 //opMode.telemetry.update();
-                distance = robot.rangeSensor.cmUltrasonic();
+                //distance = robot.rangeSensorLeft.cmUltrasonic();
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
                 //Log.v("BOK", "goBwd: " + distance);
             } // while (opModeIsActive())
@@ -589,13 +589,13 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                    double targetDistance,
                                    double waitForSec)
     {
-        double distance, current_alpha;
+        double distance = 0, current_alpha;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToDTMotors(LEFT_MOTOR_POWER/2.5, RIGHT_MOTOR_POWER/2.5);
 
-            distance = robot.rangeSensor.cmUltrasonic();
+            //distance = robot.rangeSensorLeft.cmUltrasonic();
             current_alpha = robot.odsSensor.getLightDetected();
             runTime.reset();
 
@@ -604,9 +604,9 @@ public abstract class BoKAutoCommon implements BoKAuto {
             // stop when near the white line and the distance < target distance
             while (opMode.opModeIsActive() &&
                     ((distance > targetDistance) &&
-                     (current_alpha <= WHITE_LINE)) &&
-                     (runTime.seconds() < waitForSec)) {
-                distance = robot.rangeSensor.cmUltrasonic();
+                            (current_alpha <= WHITE_LINE)) &&
+                    (runTime.seconds() < waitForSec)) {
+                //distance = robot.rangeSensorLeft.cmUltrasonic();
                 current_alpha = robot.odsSensor.getLightDetected();
 
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
@@ -623,13 +623,13 @@ public abstract class BoKAutoCommon implements BoKAuto {
                                        double targetDistance,
                                        double waitForSec)
     {
-        double distance;
+        double distance = 0;
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToDTMotors(LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2);
 
-            distance = robot.rangeSensor.cmUltrasonic();
+            //distance = robot.rangeSensorLeft.cmUltrasonic();
             runTime.reset();
 
             Log.v("BOK", "goForward: " + distance + ", ang: " +
@@ -638,7 +638,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
             while (opMode.opModeIsActive() &&
                     (distance > targetDistance) &&
                     (runTime.seconds() < waitForSec)) {
-                distance = robot.rangeSensor.cmUltrasonic();
+                //distance = robot.rangeSensorLeft.cmUltrasonic();
 
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
                 //Log.v("BOK", "goFwd: " + distance + " alpha: " + current_alpha +
