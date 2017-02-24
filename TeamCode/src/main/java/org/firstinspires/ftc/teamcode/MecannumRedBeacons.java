@@ -23,6 +23,7 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
     public void runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
         //double shooterMotorsPower = getShooterMotorsPowerBasedOnBatteryLevel(robot);
+        moveForward(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, 15, 4);
         alignToWall(opMode,robot,30.0,10.0);
         //robot.gyroSensor.resetZAxisIntegrator();
 
@@ -31,7 +32,7 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
         runToWhiteSideways(opMode, robot, 5.0);
 
         // detect beacom color
-        detectBeaconColor(opMode, robot);
+        detectBeaconColor(opMode, robot, 2.0);
 
     }
 
