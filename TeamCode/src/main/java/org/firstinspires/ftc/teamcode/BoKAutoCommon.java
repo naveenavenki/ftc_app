@@ -169,9 +169,9 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
             robot.setPowerToDTMotors(0, 0); // Do not move the robot
             //robot.partLiftGateServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_PART_GATE);
-            robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO);
-            robot.setPowerToShooterMotors(shooterMotorsPower);
-            robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);
+            //robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO);
+            //robot.setPowerToShooterMotors(shooterMotorsPower);
+            //robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_NORMAL);
             runTime.reset();
 
             // run until we either press STOP or run out of time
@@ -181,8 +181,8 @@ public abstract class BoKAutoCommon implements BoKAuto {
                 opMode.telemetry.update();
             } // while (opModeIsActive())
 
-            robot.setPowerToShooterMotors(0.0f); // stop the ball shooter
-            robot.sweeperMotor.setPower(0.0f); // stop the sweeper
+            //robot.setPowerToShooterMotors(0.0f); // stop the ball shooter
+            //robot.sweeperMotor.setPower(0.0f); // stop the sweeper
         } // if (opModeIsActive())
     }
 

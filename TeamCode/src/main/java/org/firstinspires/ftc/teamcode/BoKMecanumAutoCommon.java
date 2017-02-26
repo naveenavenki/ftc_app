@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -27,6 +28,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
@@ -185,15 +187,18 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
             else
                 rightSpeed = Range.clip(rightSpeed, -TURN_SPEED_HIGH, -TURN_SPEED_LOW);
 
-            leftSpeed   = -rightSpeed;
+            leftSpeed   = rightSpeed;
         }
 
         // Send desired speeds to motors.
-        robot.setPowerToDTMotors(leftSpeed, -leftSpeed, -rightSpeed, rightSpeed);
+        if (right)
+            robot.setPowerToDTMotors(0, 0, -rightSpeed, -rightSpeed);
+        else
+            robot.setPowerToDTMotors(leftSpeed, leftSpeed, 0, 0);
 
         //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
         //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
-        // String.format("%5.2f", rightSpeed));
+        //  String.format("%5.2f", rightSpeed));
         return onTarget;
     }
 
@@ -248,8 +253,117 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
         }
     }
 
+    public void slideSideways (LinearOpMode opMode, BoKHardwareBot robot,
+                                   double leftPower, double rightPower,
+                                   boolean right, double waitForSec){
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+            if (right) {
+                robot.setPowerToDTMotors(+leftPower, -leftPower,
+                        +rightPower, -rightPower);
+            }
+            else {
+                robot.setPowerToDTMotors(-leftPower, +leftPower,
+                        -rightPower, +rightPower);
+            }
+            opMode.idle();
+
+            runTime.reset();
+            while (opMode.opModeIsActive() &&
+                    (runTime.seconds() < waitForSec)) {
+
+
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                //Log.v("BOK", "ALPHAW " + String.format("%.2f", current_alpha));
+                // distance + " sec: " + String.format("%.2f", runTime.seconds()));
+            } // while (current_alpha < WHITE_LINE)
+
+            robot.setPowerToDTMotors(0.0f, 0.0f, 0.0f, 0.0f); // stop the robot
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_LONG);
+
+        } // if (opModeIsActive())
+    }
+
+    public void runParallelToWall (LinearOpMode opMode, BoKHardwareBot robot,
+                               double leftPower, double rightPower, double distanceToWall,
+                               boolean right, double waitForSec){
+        byte[] rangeLeft;
+        double current_alpha = 0, distance = 0;
+
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+            if (right) {
+                robot.setPowerToDTMotors(+leftPower, -leftPower,
+                        +rightPower, -rightPower);
+            }
+            else {
+                robot.setPowerToDTMotors(-leftPower, +leftPower,
+                        -rightPower, +rightPower);
+            }
+            opMode.idle();
+
+            runTime.reset();
+            rangeLeft = robot.rsLeftReader.read(0x04, 2);
+            distance = rangeLeft[0] & 0xFF;
+            current_alpha = robot.odsSensor.getLightDetected();
+
+            Log.v("BOK", "RunParallel " + String.format("%.2f", current_alpha) + " d: " + distance);
+
+            while (opMode.opModeIsActive() &&
+                    (current_alpha < WHITE_LINE) && (runTime.seconds() < waitForSec)) {
+                double error;
+                current_alpha = robot.odsSensor.getLightDetected();
+                rangeLeft = robot.rsLeftReader.read(0x04, 2);
+                distance = rangeLeft[0] & 0xFF;
+
+                error = distanceToWall - distance;
+                if (Math.abs(error) <= HEADING_THRESHOLD) {
+                    if (right) {
+                        robot.setPowerToDTMotors(+leftPower, -leftPower,
+                                +rightPower, -rightPower);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-leftPower, +leftPower,
+                                -rightPower, +rightPower);
+                    }
+                }
+                else {
+                    double steer = getSteer(error, P_TURN_COEFF);
+
+                    double rightSpeed  = rightPower * steer;
+                    if (rightSpeed > 0)
+                        rightSpeed = Range.clip(rightSpeed, 0, 1);
+                    else
+                        rightSpeed = Range.clip(rightSpeed, -1, 0);
+
+                    if (right) {
+                        robot.setPowerToDTMotors(+rightSpeed, -leftPower,
+                                +rightPower, -rightSpeed);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-rightSpeed, +leftPower,
+                                -rightPower, +rightSpeed);
+                    }
+                    Log.v("BOK", "RunParS " + String.format("%.2f", rightSpeed) +
+                            distance + " left: " + String.format("%.2f", leftPower));
+                }
+
+
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                Log.v("BOK", "RunPar " + String.format("%.2f", current_alpha) +
+                    distance + " sec: " + String.format("%.2f", runTime.seconds()));
+            } // while (current_alpha < WHITE_LINE)
+
+            Log.v("BOK", "RunPar Final " + String.format("%.2f", current_alpha) +
+                    distance + " sec: " + String.format("%.2f", runTime.seconds()));
+            robot.setPowerToDTMotors(0.0f, 0.0f, 0.0f, 0.0f); // stop the robot
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_LONG);
+
+        } // if (opModeIsActive())
+    }
+
     // Algorithm that uses Vuforia to move the robot back till the image of the beacon is visible
-    protected boolean detectBeaconColor(LinearOpMode opMode, BoKHardwareBot robot,
+    protected boolean detectBeaconColor(LinearOpMode opMode, BoKHardwareBot robot, int beacon,
                                                 double waitForSec)
     {
         boolean picIsVisible = false, foundBeacon = false, imgProcessed = false;
@@ -289,80 +403,108 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
                                 Image rgb = frame.getImage(i);
                                 /*rgb is now the Image object that we’ve used in the video*/
                                 if (rgb != null) {
-                                    picIsVisible = foundBeacon = imgProcessed = true;
+                                    picIsVisible = imgProcessed = true;
                                     boolean foundRed = false;
                                     int p, nRedPixels = 0;
                                     int numPixels = 90*50;
+                                    Rect roi = null;
+                                    String fname = String.format("/sdcard/FIRST/myImage%d.png", beacon);
                                     Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
                                             Bitmap.Config.RGB_565);
                                     bm.copyPixelsFromBuffer(rgb.getPixels());
 
                                     Mat img = new Mat(rgb.getHeight(), rgb.getWidth(),
                                             CvType.CV_8UC3);
+                                    Log.v("BOK", "imgT0: " + img.type());
                                     Utils.bitmapToMat(bm, img);
+                                    Log.v("BOK", "imgT1: " + img.type());
 
-                                    Mat hist = new Mat();
-                                    MatOfInt histSize = new MatOfInt(180);
-                                    MatOfFloat ranges = new MatOfFloat(0f, 180f);
-                                    Mat mask = new Mat(img.rows(), img.cols(),
-                                            CvType.CV_8UC1, new Scalar(0));
-                                    float[] resFloat = new float[180];
+                                    Mat pattern = Imgcodecs.imread("/sdcard/FIRST/pattern.png");
+                                    Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
 
-                                    //Log.v("BOK", "Saving image");
-                                    //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
+                                    Log.v("BOK", "img: " + img.depth() + ", pat: " + pattern.depth());
+                                    Log.v("BOK", "imgT2: " + img.type() + ", pat: " + pattern.type());
+                                    Log.v("BOK", "imgD: " + img.dims() + ", pat: " + pattern.dims());
+                                    Mat result = new Mat(img.width() - pattern.width()+1, img.height() - pattern.height() + 1, CvType.CV_8U);
+                                    Imgproc.matchTemplate(img, pattern, result, Imgproc.TM_CCOEFF_NORMED);
+                                    Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1, new Mat());
+                                    Imgproc.threshold(result, result, 0.8, 1.0, Imgproc.THRESH_TOZERO);
 
-                                    // OpenCV only deals with BGR
-                                    Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
-                                    Rect roi = new Rect(560, 24, 90, 50);
-                                    Imgproc.rectangle(img, new Point(roi.x, roi.y),
-                                            new Point(roi.x + 90, roi.y + 50),
-                                            new Scalar(255, 255, 255));
-                                    //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
-                                    Mat subMask = mask.submat(roi);
-                                    subMask.setTo(new Scalar(255));
+                                    while(true) {
+                                        Core.MinMaxLocResult mmr = Core.minMaxLoc(result);
 
-                                    Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2HSV);
-                                    Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0),
-                                            mask, hist, histSize, ranges);
-                                    //Imgcodecs.imwrite("/sdcard/FIRST/myImageH.png", img);
-                                    //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
-                                    hist.get(0, 0, resFloat);
-
-                                    // Red is 0 (in HSV),
-                                    // but we need to check between 160-179 and 0-9
-                                    for (p = 0; p < 10; p++) {
-                                        nRedPixels += (int) resFloat[p];
-                                    }
-                                    for (p = 160; p < 180; p++) {
-                                        nRedPixels += (int) resFloat[p];
+                                        if (mmr.maxVal >= 0.8) {
+                                            // / Show me what you got
+                                            // Use mmr.minLoc.x and y when using TM_SQRDIFF or TM_SQRDIFF_NORMED
+                                            Log.v("BOK", "x: " + mmr.maxLoc.x + ", " + mmr.maxLoc.y);
+                                            roi = new Rect((int)mmr.maxLoc.x - 50, (int)mmr.maxLoc.y, 50, 50);
+                                            foundBeacon = true;
+                                            break;
+                                        }
+                                        else
+                                            break;
                                     }
 
-                                    if (nRedPixels >= (numPixels/2))
-                                        foundRed = true;
+                                    if (foundBeacon) {
 
-                                    if (foundRed == true) {
-                                        Log.v("BOK", beac.getName() + " Right: RED");
-                                        if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
-                                            robot.pusherRightServo.setPosition(
-                                                    BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
+                                        Mat hist = new Mat();
+                                        MatOfInt histSize = new MatOfInt(180);
+                                        MatOfFloat ranges = new MatOfFloat(0f, 180f);
+                                        Mat mask = new Mat(img.rows(), img.cols(),
+                                                CvType.CV_8UC1, new Scalar(0));
+                                        float[] resFloat = new float[180];
+
+                                        //Log.v("BOK", "Saving image");
+                                        //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
+
+                                        // OpenCV only deals with BGR
+                                        Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
+                                        Imgproc.rectangle(img, new Point(roi.x, roi.y),
+                                                new Point(roi.x + 50, roi.y + 50),
+                                                new Scalar(255, 255, 255));
+                                        Imgcodecs.imwrite(fname, img);
+                                        Mat subMask = mask.submat(roi);
+                                        subMask.setTo(new Scalar(255));
+
+                                        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2HSV);
+                                        Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0),
+                                                mask, hist, histSize, ranges);
+                                        //Imgcodecs.imwrite("/sdcard/FIRST/myImageH.png", img);
+                                        //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
+                                        hist.get(0, 0, resFloat);
+
+                                        // Red is 0 (in HSV),
+                                        // but we need to check between 160-179 and 0-9
+                                        for (p = 0; p < 10; p++) {
+                                            nRedPixels += (int) resFloat[p];
                                         }
-                                        else {
-                                            robot.pusherLeftServo.setPosition(
-                                                    BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                        for (p = 160; p < 180; p++) {
+                                            nRedPixels += (int) resFloat[p];
+                                        }
+
+                                        if (nRedPixels >= (numPixels / 2))
+                                            foundRed = true;
+
+                                        if (foundRed == true) {
+                                            Log.v("BOK", beac.getName() + " Right: RED");
+                                            if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
+                                                robot.pusherRightServo.setPosition(
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
+                                            } else {
+                                                robot.pusherLeftServo.setPosition(
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                            }
+                                        } else {
+                                            Log.v("BOK", beac.getName() + " RIGHT: BLUE");
+                                            if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
+                                                robot.pusherLeftServo.setPosition(
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
+                                            } else {
+                                                robot.pusherRightServo.setPosition(
+                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
+                                            }
                                         }
                                     }
-                                    else {
-                                        Log.v("BOK",beac.getName() + " RIGHT: BLUE");
-                                        if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
-                                            robot.pusherLeftServo.setPosition(
-                                                    BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
-                                        }
-                                        else {
-                                            robot.pusherRightServo.setPosition(
-                                                    BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
-                                        }
-                                    }
-
                                 } // if (rgb != null)
                                 break;
                             }//if (rgb != null)
@@ -370,9 +512,9 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
                         frame.close();
                         break;
                     } // rawPose != null
-                    else {
-                        Log.v("BOK", "null");
-                    }
+                    //else {
+                    //    Log.v("BOK", "null");
+                    //}
                 } // for beacons
                 if ((picIsVisible == true) && (foundBeacon == true) && (imgProcessed == true)){
                     //robot.setPowerToMotors(0, 0);
@@ -496,15 +638,15 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
             else
                 rightSpeed = Range.clip(rightSpeed, -TURN_SPEED_HIGH, -TURN_SPEED_LOW);
 
-            leftSpeed   = -rightSpeed;
+            leftSpeed   = rightSpeed;
         }
 
         // Send desired speeds to motors.
-        robot.setPowerToDTMotors(leftSpeed, -leftSpeed, -rightSpeed, rightSpeed);
+        robot.setPowerToDTMotors(-leftSpeed, -leftSpeed, -rightSpeed, -rightSpeed);
 
-        Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
-        Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
-              String.format("%5.2f", rightSpeed));
+        //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
+        //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
+        //      String.format("%5.2f", rightSpeed));
         return onTarget;
     }
 

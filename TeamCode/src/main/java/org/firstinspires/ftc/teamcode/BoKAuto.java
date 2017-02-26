@@ -19,7 +19,7 @@ public interface BoKAuto {
     static final double LEFT_POWER_LINE_FOLLOW = 0.2;
     static final double RIGHT_POWER_LINE_FOLLOW = 0.225;
 
-    static final float LEFT_MOTOR_POWER = 0.65f;
+    static final float LEFT_MOTOR_POWER = 0.5f;
     static final float RIGHT_MOTOR_POWER = 0.5f;
 
     static final double WAIT_FOR_SEC_SHOOTER = 5.0;

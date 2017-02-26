@@ -145,8 +145,8 @@ public class BoK4MotorsDTBot extends BoKHardwareBot {
         int leftFrontCurrentPos = leftFront.getCurrentPosition();
         int rightFrontCurrentPos = rightFront.getCurrentPosition();
 
-        Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " +
-                     rightFrontCurrentPos + ", " + rightFront.isBusy());
+        //Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " +
+        //             rightFrontCurrentPos + ", " + rightFront.isBusy());
 
         if (leftPositive) {
             if ((leftFrontCurrentPos >= currentLeftTarget) ||
