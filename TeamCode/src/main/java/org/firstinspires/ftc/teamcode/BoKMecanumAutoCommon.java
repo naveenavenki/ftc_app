@@ -459,9 +459,9 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
 
                                         // OpenCV only deals with BGR
                                         Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
-                                        Imgproc.rectangle(img, new Point(roi.x, roi.y),
-                                                new Point(roi.x + 50, roi.y + 50),
-                                                new Scalar(255, 255, 255));
+                                        //Imgproc.rectangle(img, new Point(roi.x, roi.y),
+                                        //        new Point(roi.x + 50, roi.y + 50),
+                                        //        new Scalar(255, 255, 255));
                                         Imgcodecs.imwrite(fname, img);
                                         Mat subMask = mask.submat(roi);
                                         subMask.setTo(new Scalar(255));

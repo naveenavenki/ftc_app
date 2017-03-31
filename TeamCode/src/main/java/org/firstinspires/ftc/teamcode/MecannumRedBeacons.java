@@ -30,23 +30,23 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
         // Move forward using encoders
 
         moveForward(opMode, robot,
-                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
-                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
+                LEFT_MOTOR_POWER,
+                RIGHT_MOTOR_POWER, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
 
         robot.gyroSensor.resetZAxisIntegrator();
         gyroTurn(opMode, robot,LEFT_MOTOR_POWER, INITIAL_TURN_ANGLE);
 
         moveForward(opMode, robot,
-                LEFT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD,
-                RIGHT_MOTOR_POWER/POWER_REDUCTION_FACTOR_FWD, MOVE_FORWARD_TO_LINE, FOUR_SECONDS);
+                LEFT_MOTOR_POWER,
+                RIGHT_MOTOR_POWER, MOVE_FORWARD_TO_LINE, FOUR_SECONDS);
 
         gyroTurn(opMode, robot,LEFT_MOTOR_POWER, TURN_ANGLE_TO_WHITE);
 
-        alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
-        alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
+        alignToWall(opMode, robot, 32.0, RIGHT_MOTOR_POWER/2, true, 4);
+        alignToWall(opMode, robot, 32.0, LEFT_MOTOR_POWER/2, false, 4);
 
-        alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
-        alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
+        //alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
+        //alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
 
         //alignToWall(opMode,robot,30.0,10.0);
         //opMode.sleep(100);
