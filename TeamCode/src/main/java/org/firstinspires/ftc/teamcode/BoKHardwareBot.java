@@ -67,17 +67,20 @@ public abstract class BoKHardwareBot {
     protected Servo pusherRightServo;
     //protected Servo clawLockServo;
     //protected Servo partLiftGateServo;
-
-    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.65;
-    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.65;
-    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.35;
-    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.85;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.08;
+    protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.06;
+    protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.85;
+    protected static final double FINAL_SERVO_POS_PUSHER_LEFT    = 0.35;
     protected static final double INITIAL_SERVO_POS_PUSHER_RIGHT = 0.3;
     protected static final double FINAL_SERVO_POS_PUSHER_RIGHT   = 0.8;
     protected static final double INITIAL_SERVO_POS_CAP_CLAW     = 0.9;
     protected static final double FINAL_SERVO_POS_CAP_CLAW       = 0.5;
     protected static final double INITIAL_SERVO_POS_PART_GATE    = 0.0;
-    protected static final double FINAL_SERVO_POS_PART_GATE      = 0.84;
+    protected static final double FINAL_SERVO_POS_PART_GATE      = 0.65;
+    protected static final double INITIAL_SERVO_POS_CAP_BALL     = 0.9;
+    protected static final double FINAL_SERVO_POS_CAP_BALL       = 0.1;
+
+
 
     //shooter motors, sweeper motor, and cap ball lift motor
     private DcMotor leftShooterMotor;

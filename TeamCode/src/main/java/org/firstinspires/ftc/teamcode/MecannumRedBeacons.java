@@ -25,7 +25,7 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
         double shooterMotorsPower = getShooterMotorsPowerBasedOnBatteryLevel(robot);
 
         // First shoot the two balls by turning on the sweeper and the ball shooter
-        shootBall(opMode, robot, shooterMotorsPower, WAIT_FOR_SEC_SHOOTER);
+        //shootBall(opMode, robot, shooterMotorsPower, WAIT_FOR_SEC_SHOOTER);
 
         // Move forward using encoders
 
@@ -42,30 +42,30 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
 
         gyroTurn(opMode, robot,LEFT_MOTOR_POWER, TURN_ANGLE_TO_WHITE);
 
-        alignToWall(opMode, robot, 32.0, RIGHT_MOTOR_POWER/2, true, 4);
-        alignToWall(opMode, robot, 32.0, LEFT_MOTOR_POWER/2, false, 4);
+        alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
+        alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
 
         //alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
         //alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
 
         //alignToWall(opMode,robot,30.0,10.0);
         //opMode.sleep(100);
-        runToWhiteSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, true, 5.0);
+        //runToWhiteSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, true, 5.0);
 
         // detect beacom color
-        detectBeaconColor(opMode, robot, 0, 2.0);
+        //detectBeaconColor(opMode, robot, 0, 2.0);
 
-        slideSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, false, 3);
+        //slideSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, false, 3);
 
         //runParallelToWall(opMode, robot, LEFT_MOTOR_POWER/2, RIGHT_MOTOR_POWER/2, 30, true, 5);
-        alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
-        alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
+        //alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
+        //alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
 
-        alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
-        alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
+        //alignToWall(opMode, robot, 30.0, RIGHT_MOTOR_POWER/2, true, 4);
+        //alignToWall(opMode, robot, 30.0, LEFT_MOTOR_POWER/2, false, 4);
 
-        runToWhiteSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, false, 5.0);
-        detectBeaconColor(opMode, robot, 1, 2.0);
+        //runToWhiteSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, false, 5.0);
+        //detectBeaconColor(opMode, robot, 1, 2.0);
     }
 
 }
