@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.view.SurfaceView;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,9 +25,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.AppUtil;
 import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
@@ -47,7 +50,7 @@ import java.util.Arrays;
  * 2. initialize OpenCV
  * 3. set up servos and DC motors for autonomous
  */
-public abstract class BoKAutoCommon implements BoKAuto {
+public abstract class BoKAutoCommon implements BoKAuto, CameraBridgeViewBase.CvCameraViewListener2{
     protected AppUtil appUtil = AppUtil.getInstance();
 
     protected BoKAlliance alliance;
@@ -66,21 +69,50 @@ public abstract class BoKAutoCommon implements BoKAuto {
     protected static final double TURN_SPEED_LOW  = 0.16;
     protected static final double TURN_SPEED_HIGH = 0.2;
 
-    protected VuforiaTrackables beacons;
+    //protected VuforiaTrackables beacons;
+    protected CameraBridgeViewBase mOpenCvCameraView;
+    protected Mat                  mRgba;
     protected ElapsedTime runTime  = new ElapsedTime();
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity()) {
         @Override
         public void onManagerConnected(int status) {
-            super.onManagerConnected(status);
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.v("BOK", "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
         }
     };
+
+    public void onCameraViewStarted(int width, int height) {
+        mRgba = new Mat(height, width, CvType.CV_8UC4);
+    }
+
+    public void onCameraViewStopped() {
+        mRgba.release();
+    }
+
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        mRgba = inputFrame.rgba();
+        return mRgba;
+
+    }
 
     @Override
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
 
         Log.v("BOK", "Initializing OpenCV");
         // Initialize OpenCV
+        mOpenCvCameraView = (CameraBridgeViewBase) appUtil.getActivity().findViewById(R.id.beacon_color_detect_view);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setCvCameraViewListener(this);
         if (!OpenCVLoader.initDebug()) {
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0,
                     appUtil.getActivity(), loaderCallback);
@@ -108,8 +140,8 @@ public abstract class BoKAutoCommon implements BoKAuto {
 */
         alliance = redOrBlue;
 
-        Log.v("BOK", "Initializing Vuforia");
-
+        //Log.v("BOK", "Initializing Vuforia");
+/*
         // Initialize Vuforia
         VuforiaLocalizer.Parameters parameters =
                 new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
@@ -132,6 +164,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
         beacons.get(3).setName("Gears");
 
         Log.v("BOK", "Done initializing Vuforia");
+        */
     }
 
     @Override
@@ -140,7 +173,9 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
     public void exitSoftware()
     {
-        beacons.deactivate();
+        //beacons.deactivate();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
     }
 
     // Algorithm to control the speed for shooter motors based on battery level
@@ -366,7 +401,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
 
         if (opMode.opModeIsActive()) {
             /** Start tracking the data sets we care about. */
-            beacons.activate();
+            //beacons.activate();
 
             //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerToDTMotors(-LEFT_MOTOR_POWER/3, -RIGHT_MOTOR_POWER/3);
@@ -385,9 +420,10 @@ public abstract class BoKAutoCommon implements BoKAuto {
                 opMode.sleep(SLEEP_250_MS);
 
                 //Log.v("BOK", "Img: " + runTime.seconds());
-                for (VuforiaTrackable beac : beacons) {
+                /*for (VuforiaTrackable beac : beacons)*/ {
                     //OpenGLMatrix pose =
                     // ((VuforiaTrackableDefaultListener) beac.getListener()).getPose();
+                    /*
                     VuforiaTrackableDefaultListener listener =
                             (VuforiaTrackableDefaultListener)beac.getListener();
                     OpenGLMatrix rawPose = listener.getRawUpdatedPose();
@@ -431,7 +467,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
                         for (int i = 0; i < numImages; i++) {
                             if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
                                 Image rgb = frame.getImage(i);
-                                /*rgb is now the Image object that we’ve used in the video*/
+                                //rgb is now the Image object that we’ve used in the video
                                 if (rgb != null) {
                                     Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
                                             Bitmap.Config.RGB_565);
@@ -540,6 +576,7 @@ public abstract class BoKAutoCommon implements BoKAuto {
                         frame.close();
                         break;
                     } // rawPose != null
+                    */
                 } // for beacons
                 if ((picIsVisible == true) && (foundBeacon == true) && (imgProcessed == true)){
                     //robot.setPowerToMotors(0, 0);

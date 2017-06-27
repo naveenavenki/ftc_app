@@ -28,7 +28,7 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
         //shootBall(opMode, robot, shooterMotorsPower, WAIT_FOR_SEC_SHOOTER);
 
         // Move forward using encoders
-
+/*
         moveForward(opMode, robot,
                 LEFT_MOTOR_POWER,
                 RIGHT_MOTOR_POWER, MOVE_FORWARD_FROM_WALL, TWO_SECONDS);
@@ -50,10 +50,10 @@ public class MecannumRedBeacons extends BoKMecanumAutoCommon {
 
         //alignToWall(opMode,robot,30.0,10.0);
         //opMode.sleep(100);
-        //runToWhiteSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, true, 5.0);
-
+        runToWhiteSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, true, 5.0);
+*/
         // detect beacom color
-        //detectBeaconColor(opMode, robot, 0, 2.0);
+        detectBeaconColor(opMode, robot, 0, 2.0);
 
         //slideSideways(opMode, robot, LEFT_MOTOR_POWER, RIGHT_MOTOR_POWER, false, 3);
 

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.view.SurfaceView;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.AppUtil;
 import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -33,6 +35,8 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -40,7 +44,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Krishna Saxena on 11/15/2016.
@@ -56,8 +62,8 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
     public void initSoftware(LinearOpMode opMode, BoKHardwareBot robot, BoKAlliance redOrBlue) {
         super.initSoftware(opMode, robot, redOrBlue);
 
-        beacons.activate();
-        Log.v("BOK", "Done initializing Vuforia");
+        //beacons.activate();
+        //Log.v("BOK", "Done initializing Vuforia");
     }
 
     // Algorithm to move forward using encoder sensor on the DC motors on the drive train
@@ -366,171 +372,106 @@ public abstract class BoKMecanumAutoCommon extends BoKAutoCommon {
     protected boolean detectBeaconColor(LinearOpMode opMode, BoKHardwareBot robot, int beacon,
                                                 double waitForSec)
     {
-        boolean picIsVisible = false, foundBeacon = false, imgProcessed = false;
         double distance = 0;
 
         if (opMode.opModeIsActive()) {
             /** Start tracking the data sets we care about. */
-            beacons.activate();
+            //beacons.activate();
 
             //distance = robot.rangeSensorLeft.cmUltrasonic();
 
             Log.v("BOK", "detectBeaconColor!");
             runTime.reset();
             // run until the end of the match (driver presses STOP)
-            while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
+            //while (opMode.opModeIsActive() && (runTime.seconds() < waitForSec)) {
+                List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+                Mat image = new Mat();
+                boolean foundImage = false, foundRed = false;
+                //Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2HSV);
+                //Size sz = new Size(3, 3);
+                //Imgproc.blur(image, image, sz);
+                Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_BGR2RGB);
+                Imgcodecs.imwrite("/sdcard/FIRST/myImage0.png", mRgba);
+                Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_RGB2BGR);
 
-                Log.v("BOK", "Img: " + runTime.seconds());
-                for (VuforiaTrackable beac : beacons) {
-                    //OpenGLMatrix pose =
-                    // ((VuforiaTrackableDefaultListener) beac.getListener()).getPose();
-                    VuforiaTrackableDefaultListener listener =
-                            (VuforiaTrackableDefaultListener)beac.getListener();
-                    OpenGLMatrix rawPose = listener.getRawUpdatedPose();
-                    if (rawPose != null) {
-                        VuforiaLocalizer.CloseableFrame frame;
-                        // takes the frame at the head of the queue
-                        try {
-                            frame = vuforiaFTC.getFrameQueue().take();
-                        } catch (InterruptedException e) {
-                            break;
+                Core.inRange(mRgba, new Scalar(0, 0, 0), new Scalar(30, 30, 30), image);
+                Mat kernel = new Mat(10, 10, CvType.CV_8UC1, new Scalar(1));
+
+                Imgproc.morphologyEx(image, image, Imgproc.MORPH_OPEN, kernel);
+                Imgproc.findContours(image, contours, new Mat(), Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_NONE);
+                Log.v("BOK", "Contours: " + contours.size());
+                for (int i = 0; i < contours.size(); i++) {
+                    Point center= new Point(0, 0);
+                    float[] radius = new float[2];
+                    MatOfPoint2f contour2f = new MatOfPoint2f( contours.get(i).toArray() );
+                    Imgproc.minEnclosingCircle(contour2f, center, radius);
+                    //System.out.println(center);
+                    if ((center.x >= 350) && (center.x <= 420) && (center.y >= 100) && (center.y <= 200)) {
+                        foundImage = true;
+                        //if((radius[0] < 50) && (radius[0] > 20))
+                        Imgproc.circle(image,center, (int)radius[0], new Scalar(255,255,255), 2);
+                        //if (false) {
+                        Mat hist = new Mat();
+                        MatOfInt histSize = new MatOfInt(180);
+                        MatOfFloat ranges = new MatOfFloat(0f, 180f);
+
+                        Rect roi = new Rect((int)(center.x - 100), (int)(center.y - 10), 50, 50);
+                        Mat subImg = mRgba.submat(roi);
+                        int p, nRedPixels = 0, numPixels = 50*50;
+                        Imgproc.rectangle(image, new Point(roi.x, roi.y),
+                                new Point(roi.x + 50, roi.y + 50),
+                                new Scalar(255, 255, 255));
+                        Mat mask = new Mat(subImg.rows(), subImg.cols(),
+                                CvType.CV_8UC1, new Scalar(255));
+                        float[] resFloat = new float[180];
+
+                        //Log.v("BOK", "Saving image");
+                        //Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2RGB);
+                        Imgcodecs.imwrite("/sdcard/FIRST/myImage1.png", image);
+
+                        //Mat subMask = mask.submat(roi);
+                        //subMask.setTo(new Scalar(255));
+
+                        Imgproc.cvtColor(subImg, subImg, Imgproc.COLOR_BGR2HSV);
+                        Imgproc.calcHist(Arrays.asList(subImg), new MatOfInt(0),
+                                mask, hist, histSize, ranges);
+                        //Imgcodecs.imwrite("/sdcard/FIRST/myImageH.png", img);
+                        //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
+                        hist.get(0, 0, resFloat);
+                        // String filename = "C:/Users/shiv/Documents/Images/subimg.png";
+                        // System.out.println(String.format("Writing %s", filename));
+                        // Imgcodecs.imwrite(filename, subImg);
+
+                        for (p = 0; p < 180; p++) if (resFloat[p] > 0) Log.v("BOK", "p: " + p + ": " + resFloat[p]);
+                        // Red is 0 (in HSV),
+                        // but we need to check between 160-179 and 0-9
+                        for (p = 0; p < 10; p++) {
+                            nRedPixels += (int) resFloat[p];
                         }
-                        Log.v("BOK", "Img processing: " + String.format("%.2f", runTime.seconds()));
+                        for (p = 160; p < 180; p++) {
+                            nRedPixels += (int) resFloat[p];
+                        }
 
-                        long numImages = frame.getNumImages();
-                        for (int i = 0; i < numImages; i++) {
-                            if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-                                Image rgb = frame.getImage(i);
-                                /*rgb is now the Image object that we’ve used in the video*/
-                                if (rgb != null) {
-                                    picIsVisible = imgProcessed = true;
-                                    boolean foundRed = false;
-                                    int p, nRedPixels = 0;
-                                    int numPixels = 90*50;
-                                    Rect roi = null;
-                                    String fname = String.format("/sdcard/FIRST/myImage%d.png", beacon);
-                                    Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
-                                            Bitmap.Config.RGB_565);
-                                    bm.copyPixelsFromBuffer(rgb.getPixels());
-
-                                    Mat img = new Mat(rgb.getHeight(), rgb.getWidth(),
-                                            CvType.CV_8UC3);
-                                    Log.v("BOK", "imgT0: " + img.type());
-                                    Utils.bitmapToMat(bm, img);
-                                    Log.v("BOK", "imgT1: " + img.type());
-
-                                    Mat pattern = Imgcodecs.imread("/sdcard/FIRST/pattern.png");
-                                    Imgproc.cvtColor(img, img, Imgproc.COLOR_RGBA2RGB);
-
-                                    Log.v("BOK", "img: " + img.depth() + ", pat: " + pattern.depth());
-                                    Log.v("BOK", "imgT2: " + img.type() + ", pat: " + pattern.type());
-                                    Log.v("BOK", "imgD: " + img.dims() + ", pat: " + pattern.dims());
-                                    Mat result = new Mat(img.width() - pattern.width()+1, img.height() - pattern.height() + 1, CvType.CV_8U);
-                                    Imgproc.matchTemplate(img, pattern, result, Imgproc.TM_CCOEFF_NORMED);
-                                    Core.normalize(result, result, 0, 1, Core.NORM_MINMAX, -1, new Mat());
-                                    Imgproc.threshold(result, result, 0.8, 1.0, Imgproc.THRESH_TOZERO);
-
-                                    while(true) {
-                                        Core.MinMaxLocResult mmr = Core.minMaxLoc(result);
-
-                                        if (mmr.maxVal >= 0.8) {
-                                            // / Show me what you got
-                                            // Use mmr.minLoc.x and y when using TM_SQRDIFF or TM_SQRDIFF_NORMED
-                                            Log.v("BOK", "x: " + mmr.maxLoc.x + ", " + mmr.maxLoc.y);
-                                            roi = new Rect((int)mmr.maxLoc.x - 50, (int)mmr.maxLoc.y, 50, 50);
-                                            foundBeacon = true;
-                                            break;
-                                        }
-                                        else
-                                            break;
-                                    }
-
-                                    if (foundBeacon) {
-
-                                        Mat hist = new Mat();
-                                        MatOfInt histSize = new MatOfInt(180);
-                                        MatOfFloat ranges = new MatOfFloat(0f, 180f);
-                                        Mat mask = new Mat(img.rows(), img.cols(),
-                                                CvType.CV_8UC1, new Scalar(0));
-                                        float[] resFloat = new float[180];
-
-                                        //Log.v("BOK", "Saving image");
-                                        //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
-
-                                        // OpenCV only deals with BGR
-                                        Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
-                                        //Imgproc.rectangle(img, new Point(roi.x, roi.y),
-                                        //        new Point(roi.x + 50, roi.y + 50),
-                                        //        new Scalar(255, 255, 255));
-                                        Imgcodecs.imwrite(fname, img);
-                                        Mat subMask = mask.submat(roi);
-                                        subMask.setTo(new Scalar(255));
-
-                                        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2HSV);
-                                        Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0),
-                                                mask, hist, histSize, ranges);
-                                        //Imgcodecs.imwrite("/sdcard/FIRST/myImageH.png", img);
-                                        //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
-                                        hist.get(0, 0, resFloat);
-
-                                        // Red is 0 (in HSV),
-                                        // but we need to check between 160-179 and 0-9
-                                        for (p = 0; p < 10; p++) {
-                                            nRedPixels += (int) resFloat[p];
-                                        }
-                                        for (p = 160; p < 180; p++) {
-                                            nRedPixels += (int) resFloat[p];
-                                        }
-
-                                        if (nRedPixels >= (numPixels / 2))
-                                            foundRed = true;
-
-                                        if (foundRed == true) {
-                                            Log.v("BOK", beac.getName() + " Right: RED");
-                                            if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
-                                                robot.pusherRightServo.setPosition(
-                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
-                                            } else {
-                                                robot.pusherLeftServo.setPosition(
-                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
-                                            }
-                                        } else {
-                                            Log.v("BOK", beac.getName() + " RIGHT: BLUE");
-                                            if (alliance == BoKAlliance.BOK_ALLIANCE_RED) {
-                                                robot.pusherLeftServo.setPosition(
-                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_LEFT);
-                                            } else {
-                                                robot.pusherRightServo.setPosition(
-                                                        BoKHardwareBot.FINAL_SERVO_POS_PUSHER_RIGHT);
-                                            }
-                                        }
-                                    }
-                                } // if (rgb != null)
-                                break;
-                            }//if (rgb != null)
-                        }//for (int i = 0; i < numImages; i++)
-                        frame.close();
+                        if (nRedPixels >= (numPixels / 2))
+                            foundRed = true;
                         break;
-                    } // rawPose != null
-                    //else {
-                    //    Log.v("BOK", "null");
-                    //}
-                } // for beacons
-                if ((picIsVisible == true) && (foundBeacon == true) && (imgProcessed == true)){
-                    //robot.setPowerToMotors(0, 0);
-                    //robot.waitForTick(METRONOME_TICK);
-                    Log.v("BOK", "Stopping " + String.format("%.2f", runTime.seconds()) +
-                            robot.gyroSensor.getIntegratedZValue());
-                    break;
+                        //}
+                    }
+
+                }
+            //Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2RGB);
+            Imgcodecs.imwrite("/sdcard/FIRST/myImage2.png", image);
+
+                if (foundImage) {
+                    if (foundRed) Log.v("BOK", "RED!!");
+                    else Log.v("BOK", "BLUE!!");
                 }
 
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-            } // while (opMode.isOpModeActive)
-            Log.v("BOK", "Go back Final: " + String.format("%.2f", runTime.seconds()) +
+            //} // while (opMode.isOpModeActive)
+            Log.v("BOK", "detectBeaconColor: " + String.format("%.2f", runTime.seconds()) +
                     robot.gyroSensor.getIntegratedZValue());
-            robot.setPowerToDTMotors(0, 0);
         }
-        return ((picIsVisible == true) && (foundBeacon == true) && (imgProcessed == true));
+        return true;
     }
 
     // Algorithm to go back from wall using the range sensor

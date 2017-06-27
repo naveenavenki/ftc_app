@@ -65,8 +65,8 @@ public abstract class BoKHardwareBot {
     protected Servo shooterServo;
     protected Servo pusherLeftServo;
     protected Servo pusherRightServo;
-    //protected Servo clawLockServo;
-    //protected Servo partLiftGateServo;
+    protected Servo clawLockServo;
+    protected Servo partLiftGateServo;
     protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.08;
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.06;
     protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.85;
@@ -86,7 +86,7 @@ public abstract class BoKHardwareBot {
     private DcMotor leftShooterMotor;
     private DcMotor rightShooterMotor;
     protected DcMotor sweeperMotor;
-   // protected DcMotor capLiftMotor;
+    protected DcMotor capLiftMotor;
 
     protected static final double SHOOTER_MOTORS_POWER_NORMAL = 0.8;
     protected static final double SWEEPER_MOTOR_POWER_NORMAL  = 0.95;
@@ -195,7 +195,7 @@ public abstract class BoKHardwareBot {
         if (sweeperMotor == null) {
             return BoKStatus.BOK_FAILURE;
         }
-/*
+
         capLiftMotor = opMode.hardwareMap.dcMotor.get(MOTOR_CAP_LIFT_CFG);
         if (capLiftMotor == null) {
             return BoKStatus.BOK_FAILURE;
@@ -210,7 +210,7 @@ public abstract class BoKHardwareBot {
         if (partLiftGateServo == null) {
             return BoKStatus.BOK_FAILURE;
         }
-*/
+
         voltageSensor = opMode.hardwareMap.voltageSensor.get(MOTOR_CTRL_UP_RIGHT_CFG);
         if (voltageSensor == null) {
             return BoKStatus.BOK_FAILURE;
@@ -222,7 +222,7 @@ public abstract class BoKHardwareBot {
         sweeperMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         // reverse the right particle shooter motor
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        //capLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        capLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         return BoKStatus.BOK_SUCCESS;
     }
