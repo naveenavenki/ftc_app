@@ -43,6 +43,7 @@ public abstract class BoKHardwareBot {
     private static final String MOTOR_SWEEPER_CFG       = "sw";
     private static final String MOTOR_CAP_LIFT_CFG      = "lift";
     private static final String SERVO_CAP_LIFT_CFG      = "lifts";
+    private static final String SERVO_CAP_BALL_CFG      = "caps";
     private static final String SERVO_PART_LIFT_GATE_CFG= "gate";
     private static final String MOTOR_CTRL_UP_RIGHT_CFG = "Motor Controller Up Right";
 
@@ -67,6 +68,8 @@ public abstract class BoKHardwareBot {
     protected Servo pusherRightServo;
     protected Servo clawLockServo;
     protected Servo partLiftGateServo;
+    protected Servo capBallServo;
+
     protected static final double INITIAL_SHOOTER_SERVO_POS_TELEOP    = 0.08;
     protected static final double INITIAL_SHOOTER_SERVO_POS_AUTO      = 0.06;
     protected static final double INITIAL_SERVO_POS_PUSHER_LEFT  = 0.85;
@@ -211,6 +214,11 @@ public abstract class BoKHardwareBot {
             return BoKStatus.BOK_FAILURE;
         }
 
+        capBallServo = opMode.hardwareMap.servo.get(SERVO_CAP_BALL_CFG);
+        if (capBallServo == null) {
+            return BoKStatus.BOK_FAILURE;
+        }
+
         voltageSensor = opMode.hardwareMap.voltageSensor.get(MOTOR_CTRL_UP_RIGHT_CFG);
         if (voltageSensor == null) {
             return BoKStatus.BOK_FAILURE;
@@ -223,6 +231,7 @@ public abstract class BoKHardwareBot {
         // reverse the right particle shooter motor
         rightShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         capLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        capLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         return BoKStatus.BOK_SUCCESS;
     }

@@ -134,10 +134,10 @@ public abstract class BoKAutoCommon implements BoKAuto, CameraBridgeViewBase.CvC
         robot.pusherRightServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PUSHER_RIGHT);
 
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_AUTO-0.1);
-        /*
         robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
         robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
-*/
+        robot.capBallServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_BALL);
+
         alliance = redOrBlue;
 
         //Log.v("BOK", "Initializing Vuforia");

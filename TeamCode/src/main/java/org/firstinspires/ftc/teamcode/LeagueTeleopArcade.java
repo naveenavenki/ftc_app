@@ -44,6 +44,7 @@ public class LeagueTeleopArcade implements BoKTeleop {
         robot.pusherRightServo.setPosition(posRightPusher);
         robot.clawLockServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_CLAW);
         robot.partLiftGateServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_PART_GATE);
+        robot.capBallServo.setPosition(BoKHardwareBot.INITIAL_SERVO_POS_CAP_BALL);
 
         // set the initial position of the shooter servo
         robot.shooterServo.setPosition(BoKHardwareBot.INITIAL_SHOOTER_SERVO_POS_TELEOP);
@@ -148,8 +149,11 @@ public class LeagueTeleopArcade implements BoKTeleop {
              * right_trigger: raise the cap-ball lift (must keep it pressed)
              * left_trigger: lower the cap-ball lift (must keep it pressed)
              */
-            if (opMode.gamepad2.dpad_left || opMode.gamepad2.dpad_right){
+            if (opMode.gamepad2.dpad_left){
                 robot.sweeperMotor.setPower(BoKHardwareBot.SWEEPER_MOTOR_POWER_REVERSE);
+            }
+            if (opMode.gamepad2.dpad_right){
+                robot.capBallServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_CAP_BALL);
             }
 
             if (opMode.gamepad2.dpad_down){
@@ -189,8 +193,8 @@ public class LeagueTeleopArcade implements BoKTeleop {
                     goForBeacon = false;
             }
 
-            if (opMode.gamepad1.x) {
-                //robot.clawLockServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_CAP_CLAW);
+            if (opMode.gamepad1.x && opMode.gamepad1.left_bumper) {
+                robot.clawLockServo.setPosition(BoKHardwareBot.FINAL_SERVO_POS_CAP_CLAW);
                 driveDirection = -1.0;
                 endGame = true;
             }
