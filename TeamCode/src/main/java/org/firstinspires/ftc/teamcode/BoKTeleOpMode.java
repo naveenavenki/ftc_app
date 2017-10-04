@@ -3,13 +3,14 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 /**
  * Created by Krishna Saxena on 10/3/2017.
  * Registers the opMode with the driver station.
  * It uses BoKMecanumDT and BoKTele objects
  */
-@Autonomous(name="BoK Teleop", group="BoKTele")
+@TeleOp(name="BoK Teleop", group="BoKTele")
 //@Disabled
 public class BoKTeleOpMode extends LinearOpMode
 {
