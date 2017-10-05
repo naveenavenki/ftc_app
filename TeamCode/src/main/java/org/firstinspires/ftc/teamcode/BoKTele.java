@@ -21,9 +21,6 @@ public class BoKTele
 
     public BoKTeleStatus initSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
-        // In teleop, do NOT use encoder
-        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         // Reset the initial position of the servos
 
         return BoKTeleStatus.BOK_TELE_SUCCESS;

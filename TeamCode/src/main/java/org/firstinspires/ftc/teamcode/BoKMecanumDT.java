@@ -12,10 +12,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class BoKMecanumDT extends BoKHardwareBot
 {
     // CONSTANTS
-    // 280 cycles per revolution (CPR); It is a quadrature encoder producing 4 Pulses per Cycle.
-    // With 280 CPR, it outputs 1120 PPR. AndyMark 40 Motor Encoder
+    // 134.4 cycles per revolution (CPR); It is a quadrature encoder producing 4 Pulses per Cycle.
+    // With 134.4 CPR, it outputs 537.6 PPR. AndyMark Orbital 20 Motor Encoder
     // For 360 degrees wheel turn, motor shaft moves 480 degrees (approx)
-    private static final double   COUNTS_PER_MOTOR_REV    = 1120;
+    private static final double   COUNTS_PER_MOTOR_REV    = 537.6;
     private static final double   DRIVE_GEAR_REDUCTION    = 1.33;
     private static final double   WHEEL_DIAMETER_INCHES   = 4.0;
     private static final int DISTANCE_THRESHOLD           = 10;
@@ -31,14 +31,6 @@ public class BoKMecanumDT extends BoKHardwareBot
     private DcMotor leftFront;
     private DcMotor rightBack;
     private DcMotor rightFront;
-
-    // Encoder variables
-    private int currentLeftTarget;
-    private int currentRightTarget;
-    private boolean leftPositive;
-    private boolean rightPositive;
-    private boolean leftReached;
-    private boolean rightReached;
 
     LinearOpMode opMode; // current opMode
 
@@ -71,6 +63,7 @@ public class BoKMecanumDT extends BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
+        setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         //leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -125,28 +118,25 @@ public class BoKMecanumDT extends BoKHardwareBot
         return (BoKMecanumDT.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
     }
 
+    public void resetDTEncoders()
+    {
+        // all four motors need encoder wires to use RUN_TO_POSITION
+        setModeForDTMotors(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setModeForDTMotors(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
     private void setDTMotorEncoderTarget(int leftTarget, int rightTarget)
     {
-        // We are NOT using RUN_USING_ENCODER or RUN_TO_POSITION
-        setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        int currentLeftTarget = leftFront.getCurrentPosition() + leftTarget;
+        int currentRightTarget = rightFront.getCurrentPosition() + rightTarget;
 
-        leftReached = rightReached = false;
+        leftFront.setTargetPosition(currentLeftTarget);
+        leftBack.setTargetPosition(currentLeftTarget);
+        rightFront.setTargetPosition(currentRightTarget);
+        rightBack.setTargetPosition(currentRightTarget);
 
-        currentLeftTarget = leftFront.getCurrentPosition() + leftTarget;
-        currentRightTarget = rightFront.getCurrentPosition() + rightTarget;
-
-        opMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
-        //opMode.idle();
-
-        if (leftTarget > 0)
-            leftPositive = true;
-        else
-            leftPositive = false;
-
-        if (rightTarget > 0)
-            rightPositive = true;
-        else
-            rightPositive = false;
+        // Turn On RUN_TO_POSITION
+        setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
 
         Log.v("BOK", "START: " + leftFront.getCurrentPosition() +", " + currentLeftTarget + ", " +
                 rightFront.getCurrentPosition() + ", " + currentRightTarget);
@@ -155,63 +145,39 @@ public class BoKMecanumDT extends BoKHardwareBot
     /*
      * move() method: setup the robot to move encoder counts
      */
-    public void move(double leftPower,
-                     double rightPower,
-                     double inches,
-                     boolean forward)
+    public void startMove(double leftPower,
+                          double rightPower,
+                          double inches,
+                          boolean forward)
     {
         double targetEncCount = getTargetEncCount(inches);
         if (forward) {
-            setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
+            setDTMotorEncoderTarget((int) targetEncCount, (int) -targetEncCount);
             setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
         }
         else {
-            setDTMotorEncoderTarget((int) targetEncCount, (int) -targetEncCount);
+            setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
             setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
         }
     }
 
-    /*
-     * getDTCurrentPosition() method: Returns true if target encoder count is reached
-     */
-    public boolean getDTCurrentPosition()
+    public void stopMove()
     {
-        int leftFrontCurrentPos = leftFront.getCurrentPosition();
-        int rightFrontCurrentPos = rightFront.getCurrentPosition();
+        // Stop all motion;
+        setPowerToDTMotors(0, 0, 0, 0);
+        // Turn off RUN_TO_POSITION
+        setModeForDTMotors(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
 
-        //Log.v("BOK", "Current " + leftFrontCurrentPos + ", " + leftFront.isBusy() + ", " +
-        //             rightFrontCurrentPos + ", " + rightFront.isBusy());
-
-        if (leftPositive) {
-            if ((leftFrontCurrentPos >= currentLeftTarget) ||
-                    (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD)) {
-                Log.v("BOK", "Left position reached +ve!!");
-                leftReached = true;
-            }
-        }
-        else {
-            if ((leftFrontCurrentPos <= currentLeftTarget) ||
-                    (Math.abs(leftFrontCurrentPos - currentLeftTarget) <= DISTANCE_THRESHOLD)) {
-                Log.v("BOK", "Left position reached -ve!!");
-                leftReached = true;
-            }
-        }
-
-        if (rightPositive) {
-            if ((rightFrontCurrentPos >= currentRightTarget) ||
-                    (Math.abs(rightFrontCurrentPos - currentRightTarget) <= DISTANCE_THRESHOLD)) {
-                Log.v("BOK", "Right position reached +ve!!");
-                rightReached = true;
-            }
-        }
-        else {
-            if ((rightFrontCurrentPos <= currentRightTarget) ||
-                    (Math.abs(rightFrontCurrentPos - currentRightTarget) <= DISTANCE_THRESHOLD)) {
-                Log.v("BOK", "Right position reached -ve!!");
-                rightReached = true;
-            }
-        }
-
-        return rightReached && leftReached;
+    public boolean areDTMotorsBusy()
+    {
+        Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
+                ", RF " + rightFront.getCurrentPosition() +
+                ", LB " + leftBack.getCurrentPosition() +
+                ", RB " + rightBack.getCurrentPosition());
+        return (leftFront.isBusy() &&
+                rightFront.isBusy() &&
+                leftBack.isBusy() &&
+                rightBack.isBusy());
     }
 }

@@ -57,7 +57,9 @@ public abstract class BoKHardwareBot
     protected abstract BoKHardwareStatus initDriveTrainMotors(LinearOpMode opMode);
 
     // Using the drive train is public
-    public abstract void setModeForDTMotors(DcMotor.RunMode runMode);
+    public abstract void resetDTEncoders();
+    public abstract boolean areDTMotorsBusy();
+
     //public abstract void setPowerToDTMotors(double leftPower, double rightPower);
     public abstract void setPowerToDTMotors(double leftFrontPower,
                                             double leftBackPower,
@@ -65,12 +67,12 @@ public abstract class BoKHardwareBot
                                             double rightBackPower);
 
     // Autonomous driving
-    public abstract void move(double leftPower,
-                              double rightPower,
-                              double inches,
-                              boolean forward);
+    public abstract void startMove(double leftPower,
+                                   double rightPower,
+                                   double inches,
+                                   boolean forward);
 
-    public abstract boolean getDTCurrentPosition();
+    public abstract void stopMove();
 
     /*
      *
