@@ -18,7 +18,6 @@ public class BoKMecanumDT extends BoKHardwareBot
     private static final double   COUNTS_PER_MOTOR_REV    = 537.6;
     private static final double   DRIVE_GEAR_REDUCTION    = 1.33;
     private static final double   WHEEL_DIAMETER_INCHES   = 4.0;
-    private static final int DISTANCE_THRESHOLD           = 10;
 
     // CONSTANTS (strings from the robot config)
     private static final String LEFT_BACK_MOTOR_NAME   = "lb";
@@ -27,10 +26,10 @@ public class BoKMecanumDT extends BoKHardwareBot
     private static final String RIGHT_FRONT_MOTOR_NAME = "rf";
 
     // Drive train motors
-    private DcMotor leftBack;
-    private DcMotor leftFront;
-    private DcMotor rightBack;
-    private DcMotor rightFront;
+    public DcMotor leftBack;
+    public DcMotor leftFront;
+    public DcMotor rightBack;
+    public DcMotor rightFront;
 
     LinearOpMode opMode; // current opMode
 

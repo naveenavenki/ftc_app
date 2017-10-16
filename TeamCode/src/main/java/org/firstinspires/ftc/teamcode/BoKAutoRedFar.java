@@ -10,6 +10,9 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     @Override
     public void runSoftware()
     {
-        // move forward
+        // detect Vuforia image
+        getCryptoColumn();
+        // setup flicker
+        setJewelFlicker();
     }
 }

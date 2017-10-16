@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.vuforia.Image;
 import com.vuforia.Matrix34F;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Tool;
@@ -28,6 +30,16 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.Arrays;
 
@@ -43,12 +55,18 @@ import java.util.Arrays;
 public abstract class BoKAutoCommon implements BoKAuto
 {
     protected AppUtil appUtil = AppUtil.getInstance();
+    private VuforiaLocalizer vuforiaFTC;
+    private VuforiaTrackable relicTemplate;
+    private VuforiaTrackables relicTrackables;
 
     protected ElapsedTime runTime  = new ElapsedTime();
 
     protected BoKAllianceColor alliance; // BOK_ALLIANCE_RED or BOK_ALLIANCE_BLUE
     protected LinearOpMode opMode;  // save a copy of the current opMode and robot
     protected BoKHardwareBot robot;
+
+    protected RelicRecoveryVuMark cryptoColumn;
+    protected boolean foundRedOnLeft;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity())
     {
@@ -80,9 +98,6 @@ public abstract class BoKAutoCommon implements BoKAuto
          * To start up Vuforia, tell it the view that we wish to use for camera monitor (on the
          * RC phone); If no camera monitor is desired, use the parameterless constructor instead.
          */
-        VuforiaLocalizer vuforiaFTC;
-        VuforiaTrackable relicTemplate;
-        boolean vuMarkVisible = false;
         int cameraMonitorViewId =
                 opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId",
                         "id", opMode.hardwareMap.appContext.getPackageName());
@@ -101,9 +116,33 @@ public abstract class BoKAutoCommon implements BoKAuto
          * in this data set: all three of the VuMarks in the game were created from this one
          * template, but differ in their instance id information.
          */
-        VuforiaTrackables relicTrackables = vuforiaFTC.loadTrackablesFromAsset("RelicVuMark");
+        relicTrackables = vuforiaFTC.loadTrackablesFromAsset("RelicVuMark");
         relicTemplate = relicTrackables.get(0);
 
+        //robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        alliance = redOrBlue;
+
+        Log.v("BOK", "Done initializing software");
+
+        this.opMode = opMode;
+        this.robot = robot;
+
+        //robot.resetDTEncoders(); // prepare for autonomous
+        return BoKAutoStatus.BOK_AUTO_SUCCESS;
+    }
+
+    String format(OpenGLMatrix transformationMatrix)
+    {
+        return (transformationMatrix != null) ? transformationMatrix.formatAsTransform() : "null";
+    }
+
+    @Override
+    public abstract void runSoftware();
+
+    public void getCryptoColumn()
+    {
+        boolean vuMarkVisible = false;
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
         // activate
         relicTrackables.activate();
         runTime.reset();
@@ -115,7 +154,7 @@ public abstract class BoKAutoCommon implements BoKAuto
              * UNKNOWN, LEFT, CENTER, and RIGHT. When a VuMark is visible, something other than
              * UNKNOWN will be returned by RelicRecoveryVuMark from VuforiaTrackable.
              */
-            RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+            vuMark = RelicRecoveryVuMark.from(relicTemplate);
             if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
 
                 /* Found an instance of the template. In the actual game, you will probably
@@ -159,7 +198,76 @@ public abstract class BoKAutoCommon implements BoKAuto
 
                     Log.v("BOK", "Center: " + (int)pointCenter.getData()[0] +
                             ", " + (int)pointCenter.getData()[1]);
-                    
+
+                    long numImages = frame.getNumImages();
+                    for (int i = 0; i < numImages; i++) {
+                        if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                            Image rgb = frame.getImage(i);
+                            /*rgb is now the Image object that we’ve used in the video*/
+                            if (rgb != null) {
+                                Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
+                                        Bitmap.Config.RGB_565);
+                                bm.copyPixelsFromBuffer(rgb.getPixels());
+
+                                Mat img = new Mat(rgb.getHeight(), rgb.getWidth(),
+                                        CvType.CV_8UC3);
+                                Utils.bitmapToMat(bm, img);
+
+                                Mat hist = new Mat();
+                                MatOfInt histSize = new MatOfInt(180);
+                                MatOfFloat ranges = new MatOfFloat(0f, 180f);
+                                Mat mask = new Mat(img.rows(), img.cols(),
+                                        CvType.CV_8UC1, new Scalar(0));
+                                float[] resFloat = new float[180];
+
+                                Log.v("BOK", "Saving image");
+                                Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
+                                Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
+
+
+                                // OpenCV only deals with BGR
+
+                                Rect roi = new Rect(505, 540, 95, 100);
+                                Imgproc.rectangle(img, new Point(roi.x, roi.y),
+                                        new Point(roi.x + 95, roi.y + 100),
+                                        new Scalar(255, 255, 255));
+                                //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
+                                Mat subMask = mask.submat(roi);
+                                subMask.setTo(new Scalar(255));
+
+                                Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2HSV);
+                                Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0),
+                                        mask, hist, histSize, ranges);
+                                //Imgcodecs.imwrite("/sdcard/FIRST/myImageH.png", img);
+                                //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
+                                hist.get(0, 0, resFloat);
+
+                                int p, nRedPixels = 0, numPixels = 95*100;
+                                // Red is 0 (in HSV),
+                                // but we need to check between 160-179 and 0-9
+                                for (p = 0; p < 10; p++) {
+                                    nRedPixels += (int) resFloat[p];
+                                }
+                                for (p = 160; p < 180; p++) {
+                                    nRedPixels += (int) resFloat[p];
+                                }
+
+                                boolean foundRed = false;
+                                foundRedOnLeft = false;
+                                if (nRedPixels >= (numPixels / 2))
+                                    foundRed = true;
+
+                                Log.v("BOK", "numPixels: " + nRedPixels + ", " + numImages);
+                                if (foundRed == true) {
+                                    foundRedOnLeft = true;
+                                    Log.v("BOK", "Left is RED");
+                                } else {
+                                    Log.v("BOK", "Left is BLUE");
+                                }
+                            }
+                            break;
+                        } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
+                    } // for (int i = 0; i < numImages; i++)
                     frame.close();
                 } // if (pose != null)
                 relicTrackables.deactivate();
@@ -169,25 +277,15 @@ public abstract class BoKAutoCommon implements BoKAuto
                 // Log.v("BOK", "VuMark not visible");
             }
         } // while (!vuMarkVisible)
-
-        //robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        alliance = redOrBlue;
-
-        Log.v("BOK", "Done initializing software");
-
-        this.opMode = opMode;
-        this.robot = robot;
-
-        robot.resetDTEncoders(); // prepare for autonomous
-        return BoKAutoStatus.BOK_AUTO_SUCCESS;
+        cryptoColumn = vuMark;
+        Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
     }
 
-    String format(OpenGLMatrix transformationMatrix) {
-        return (transformationMatrix != null) ? transformationMatrix.formatAsTransform() : "null";
+    public void setJewelFlicker()
+    {
+        robot.jewelFlicker.setPosition(robot.JF_FINAL);
+        robot.jewelArm.setPosition(robot.JA_FINAL);
     }
-    @Override
-    public abstract void runSoftware();
-
     // Algorithm to move forward using encoder sensor on the DC motors on the drive train
     protected void move(double leftPower,
                         double rightPower,

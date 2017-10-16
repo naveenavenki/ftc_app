@@ -11,7 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class BoKTele
 {
+    private BoKGlyphArm arm;
     private static final double GAME_STICK_DEAD_ZONE      = 0.05;
+    private int uaTarget = -1;
 
     public enum BoKTeleStatus
     {
@@ -21,6 +23,7 @@ public class BoKTele
 
     public BoKTeleStatus initSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
+        arm = new BoKGlyphArm(robot);
         // Reset the initial position of the servos
 
         return BoKTeleStatus.BOK_TELE_SUCCESS;
@@ -37,6 +40,90 @@ public class BoKTele
             /*
              * Gamepad 2 controls
              */
+
+            if(opMode.gamepad2.right_trigger > 0.1) {
+
+                robot.turnTable.setPower(opMode.gamepad2.right_trigger);
+
+            }
+            else {
+
+                robot.turnTable.setPower(0.0);
+
+            }
+
+            if (opMode.gamepad2.left_trigger > 0.1) {
+
+                robot.turnTable.setPower(-opMode.gamepad2.left_trigger);
+
+            }
+            else {
+
+                robot.turnTable.setPower(0.0);
+
+            }
+/*
+            if (opMode.gamepad2.dpad_up) {
+
+                robot.upperArm.setPower(0.2);
+            }
+            else if(opMode.gamepad2.dpad_down){
+
+                robot.upperArm.setPower(-0.1);
+            }
+            else {
+
+                robot.upperArm.setPower(0);
+                robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
+*/
+            if (opMode.gamepad2.left_stick_y < -0.2) {
+                if (uaTarget == -1) {
+                    uaTarget = arm.moveUpperArm(30.0, 0.3);
+                }
+            }
+            if (opMode.gamepad2.left_stick_y > 0.2) {
+                if (uaTarget == -1) {
+                    uaTarget = arm.moveUpperArm(-30.0, 0.3);
+                }
+            }
+            if (uaTarget != -1) {
+                int pos = robot.upperArm.getCurrentPosition();
+                int diff = (uaTarget <= 0) ? Math.abs(uaTarget) - Math.abs(pos) :
+                        uaTarget - pos;
+                Log.v("BOK", pos + ", " + diff);
+                if (!robot.upperArm.isBusy()) {
+                    robot.upperArm.setPower(0);
+                    robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                    uaTarget = -1;
+                }
+            }
+            if(opMode.gamepad2.right_stick_y < -0.2){
+
+                arm.increaseClawWristPos();
+                //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
+            }
+
+            if(opMode.gamepad2.right_stick_y > 0.2){
+
+                arm.decreaseClawWristPos();
+                //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
+            }
+
+            if(opMode.gamepad2.b){
+
+                arm.setClawGrabOpen ();
+                //Log.v("BOK","CLAWOPEN");
+
+            }
+
+            if(opMode.gamepad2.a){
+
+                arm.setClawGrabClose();
+                //Log.v("BOK","CLAWCLOSED");
+
+            }
+
         }
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
