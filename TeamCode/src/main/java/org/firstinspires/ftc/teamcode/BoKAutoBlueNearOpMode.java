@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  * It uses BoKMecanumDT and BoKAutoBlueNear objects
  */
 @Autonomous(name="BoK Auto BLUE Near", group="BoKBlue")
-@Disabled
+//@Disabled
 public class BoKAutoBlueNearOpMode extends LinearOpMode
 {
     @Override

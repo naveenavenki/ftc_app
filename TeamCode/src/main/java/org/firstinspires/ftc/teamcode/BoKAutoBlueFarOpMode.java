@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  * It uses BoKMecanumDT and BoKAutoBlueFar objects
  */
 @Autonomous(name="BoK Auto BLUE Far", group="BoKBlue")
-@Disabled
+//@Disabled
 public class BoKAutoBlueFarOpMode extends LinearOpMode
 {
     @Override

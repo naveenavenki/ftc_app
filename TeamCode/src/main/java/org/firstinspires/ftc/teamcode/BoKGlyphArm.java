@@ -49,7 +49,7 @@ public class BoKGlyphArm {
         return target;
     }
 
-    public void increaseClawWristPos()
+    public void increaseClawWristPos(double stick_y)
     {
         double pos = robot.clawWrist.getPosition();
 
@@ -57,24 +57,24 @@ public class BoKGlyphArm {
 
         }
         else {
-            robot.clawWrist.setPosition(pos + 0.001);
+            robot.clawWrist.setPosition(pos - stick_y/100);
         }
     }
 
-    public void decreaseClawWristPos()
+    public void decreaseClawWristPos(double stick_y)
     {
         double pos = robot.clawWrist.getPosition();
 
         if(pos < 0.1) {
         }
         else {
-            robot.clawWrist.setPosition(pos - 0.001);
+            robot.clawWrist.setPosition(pos - stick_y/100);
         }
     }
 
     public void setClawGrabOpen(){
 
-        robot.clawGrab.setPosition(0);
+        robot.clawGrab.setPosition(0.25);
     }
 
     public void setClawGrabClose(){
