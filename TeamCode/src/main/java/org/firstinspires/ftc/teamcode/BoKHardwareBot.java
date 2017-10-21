@@ -4,7 +4,9 @@ import com.qualcomm.hardware.motors.TetrixMotor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -17,11 +19,12 @@ public abstract class BoKHardwareBot
 
     protected static final double CW_INIT = 1;
     protected static final double CG_INIT = 0;
-    protected static final double JA_INIT = 0;
+    protected static final double CG_MID = 0.25;
+    protected static final double JA_INIT = 0.04;
     protected static final double JF_INIT = 0.75;
     protected static final double JF_FINAL = 0.4;
-    protected static final double JA_MID = 0.5;
-    protected static final double JA_FINAL = 1;
+    protected static final double JA_MID = 0.35;
+    protected static final double JA_FINAL = 0.5;
 
 
 
@@ -46,6 +49,7 @@ public abstract class BoKHardwareBot
 
 
     // Sensors
+    DigitalChannel flickerTouch;
 
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();
@@ -109,16 +113,28 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
+        flickerTouch = opMode.hardwareMap.get(DigitalChannel.class, "ft");
+        if(flickerTouch == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
         clawWrist.setPosition(CW_INIT);
         clawGrab.setPosition(CG_INIT);
         jewelArm.setPosition(JA_INIT);
         jewelFlicker.setPosition(JF_INIT);
 
-
         upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
         upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+
+        //turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        flickerTouch.setMode(DigitalChannel.Mode.INPUT);
         return BoKHardwareStatus.BOK_HARDWARE_SUCCESS;
     }
 
