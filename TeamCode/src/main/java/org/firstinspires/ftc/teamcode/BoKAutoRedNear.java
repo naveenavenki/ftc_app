@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -36,14 +38,38 @@ public class BoKAutoRedNear extends BoKAutoCommon
         //raise the flicker again
         robot.jewelArm.setPosition(robot.JA_INIT);
 
+        opMode.sleep(1000);
+
+        robot.jewelFlicker.setPosition(robot.JF_HIT_CRYPTO);
+
+    //    opMode.sleep(1000);
         robot.resetDTEncoders();
+        robot.startMove(0.2,0.2,15,true);
+        while (opMode.opModeIsActive() &&
+                (robot.areDTMotorsBusy())) {
+        }
+
+        robot.stopMove();
+
+        robot.jewelArm.setPosition(robot.JA_FINAL);
+
+        opMode.sleep(1000);
+
+        //move forward towards cryptobox
+        hitCryptoWithTouch(true);
+    //    Log.v("BOK", "stop motors");
+
+     /*   robot.resetDTEncoders();
         robot.startMove(0.2,0.2,30,true);
         while (opMode.opModeIsActive() &&
                 (robot.areDTMotorsBusy())) {
         }
 
+
         // Stop all motion;
         robot.stopMove();
+
+        */
 
     }
 }

@@ -311,4 +311,24 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
+    public void hitCryptoWithTouch(boolean forward){
+        ((BoKMecanumDT)robot).setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if(forward){
+            Log.v("BOK", "forward");
+            robot.setPowerToDTMotors(0.15,0.15,-0.15,-0.15);
+            while(opMode.opModeIsActive() &&
+                    robot.flickerTouch.getState() == true){
+                Log.v("BOK", "loop");
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            }
+            robot.setPowerToDTMotors(0,0,0,0);
+        }
+        else{
+            while(robot.flickerTouch.getState() == true){
+                robot.setPowerToDTMotors(0.2, 0.2, -0.2 ,-0.2);
+            }
+        }
+
+    }
+
 }

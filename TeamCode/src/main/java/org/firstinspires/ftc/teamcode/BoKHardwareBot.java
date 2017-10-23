@@ -25,6 +25,7 @@ public abstract class BoKHardwareBot
     protected static final double JF_FINAL = 0.4;
     protected static final double JA_MID = 0.35;
     protected static final double JA_FINAL = 0.5;
+    protected static final double JF_HIT_CRYPTO = 0.25;
 
 
 
