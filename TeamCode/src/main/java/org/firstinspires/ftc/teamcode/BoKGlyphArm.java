@@ -8,16 +8,27 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
- * Created by shiv on 10/6/2017.
+ * Created by Krishna Saxena on 10/6/2017.
  */
 
 public class BoKGlyphArm {
 
     BoKHardwareBot robot;
-    public BoKGlyphArm(BoKHardwareBot robot)
+    LinearOpMode opMode;
+    protected Servo clawWrist;
+    protected Servo clawGrab;
+    
+    public BoKGlyphArm(BoKHardwareBot robot,
+                       LinearOpMode opMode,
+                       Servo clawWrist,
+                       Servo clawGrab)
     {
         this.robot = robot;
+        this.opMode = opMode;
+        this.clawWrist = clawWrist;
+        this.clawGrab = clawGrab;
     }
+    
     private static final double   COUNTS_PER_MOTOR_REV    = 1120;
     private static final double   DRIVE_GEAR_REDUCTION    = 5.0;
 
@@ -27,7 +38,7 @@ public class BoKGlyphArm {
         return (COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
     }
 
-    public int moveUpperArm(double targetAngleDegrees, double power) {
+    public void moveUpperArm(double targetAngleDegrees, double power) {
 
         robot.upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -35,51 +46,50 @@ public class BoKGlyphArm {
         robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         int target = (int) getTargetEncCount(targetAngleDegrees);
         Log.v("BOK", "Target: " + target);
-/*
-        double posD = robot.clawWrist.getPosition();
-        if (target > 0) {
-            robot.clawWrist.setPosition(posD - targetAngleDegrees/180.0);
-        }
-        else {
-            robot.clawWrist.setPosition(posD + targetAngleDegrees/180.0);
-        }
-*/
+
         robot.upperArm.setTargetPosition((int)getTargetEncCount(targetAngleDegrees));
         robot.upperArm.setPower(power);
-        return target;
+        while (opMode.opModeIsActive() &&
+                /*(robot.getDTCurrentPosition() == false) &&*/
+                robot.upperArm.isBusy()) {
+            //opMode.telemetry.update();
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+        robot.upperArm.setPower(0);
+        robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void increaseClawWristPos(double stick_y)
     {
-        double pos = robot.clawWrist.getPosition();
+        double pos = clawWrist.getPosition();
 
         if(pos > robot.CW_INIT) {
 
         }
         else {
-            robot.clawWrist.setPosition(pos - stick_y/100);
+            clawWrist.setPosition(pos - stick_y/100);
         }
     }
 
     public void decreaseClawWristPos(double stick_y)
     {
-        double pos = robot.clawWrist.getPosition();
+        double pos = clawWrist.getPosition();
 
         if(pos < 0.1) {
         }
         else {
-            robot.clawWrist.setPosition(pos - stick_y/100);
+            clawWrist.setPosition(pos - stick_y/100);
         }
     }
 
     public void setClawGrabOpen(){
 
-        robot.clawGrab.setPosition(0.25);
+        clawGrab.setPosition(BoKHardwareBot.CG_MID);
     }
 
     public void setClawGrabClose(){
 
-        robot.clawGrab.setPosition(1);
+        clawGrab.setPosition(BoKHardwareBot.CG_CLOSE);
     }
 
 }

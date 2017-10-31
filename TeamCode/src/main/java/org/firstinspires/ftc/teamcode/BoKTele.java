@@ -4,21 +4,26 @@ import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 
 /**
- * Created by urmanKrishna Saxena on 10/3/2017.
+ * Created by Krishna Saxena on 10/3/2017.
  */
 
 public class BoKTele
 {
-    private BoKGlyphArm arm;
     private static final double GAME_STICK_DEAD_ZONE      = 0.05;
-    private static final double GAME_TRIGGER_DEAD_ZONE      = 0.1;
+    private static final double GAME_TRIGGER_DEAD_ZONE    = 0.1;
     private static final double   COUNTS_PER_MOTOR_REV    = 1120;
 
-    public int tTAngle = 1120;
-    private int tTAngleMax = 1120;
-    private int tTAngleMin = 0;
+    double posOfUpperArm = 0;
+    int tTAngle = 0;
+    double tTDegrees = 90;
+    int tTAngleMax = 0;
+    int tTAngleMin = -1120;
+    int increment = 20;
+    double currentPos;
+    boolean clawClosed = false;
 
     private boolean tank = false;
 
@@ -30,11 +35,9 @@ public class BoKTele
         BOK_TELE_SUCCESS
     }
 
-    public BoKTeleStatus initSoftware(LinearOpMode opMode, BoKHardwareBot robot)
+    public BoKTeleStatus initSoftware(LinearOpMode opMode,
+                                      BoKHardwareBot robot)
     {
-        arm = new BoKGlyphArm(robot);
-        // Reset the initial position of the servos
-
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
@@ -42,125 +45,138 @@ public class BoKTele
     {
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
-            if(opMode.gamepad1.x) {
+            if (opMode.gamepad1.x) {
                 tank = false;
             }
-            if(opMode.gamepad1.b) {
+            if (opMode.gamepad1.b) {
                 tank = true;
             }
-            if(!tank) {
+            if (!tank) {
                 moveRobot(opMode, robot);
-            }
-            else {
+            } else {
                 moveRobotTank(opMode, robot);
             }
 
             /*
              * Gamepad 1 controls
              */
-            if(opMode.gamepad1.y)
-            {
+            if (opMode.gamepad1.y) {
                 speedCoef = 0.2;
             }
-            if(opMode.gamepad1.a)
-            {
+            if (opMode.gamepad1.a) {
                 speedCoef = 0.5;
             }
+            
             /*
              * Gamepad 2 controls
              */
-
-            if(opMode.gamepad2.right_trigger > GAME_TRIGGER_DEAD_ZONE) {
-
-                robot.turnTable.setPower(opMode.gamepad2.right_trigger / 2);
-
-                /*if ((tTAngle++) >= tTAngleMax) {
-                    tTAngle = tTAngleMax;
+            if ((Math.abs(opMode.gamepad2.right_stick_y) >= 0.8) ||
+                    (Math.abs(opMode.gamepad2.right_stick_x) >= 0.8)) {
+                double y = -opMode.gamepad2.right_stick_y;
+                double x = opMode.gamepad2.right_stick_x;
+                double angle = Math.atan2(y, x);
+                angle = (-angle * 180 / Math.PI) + 90;
+                if (angle >= 90 && angle <= 120) {
+                    angle = 90;
+                } else if (angle >= 240 && angle <= 270) {
+                    angle = -90;
                 }
-                else {
-                    tTAngle++;
-                }
-                robot.turnTable.setTargetPosition(tTAngle);
-                robot.turnTable.setPower(0.3);
-                opMode.telemetry.addData("tTAngle #:", tTAngle);
-                opMode.telemetry.update();*/
-
+                opMode.telemetry.addData("Angle", angle);
+                robot.turnTable.setTargetPosition((int) ((1120 * (angle - 90))) / 180);
+                opMode.telemetry.addData("Enc", (int) ((1120 * (angle - 90))) / 180);
+                robot.turnTable.setPower(0.1);
             }
             else {
 
                 robot.turnTable.setPower(0.0);
-            }
-
-            if (opMode.gamepad2.left_trigger > GAME_TRIGGER_DEAD_ZONE) {
-                robot.turnTable.setPower(-opMode.gamepad2.left_trigger / 2);
-
-                /*if ((tTAngle--) <= tTAngleMin) {
-                    tTAngle = tTAngleMin;
-                }
-                else {
-                    tTAngle--;
-                }
-                robot.turnTable.setTargetPosition(-tTAngle);
-                robot.turnTable.setPower(0.3);
-                opMode.telemetry.addData("tTAngle #:", tTAngle);
-                opMode.telemetry.update();*/
-
-            }
-            else {
-
-                robot.turnTable.setPower(0.0);
+                robot.turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
 
             if (opMode.gamepad2.left_stick_y < -0.2) {
-                robot.upperArm.setPower(0.3);
-            }
-            else if (opMode.gamepad2.left_stick_y > 0.2) {
-                robot.upperArm.setPower(-0.3);
-            }
-            else {
+                double posOfArm = robot.upperArm.getCurrentPosition();
+                double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
+                robot.glyphArm.clawWrist.setPosition(
+                        robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
+                posOfUpperArm = posOfArm;
+                if (clawClosed)
+                    robot.upperArm.setPower(0.4);
+                else
+                    robot.upperArm.setPower(0.2);
+            } else if (opMode.gamepad2.left_stick_y > 0.2) {
+                double posOfArm = robot.upperArm.getCurrentPosition();
+                double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
+                robot.glyphArm.clawWrist.setPosition(
+                        robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
+                if (clawClosed)
+                    robot.upperArm.setPower(-0.4);
+                else
+                    robot.upperArm.setPower(-0.2);
+                posOfUpperArm = posOfArm;
+            } else {
                 robot.upperArm.setPower(0);
                 robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                double posOfArm = robot.upperArm.getCurrentPosition();
+                //opMode.telemetry.addData("upperArm", posOfArm);
+                //opMode.telemetry.update();
             }
 
-            if(opMode.gamepad2.right_stick_y < -0.2){
+            if (opMode.gamepad2.left_trigger > 0.2) {
 
-                arm.increaseClawWristPos(opMode.gamepad2.right_stick_y);
+                robot.glyphArm.increaseClawWristPos(-opMode.gamepad2.left_trigger);
                 //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
             }
 
-            if(opMode.gamepad2.right_stick_y > 0.2){
+            if (opMode.gamepad2.right_trigger > 0.2) {
 
-                arm.decreaseClawWristPos(opMode.gamepad2.right_stick_y);
+                robot.glyphArm.decreaseClawWristPos(opMode.gamepad2.right_trigger);
                 //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
             }
 
-            if(opMode.gamepad2.b){
+            if (opMode.gamepad2.b) {
 
-                arm.setClawGrabOpen ();
+                robot.glyphArm.setClawGrabOpen();
+                clawClosed = false;
                 //Log.v("BOK","CLAWOPEN");
 
             }
 
-            if(opMode.gamepad2.a){
+            if (opMode.gamepad2.a) {
 
-                arm.setClawGrabClose();
+                robot.glyphArm.setClawGrabClose();
+                clawClosed = true;
                 //Log.v("BOK","CLAWCLOSED");
 
             }
 
             // if the digital channel returns true it's HIGH and the button is unpressed.
-            if (robot.flickerTouch.getState() == true)
-            {
-                opMode.telemetry.addData("Digital Touch", "Is not pressed");
-                opMode.telemetry.update();
+            if (robot.flickerTouch.getState() == true) {
+                //opMode.telemetry.addData("Digital Touch", "Is not pressed");
+                //opMode.telemetry.update();
                 //Log.v("BOK", "Hi");
-            }
-            else
-            {
+            } else {
                 Log.v("BOK", "Hi");
-                opMode.telemetry.addData("Digital Touch", "Is Pressed");
-                opMode.telemetry.update();
+                //opMode.telemetry.addData("Digital Touch", "Is Pressed");
+                //opMode.telemetry.update();
             }
+/*
+            if (opMode.gamepad1.a) {
+                robot.spool.setPower(-0.15);
+            } 
+            if (opMode.gamepad1.b) {
+                robot.spool.setPower(0.15);
+            }
+            if (opMode.gamepad1.y) {
+                robot.spool.setPower(0);
+            }
+
+            if (opMode.gamepad1.dpad_up) {
+                currentPos = robot.relicArm.getPosition() - 0.01;
+                robot.relicArm.setPosition(currentPos);
+            } else if (opMode.gamepad1.dpad_down) {
+                currentPos = robot.relicArm.getPosition() + 0.01;
+                robot.relicArm.setPosition(currentPos);
+            }
+*/
 
         }
         return BoKTeleStatus.BOK_TELE_SUCCESS;

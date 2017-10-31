@@ -66,7 +66,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected BoKHardwareBot robot;
 
     protected RelicRecoveryVuMark cryptoColumn;
-    protected boolean foundRedOnLeft;
+    protected boolean foundRedOnLeft = false;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity())
     {
@@ -139,7 +139,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     @Override
     public abstract void runSoftware();
 
-    public void getCryptoColumn()
+    public void getCryptoColumn(double waitForSec)
     {
         boolean vuMarkVisible = false;
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
@@ -147,7 +147,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         relicTrackables.activate();
         runTime.reset();
 
-        while (!vuMarkVisible) {
+        while (!vuMarkVisible && runTime.seconds() < waitForSec) {
             /**
              * See if any of the instances of relicTemplate are currently visible.
              * RelicRecoveryVuMark is an enum which can have the following values:
@@ -203,7 +203,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     for (int i = 0; i < numImages; i++) {
                         if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
                             Image rgb = frame.getImage(i);
-                            /*rgb is now the Image object that we’ve used in the video*/
+                            // rgb is now the Image object that we’ve used in the video
                             if (rgb != null) {
                                 Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
                                         Bitmap.Config.RGB_565);
@@ -296,6 +296,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
+            robot.resetDTEncoders();
             robot.startMove(leftPower, rightPower, inches, forward);
 
             runTime.reset();
@@ -311,24 +312,59 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
-    public void hitCryptoWithTouch(boolean forward){
-        ((BoKMecanumDT)robot).setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        if(forward){
-            Log.v("BOK", "forward");
-            robot.setPowerToDTMotors(0.15,0.15,-0.15,-0.15);
-            while(opMode.opModeIsActive() &&
-                    robot.flickerTouch.getState() == true){
-                Log.v("BOK", "loop");
+    protected void strafe(double power,
+                          double rotations,
+                          boolean right,
+                          double waitForSec)
+    {
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+
+            robot.resetDTEncoders();
+            robot.startStrafe(power, rotations, right);
+
+            runTime.reset();
+            while (opMode.opModeIsActive() &&
+                    /*(robot.getDTCurrentPosition() == false) &&
+                    robot.areDTMotorsBusy() &&*/
+                    (runTime.seconds() < waitForSec)) {
+                //opMode.telemetry.update();
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             }
-            robot.setPowerToDTMotors(0,0,0,0);
+
+            robot.stopMove();
+        }
+    }
+
+    public boolean hitCryptoWithTouch(boolean forward, double waitForSeconds)
+    {
+        boolean flickerTouchState = true;
+        ((BoKMecanumDT)robot).setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        runTime.reset();
+        if(forward){
+            Log.v("BOK", "forward");
+            robot.setPowerToDTMotors(DT_POWER_FOR_CRYPTO,
+                                     DT_POWER_FOR_CRYPTO,
+                                     -DT_POWER_FOR_CRYPTO,
+                                     -DT_POWER_FOR_CRYPTO);
         }
         else{
-            while(robot.flickerTouch.getState() == true){
-                robot.setPowerToDTMotors(0.2, 0.2, -0.2 ,-0.2);
-            }
+            robot.setPowerToDTMotors(-DT_POWER_FOR_CRYPTO,
+                                     -DT_POWER_FOR_CRYPTO,
+                                     DT_POWER_FOR_CRYPTO,
+                                     DT_POWER_FOR_CRYPTO);
         }
 
+        flickerTouchState = robot.flickerTouch.getState();
+        while(opMode.opModeIsActive() &&
+                (runTime.seconds() < waitForSeconds) &&
+                (flickerTouchState == true)){
+            flickerTouchState = robot.flickerTouch.getState();
+        }
+
+        robot.setPowerToDTMotors(0, 0, 0, 0);
+        // Return true if we touched the crypto box
+        return (flickerTouchState == false);
     }
 
 }

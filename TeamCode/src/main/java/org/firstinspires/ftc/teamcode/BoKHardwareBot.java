@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.motors.TetrixMotor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -17,15 +18,19 @@ public abstract class BoKHardwareBot
     // Constants
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
 
-    protected static final double CW_INIT = 1;
-    protected static final double CG_INIT = 0;
-    protected static final double CG_MID = 0.25;
+    protected static final double CW_INIT = 0.85;
+    protected static final double CW_MID = 0.45;
+    protected static final double CG_INIT = 0.92;
+    protected static final double CG_MID = 0.5;
+    protected static final double CG_CLOSE = 0.92;
+    protected static final double JF_INIT = 0.0;
+    protected static final double JF_FINAL = 0.5;
+    protected static final double JF_HIT_CRYPTO = 0.4;
     protected static final double JA_INIT = 0.04;
-    protected static final double JF_INIT = 0.75;
-    protected static final double JF_FINAL = 0.4;
-    protected static final double JA_MID = 0.35;
+    protected static final double JA_MID = 0.4;
     protected static final double JA_FINAL = 0.5;
-    protected static final double JF_HIT_CRYPTO = 0.25;
+
+    protected static final double RA_INIT = 0.75;
 
 
 
@@ -35,22 +40,28 @@ public abstract class BoKHardwareBot
     private static final String CLAW_GRAB_SERVO  = "cg";
     private static final String JEWEL_ARM  = "ja";
     private static final String JEWEL_FLICKER  = "jf";
+    private static final String RELIC_ARM_SERVO  = "ra";
 
 
     // DC motors
     protected DcMotor turnTable;
     protected DcMotor upperArm;
+    protected DcMotor spool;
 
     // Servos
 
-    protected Servo clawWrist;
-    protected Servo clawGrab;
+    private Servo clawWrist; // These are used in the GlyphArm
+    private Servo clawGrab;
     protected Servo jewelArm;
     protected Servo jewelFlicker;
-
+    protected Servo relicArm;
 
     // Sensors
+    BNO055IMU imu;
     DigitalChannel flickerTouch;
+
+    // Glyph Arm
+    BoKGlyphArm glyphArm;
 
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();
@@ -104,6 +115,16 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
+        relicArm = opMode.hardwareMap.servo.get(RELIC_ARM_SERVO);
+        if(relicArm == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        spool = opMode.hardwareMap.dcMotor.get("sp");
+        if(spool == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
         upperArm = opMode.hardwareMap.dcMotor.get(UPPER_ARM_MOTOR);
         if(upperArm == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
@@ -123,19 +144,23 @@ public abstract class BoKHardwareBot
         clawGrab.setPosition(CG_INIT);
         jewelArm.setPosition(JA_INIT);
         jewelFlicker.setPosition(JF_INIT);
+        relicArm.setPosition(RA_INIT);
 
         upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
         upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
-        //turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turnTable.setPower(0);
+        turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         flickerTouch.setMode(DigitalChannel.Mode.INPUT);
+
+        glyphArm = new BoKGlyphArm(this, opMode, clawWrist, clawGrab);
         return BoKHardwareStatus.BOK_HARDWARE_SUCCESS;
     }
 
@@ -156,7 +181,10 @@ public abstract class BoKHardwareBot
     public abstract void startMove(double leftPower,
                                    double rightPower,
                                    double inches,
-                                   boolean forward);
+                                   boolean backward);
+
+    public abstract void startStrafe(double power, double rotations,
+                                     boolean right);
 
     public abstract void stopMove();
 

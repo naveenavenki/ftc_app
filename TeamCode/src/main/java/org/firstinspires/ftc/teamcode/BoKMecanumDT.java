@@ -140,6 +140,31 @@ public class BoKMecanumDT extends BoKHardwareBot
         Log.v("BOK", "START: " + leftFront.getCurrentPosition() +", " + currentLeftTarget + ", " +
                 rightFront.getCurrentPosition() + ", " + currentRightTarget);
     }
+    
+    private void setDTMotorEncoderTarget(int leftFrontTarget,
+                                         int leftBackTarget,
+                                         int rightFrontTarget,
+                                         int rightBackTarget)
+    {
+        int currentLeftFrontTarget = leftFront.getCurrentPosition() + leftFrontTarget;
+        int currentLeftBackTarget = leftBack.getCurrentPosition() + leftBackTarget;
+        int currentRightFrontTarget = rightFront.getCurrentPosition() + rightFrontTarget;
+        int currentRightBackTarget = rightBack.getCurrentPosition() + rightBackTarget;
+
+        leftFront.setTargetPosition(currentLeftFrontTarget);
+        leftBack.setTargetPosition(currentLeftBackTarget);
+        rightFront.setTargetPosition(currentRightFrontTarget);
+        rightBack.setTargetPosition(currentRightBackTarget);
+
+        // Turn On RUN_TO_POSITION
+        setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
+
+        Log.v("BOK", "START: LF: " + leftFront.getCurrentPosition() + ", " +
+                currentLeftFrontTarget + ", LB: " +
+                leftBack.getCurrentPosition() + ", " + currentLeftBackTarget + ", RF: " +
+                rightFront.getCurrentPosition() + ",  " + currentRightFrontTarget + " RB: " +
+                rightBack.getCurrentPosition() + ",  " + currentRightBackTarget);
+    }
 
     /*
      * move() method: setup the robot to move encoder counts
@@ -157,6 +182,21 @@ public class BoKMecanumDT extends BoKHardwareBot
         else {
             setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
             setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
+        }
+    }
+    
+    public void startStrafe(double power, double rotations, boolean right)
+    {
+        double targetEncCount = (rotations*COUNTS_PER_MOTOR_REV) * DRIVE_GEAR_REDUCTION;
+        if (right) {
+            setDTMotorEncoderTarget((int) targetEncCount, (int) -targetEncCount,
+            (int) targetEncCount, (int) -targetEncCount);
+            setPowerToDTMotors(power, -power, power, -power);
+        }
+        else {
+            setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount,
+            (int) -targetEncCount, (int) targetEncCount);
+            setPowerToDTMotors(-power, power, -power, power);
         }
     }
 

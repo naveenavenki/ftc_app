@@ -13,7 +13,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     {
         // move backwards
         // detect Vuforia image
-        getCryptoColumn();
+        getCryptoColumn(VUFORIA_TIMEOUT);
         // setup flicker
         setJewelFlicker();
 
@@ -29,11 +29,11 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         robot.jewelFlicker.setPosition(robot.JF_INIT);
         robot.jewelArm.setPosition(robot.JA_MID);
         //Widen glyph claw
-        robot.clawGrab.setPosition(robot.CG_MID);
+        robot.glyphArm.clawGrab.setPosition(robot.CG_MID);
         //lower glyph claw
-        for(double i = robot.clawWrist.getPosition() ; i>0.89 ; i-=0.01 )
+        for(double i = robot.glyphArm.clawWrist.getPosition() ; i>0.89 ; i-=0.01 )
         {
-            robot.clawWrist.setPosition(i);
+            robot.glyphArm.clawWrist.setPosition(i);
         }
         //raise the flicker again
         robot.jewelArm.setPosition(robot.JA_INIT);

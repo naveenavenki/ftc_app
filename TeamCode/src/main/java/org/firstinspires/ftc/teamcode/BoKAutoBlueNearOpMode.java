@@ -51,7 +51,7 @@ public class BoKAutoBlueNearOpMode extends LinearOpMode
 
         // Run the autonomous operation, if hardware and software is initialized
         // else do nothing
-        if (status) {
+        if (status && opModeIsActive()) {
             opMode.runSoftware();
         }
     }
