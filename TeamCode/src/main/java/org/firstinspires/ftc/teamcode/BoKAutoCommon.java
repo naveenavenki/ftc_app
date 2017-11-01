@@ -7,6 +7,7 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+/*
 import com.vuforia.Image;
 import com.vuforia.Matrix34F;
 import com.vuforia.PIXEL_FORMAT;
@@ -14,7 +15,7 @@ import com.vuforia.Tool;
 import com.vuforia.Vec2F;
 import com.vuforia.Vec3F;
 import com.vuforia.Vuforia;
-
+*/
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -28,6 +29,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+/*
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -41,7 +43,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
+*/
 import java.util.Arrays;
 
 /**
@@ -75,7 +77,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected String yaw = "y";
     
     Orientation angles;
-
+/*
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity())
     {
         @Override
@@ -83,13 +85,13 @@ public abstract class BoKAutoCommon implements BoKAuto
             super.onManagerConnected(status);
         }
     };
-
+*/
     @Override
     public BoKAutoStatus initSoftware(LinearOpMode opMode,
                                       BoKHardwareBot robot,
                                       BoKAllianceColor redOrBlue)
     {
-
+/*
         Log.v("BOK", "Initializing OpenCV");
         // Initialize OpenCV
         if (!OpenCVLoader.initDebug()) {
@@ -99,7 +101,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         else {
             loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-
+*/
         Log.v("BOK", "Initializing Vuforia");
         // Initialize Vuforia
         /*
@@ -116,7 +118,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         // Vuforia License Key
         parameters.vuforiaLicenseKey = "ASodJvL/////AAAAGa9Isk5Oa0brtCRz7Z0fQngHmf2Selfx3RDk3MzjmK9DFWkQRsg1dH8Q8VvU/9L9nr9krXa+2nY5zoK6moC4UpRIg+gRsnG5M504q50Dd+z8DDATBaamc8t5qa8OeLjFKQ/+blHLbe8tjXSdVdl/xxGdowpeuQ18dnlf129q5NjM7Z9s/M8l693yEl28b+/LLJ4SiFLBTXwkEpVblemfJKZVHO5I8JmGmQ4jcwCWFIMCFxPRbCeDVqdCeqQzFa3BcCiuuGUgZDBCaidiW0/pzEFzdXcVCQfJPMgdZUWkPAk0QXVC8zYXaweeLuAONyTDkanRiyzqZbDVpJhVHaLBsUaC3OmZ/Xo+ThguyX3tNs3G";
         vuforiaFTC = ClassFactory.createVuforiaLocalizer(parameters);
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
+        //Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
         vuforiaFTC.setFrameQueueCapacity(1); // change the frame queue capacity to 1
 
         /*
@@ -191,7 +193,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                         Log.v("BOK", "Exception!!");
                         break;
                     }
-
+/*
                     // Convert the data in rawPose back to the format that Vuforia expects -
                     // 3x4 row major matrix. where as the OpenGLMatrix is 4x4
                     // column major matrix.
@@ -276,8 +278,11 @@ public abstract class BoKAutoCommon implements BoKAuto
                             break;
                         } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
                     } // for (int i = 0; i < numImages; i++)
+
                     frame.close();
+                    */
                 } // if (pose != null)
+                foundRedOnLeft = true;
                 relicTrackables.deactivate();
             } else {
                 opMode.telemetry.addData("VuMark", "not visible");
@@ -294,6 +299,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         robot.jewelFlicker.setPosition(robot.JF_FINAL);
         robot.jewelArm.setPosition(robot.JA_FINAL);
     }
+
     // Algorithm to move forward using encoder sensor on the DC motors on the drive train
     protected void move(double leftPower,
                         double rightPower,
