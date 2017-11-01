@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * It uses BoKMecanumDT and BoKTele objects
  */
 @TeleOp(name="BoK Teleop", group="BoKTele")
-//@Disabled
 public class BoKTeleOpMode extends LinearOpMode
 {
     @Override
