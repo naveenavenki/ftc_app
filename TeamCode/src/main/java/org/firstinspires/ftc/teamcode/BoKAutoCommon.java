@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Bitmap;
 import com.qualcomm.robotcore.util.Range;
 import android.util.Log;
 
@@ -18,7 +17,6 @@ import com.vuforia.Vuforia;
 */
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -74,9 +72,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected static final double P_TURN_COEFF = 0.5;    
     protected static final double HEADING_THRESHOLD = 1;
 
-    protected String yaw = "y";
-    
-    Orientation angles;
+    private Orientation angles;
 /*
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity())
     {

@@ -2,14 +2,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
- * Created by shiv on 10/23/2017.
+ * Created by Krishna Saxena on 10/23/2017.
  */
 @TeleOp(name = "Claw", group = "test")
+//@Disabled
 public class ClawTest extends LinearOpMode {
 
     Servo relicArm;
