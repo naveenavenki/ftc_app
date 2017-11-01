@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Bitmap;
+import com.qualcomm.robotcore.util.Range;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -67,6 +68,13 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     protected RelicRecoveryVuMark cryptoColumn;
     protected boolean foundRedOnLeft = false;
+
+    protected static final double P_TURN_COEFF = 0.5;    
+    protected static final double HEADING_THRESHOLD = 1;
+
+    protected String yaw = "y";
+    
+    Orientation angles;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity())
     {
@@ -367,4 +375,149 @@ public abstract class BoKAutoCommon implements BoKAuto
         return (flickerTouchState == false);
     }
 
+    public void moveWithRangeSensor(boolean forward, int distance, double waitForSeconds)
+    {
+        //byte[] range;
+        double cmCurrent;
+        //((BoKMecanumDT)robot).setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        runTime.reset();
+
+        if(forward){
+            Log.v("BOK", "forward");
+            //robot.setPowerToDTMotors(DT_POWER_FOR_WALL,
+            //        DT_POWER_FOR_WALL,
+            //        -DT_POWER_FOR_WALL,
+            //        -DT_POWER_FOR_WALL);
+            cmCurrent = robot.rangeSensorFront.cmUltrasonic();
+        }
+        else{
+            //robot.setPowerToDTMotors(-DT_POWER_FOR_WALL,
+            //        -DT_POWER_FOR_WALL,
+            //        DT_POWER_FOR_WALL,
+            //        DT_POWER_FOR_WALL);
+            cmCurrent = robot.rangeSensorBack.cmUltrasonic();
+        }
+
+        while(opMode.opModeIsActive() /*&&
+                (cmCurrent >= distance) &&
+                (runTime.seconds() < waitForSeconds)*/) {
+            if (forward) {
+                cmCurrent = robot.rangeSensorFront.cmUltrasonic();
+            }
+            else {
+                cmCurrent = robot.rangeSensorBack.cmUltrasonic();
+            }
+            opMode.telemetry.addData("Distance", cmCurrent);
+            opMode.telemetry.update();
+        }
+
+        //robot.setPowerToDTMotors(0, 0, 0, 0);
+    }
+
+    // Code copied from the sample PushbotAutoDriveByGyro_Linear
+    /**
+     *  Method to spin on central axis to point in a new direction.
+     *  Move will stop if either of these conditions occur:
+     *  1) Move gets to the heading (angle)
+     *  2) Driver stops the opmode running.
+     *
+     * @param speed Desired speed of turn.
+     * @param angle Absolute Angle (in Degrees) relative to last gyro reset.
+     *              0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *              If a relative angle is required, add/subtract from current heading.
+     */
+    public void gyroTurn ( double speed, double angle) {
+
+        //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // keep looping while we are still active, and not on heading.
+        while (opMode.opModeIsActive() && 
+               !onHeading(speed, angle, P_TURN_COEFF)) {
+            // Update telemetry & Allow time for other processes to run.
+            opMode.telemetry.update();
+            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+
+        //Log.v("BOK", "turnF: " + robot.imu.getIntegratedZValue());
+    }   
+
+    /**
+     * Perform one cycle of closed loop heading control.
+     *
+     * @param speed     Desired speed of turn.
+     * @param angle     Absolute Angle (in Degrees) relative to last gyro reset.
+     *                  0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
+     *                  If a relative angle is required, add/subtract from current heading.
+     * @param PCoeff    Proportional Gain coefficient
+     * @return
+     */
+    protected boolean onHeading(double speed,
+                                double angle, 
+                                double PCoeff) {
+        double   error ;
+        double   steer ;
+        boolean  onTarget = false;
+        double   leftSpeed;
+        double   rightSpeed;
+
+        // determine turn power based on +/- error
+        error = getError(angle);
+        if (Math.abs(error) <= (Math.abs(angle)/2))
+            speed /= 2;
+
+        if (Math.abs(error) <= HEADING_THRESHOLD) {
+            steer = 0.0;
+            leftSpeed  = 0.0;
+            rightSpeed = 0.0;
+            onTarget = true;
+        }
+        else {
+            steer = getSteer(error, PCoeff);
+
+            rightSpeed  = speed * steer;
+            if (rightSpeed > 0)
+                rightSpeed = Range.clip(rightSpeed, DT_TURN_SPEED_LOW, DT_TURN_SPEED_HIGH);
+            else
+                rightSpeed = Range.clip(rightSpeed, -DT_TURN_SPEED_HIGH, -DT_TURN_SPEED_LOW);
+
+            leftSpeed   = rightSpeed;
+        }
+
+        // Send desired speeds to motors.
+        robot.setPowerToDTMotors(-leftSpeed, -leftSpeed, -rightSpeed, -rightSpeed);
+
+        //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
+        //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
+        //      String.format("%5.2f", rightSpeed));
+        return onTarget;
+    }
+    
+    /**
+     * getError determines the error between the target angle and the robot's current heading
+     * @param   targetAngle
+     *          Desired angle (relative to global reference established at last Gyro Reset).
+     * @return  error angle: Degrees in the range +/- 180. Centered on the robot's frame of
+     *          reference; +ve error means the robot should turn LEFT (CCW) to reduce error.
+     */
+    protected double getError(double targetAngle) {
+
+        double robotError;
+
+        // calculate error in -179 to +180 range  (
+        angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
+        robotError = targetAngle - angles.thirdAngle;
+        while (robotError > 180)  robotError -= 360;
+        while (robotError <= -180) robotError += 360;
+        return robotError;
+    }
+
+    /**
+     * returns desired steering force.  +/- 1 range.  +ve = steer left
+     * @param error   Error angle in robot relative degrees
+     * @param PCoeff  Proportional Gain Coefficient
+     * @return
+     */
+    protected double getSteer(double error, double PCoeff) {
+        return Range.clip(error * PCoeff, -1, 1);
+    }
 }

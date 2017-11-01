@@ -84,7 +84,7 @@ public class BoKTele
                 opMode.telemetry.addData("Angle", angle);
                 robot.turnTable.setTargetPosition((int) ((1120 * (angle - 90))) / 180);
                 opMode.telemetry.addData("Enc", (int) ((1120 * (angle - 90))) / 180);
-                robot.turnTable.setPower(0.1);
+                robot.turnTable.setPower(0.2);
             }
             else {
 
@@ -196,6 +196,7 @@ public class BoKTele
         double motorPowerLB = 0;
         double motorPowerRF = 0;
         double motorPowerRB = 0;
+        boolean moving = false;
 
         //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
         // gamePad1LeftStickY, gamePad1RightStickX);
@@ -214,6 +215,8 @@ public class BoKTele
             motorPowerLB = -gamePad1LeftStickY - gamePad1LeftStickX;
             motorPowerRF = gamePad1LeftStickY - (-gamePad1LeftStickX);
             motorPowerRB = gamePad1LeftStickY - gamePad1LeftStickX;
+            
+            moving = true;
 
             Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF) +
                     "LB: " + String.format("%.2f", motorPowerLB) +
@@ -222,49 +225,27 @@ public class BoKTele
         }
         else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) ||
                 (gamePad1RightStickX < -GAME_STICK_DEAD_ZONE)) {
+            // Right joystick is for turning
             motorPowerLF = motorPowerLB = gamePad1RightStickX;
             motorPowerRF = motorPowerRB = gamePad1RightStickX;
+            
+            moving = true;
 
             Log.v("BOK","Turn: LF:" + String.format("%.2f", motorPowerLF) +
                     "LB: " + String.format("%.2f", motorPowerLB) +
                     "RF: " + String.format("%.2f", motorPowerRF) +
                     "RB: " + String.format("%.2f", motorPowerRB));
         }
-        // Right joystick is for turning
 
-
-        /*if(motorPowerLB >=0){
-            motorPowerLB = motorPowerLB*motorPowerLB;
-        }
-        else{
-            motorPowerLB = -(motorPowerLB*motorPowerLB);
-        }
-
-        if(motorPowerLF >=0){
-            motorPowerLF = motorPowerLF*motorPowerLF;
-        }
-        else{
-            motorPowerLF = -(motorPowerLF*motorPowerLF);
-        }
-
-        if(motorPowerRB >=0){
-            motorPowerRB = motorPowerRB*motorPowerRB;
-        }
-        else{
-            motorPowerRB = -(motorPowerRB*motorPowerRB);
-        }
-
-        if(motorPowerRF >=0){
-            motorPowerRF = motorPowerRF*motorPowerRF;
-        }
-        else{
-            motorPowerRF = -(motorPowerLB*motorPowerRF);
-        }*/
         robot.setPowerToDTMotors(
                 (motorPowerLF * speedCoef),
                 (motorPowerLB * speedCoef),
                 (motorPowerRF * speedCoef),
                 (motorPowerRB * speedCoef));
+        
+        if (!moving) {
+            robot.setZeroPowerBehaviorDTMotors();
+        }
     }
     public void moveRobotTank(LinearOpMode opMode, BoKHardwareBot robot) {
         double gamePad1LeftStickY = opMode.gamepad1.left_stick_y;

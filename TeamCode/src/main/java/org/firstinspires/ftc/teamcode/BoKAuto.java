@@ -28,6 +28,10 @@ public interface BoKAuto
     public static double DT_POWER_FOR_STRAFE = 0.2;
     public static double DT_POWER_FOR_CRYPTO = 0.15;
     public static double DT_POWER_FOR_BACK = 0.2;
+    public static double DT_POWER_FOR_WALL = 0.15;
+    public static double DT_TURN_SPEED_LOW  = 0.15;
+    public static double DT_TURN_SPEED_HIGH = 0.4;
+    
     public static double UPPER_ARM_POWER = 0.3;
 
     public static double DISTANCE_BACK_FOR_CRYPTO = 3.75;

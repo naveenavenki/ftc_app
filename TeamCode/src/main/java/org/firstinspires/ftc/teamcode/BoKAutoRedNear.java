@@ -17,7 +17,8 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
     @Override
     public void runSoftware() {
-
+        moveWithRangeSensor(false, 20, 4);
+/*
         // detect Vuforia image
         getCryptoColumn(VUFORIA_TIMEOUT);
         // setup flicker
@@ -45,7 +46,7 @@ public class BoKAutoRedNear extends BoKAutoCommon {
         opMode.sleep(WAIT_FOR_SERVO_MS);
 
         // Determine how many rotations to strafe to the right?
-        strafe(DT_POWER_FOR_STRAFE, 1, true/*right*/, DT_STRAFE_TIMEOUT);
+        strafe(DT_POWER_FOR_STRAFE, 1, true, DT_STRAFE_TIMEOUT);
 
         // move forward towards cryptobox
         // Know if we ran out of time?
@@ -72,5 +73,6 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
             robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
         }
+        */
     }
 }

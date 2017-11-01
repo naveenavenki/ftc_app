@@ -1,13 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.motors.TetrixMotor;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -32,8 +36,6 @@ public abstract class BoKHardwareBot
 
     protected static final double RA_INIT = 0.75;
 
-
-
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
     private static final String CLAW_WRIST_SERVO = "cw";
@@ -41,7 +43,8 @@ public abstract class BoKHardwareBot
     private static final String JEWEL_ARM  = "ja";
     private static final String JEWEL_FLICKER  = "jf";
     private static final String RELIC_ARM_SERVO  = "ra";
-
+    private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
+    private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
 
     // DC motors
     protected DcMotor turnTable;
@@ -59,6 +62,9 @@ public abstract class BoKHardwareBot
     // Sensors
     BNO055IMU imu;
     DigitalChannel flickerTouch;
+
+    ModernRoboticsI2cRangeSensor rangeSensorFront;
+    ModernRoboticsI2cRangeSensor rangeSensorBack;
 
     // Glyph Arm
     BoKGlyphArm glyphArm;
@@ -140,6 +146,31 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
+        imu = opMode.hardwareMap.get(BNO055IMU.class, "imu_top");
+        if(imu == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        rangeSensorFront = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_FRONT_CFG);
+        if (rangeSensorFront == null) {
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        rangeSensorBack = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_BACK_CFG);
+        if (rangeSensorBack == null) {
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        //angles = new Orientation();
+        imu.initialize(parameters);
+        
         clawWrist.setPosition(CW_INIT);
         clawGrab.setPosition(CG_INIT);
         jewelArm.setPosition(JA_INIT);
@@ -186,6 +217,9 @@ public abstract class BoKHardwareBot
     public abstract void startStrafe(double power, double rotations,
                                      boolean right);
 
+    // TeleOp
+    public abstract void setZeroPowerBehaviorDTMotors();
+    
     public abstract void stopMove();
 
     /*

@@ -104,6 +104,13 @@ public class BoKMecanumDT extends BoKHardwareBot
         opMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
+    public void setZeroPowerBehaviorDTMotors() {
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+    
     /*
      * getTargetEncCount(targetDistanceInches): returns the target encoder count
      * based on the wheel diameter, gear reduction ratio and counts per motor rev.
