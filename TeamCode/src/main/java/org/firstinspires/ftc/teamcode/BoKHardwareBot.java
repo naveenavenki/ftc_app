@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -18,29 +18,33 @@ public abstract class BoKHardwareBot
     // Constants
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
 
-    protected static final double CW_INIT = 0.85;
-    protected static final double CW_MID = 0.45;
+    protected static final double CW_INIT = 0.94;
+    protected static final double CW_MIN = 0.1;
     protected static final double CG_INIT = 0.92;
     protected static final double CG_MID = 0.5;
     protected static final double CG_CLOSE = 0.92;
     protected static final double JF_INIT = 0.0;
     protected static final double JF_FINAL = 0.5;
-    protected static final double JF_HIT_CRYPTO = 0.4;
+    protected static final double JF_RIGHT = 1;
+    protected static final double JF_LEFT = 0;
     protected static final double JA_INIT = 0.04;
     protected static final double JA_MID = 0.4;
     protected static final double JA_FINAL = 0.5;
 
-    protected static final double RA_INIT = 0.75;
+    protected static final double RA_INIT = 0.85;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
+    private static final String RELIC_SPOOL_MOTOR = "sp";
     private static final String CLAW_WRIST_SERVO = "cw";
     private static final String CLAW_GRAB_SERVO  = "cg";
     private static final String JEWEL_ARM  = "ja";
     private static final String JEWEL_FLICKER  = "jf";
     private static final String RELIC_ARM_SERVO  = "ra";
+    private static final String JEWEL_CRS = "crs";
     private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
+    private static final String IMU_TOP = "imu_top";
 
     // DC motors
     protected DcMotor turnTable;
@@ -56,11 +60,11 @@ public abstract class BoKHardwareBot
     protected Servo relicArm;
 
     // Sensors
-    BNO055IMU imu;
-    DigitalChannel flickerTouch;
+    protected BNO055IMU imu;
+    protected LynxI2cColorRangeSensor colorRangeSensor;
 
-    ModernRoboticsI2cRangeSensor rangeSensorFront;
-    ModernRoboticsI2cRangeSensor rangeSensorBack;
+    protected ModernRoboticsI2cRangeSensor rangeSensorFront;
+    protected ModernRoboticsI2cRangeSensor rangeSensorBack;
 
     // Glyph Arm
     BoKGlyphArm glyphArm;
@@ -122,7 +126,7 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        spool = opMode.hardwareMap.dcMotor.get("sp");
+        spool = opMode.hardwareMap.dcMotor.get(RELIC_SPOOL_MOTOR);
         if(spool == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
@@ -137,22 +141,24 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        flickerTouch = opMode.hardwareMap.get(DigitalChannel.class, "ft");
-        if(flickerTouch == null){
+        colorRangeSensor = opMode.hardwareMap.get(LynxI2cColorRangeSensor.class, JEWEL_CRS);
+        if(colorRangeSensor == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        imu = opMode.hardwareMap.get(BNO055IMU.class, "imu_top");
+        imu = opMode.hardwareMap.get(BNO055IMU.class, IMU_TOP);
         if(imu == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        rangeSensorFront = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_FRONT_CFG);
+        rangeSensorFront = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class,
+                RANGE_SENSOR_FRONT_CFG);
         if (rangeSensorFront == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        rangeSensorBack = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_BACK_CFG);
+        rangeSensorBack = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class,
+                RANGE_SENSOR_BACK_CFG);
         if (rangeSensorBack == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
@@ -160,7 +166,7 @@ public abstract class BoKHardwareBot
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
         parameters.loggingEnabled      = true;
         parameters.loggingTag          = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
@@ -185,8 +191,6 @@ public abstract class BoKHardwareBot
         turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        flickerTouch.setMode(DigitalChannel.Mode.INPUT);
-
         glyphArm = new BoKGlyphArm(this, opMode, clawWrist, clawGrab);
         return BoKHardwareStatus.BOK_HARDWARE_SUCCESS;
     }
@@ -203,6 +207,7 @@ public abstract class BoKHardwareBot
                                             double leftBackPower,
                                             double rightFrontPower,
                                             double rightBackPower);
+    public abstract void setModeForDTMotors(DcMotor.RunMode runMode);
 
     // Autonomous driving
     public abstract void startMove(double leftPower,
@@ -213,7 +218,6 @@ public abstract class BoKHardwareBot
     public abstract void startStrafe(double power, double rotations,
                                      boolean right);
 
-    // TeleOp
     public abstract void setZeroPowerBehaviorDTMotors();
     
     public abstract void stopMove();
@@ -227,13 +231,19 @@ public abstract class BoKHardwareBot
      * @param periodMs  Length of wait cycle in mSec.
      * @throws InterruptedException
      */
-    public void waitForTick(long periodMs)  throws InterruptedException
+    public void waitForTick(long periodMs)
     {
         long  remaining = periodMs - (long)period.milliseconds();
 
         // sleep for the remaining portion of the regular cycle period.
-        if (remaining > 0)
-            Thread.sleep(remaining);
+        if (remaining > 0) {
+            try {
+                Thread.sleep(remaining);
+            }
+            catch (InterruptedException e) {
+            }
+        }
+
 
         // Reset the cycle clock for the next pass.
         period.reset();

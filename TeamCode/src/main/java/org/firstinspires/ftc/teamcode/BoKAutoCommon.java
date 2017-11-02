@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Bitmap;
 import com.qualcomm.robotcore.util.Range;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -55,7 +57,11 @@ import java.util.Arrays;
  */
 public abstract class BoKAutoCommon implements BoKAuto
 {
-    protected AppUtil appUtil = AppUtil.getInstance();
+    // CONSTANTS
+    private static final double P_TURN_COEFF = 0.5;
+    private static final double HEADING_THRESHOLD = 1;
+
+    private AppUtil appUtil = AppUtil.getInstance();
     private VuforiaLocalizer vuforiaFTC;
     private VuforiaTrackable relicTemplate;
     private VuforiaTrackables relicTrackables;
@@ -68,9 +74,6 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     protected RelicRecoveryVuMark cryptoColumn;
     protected boolean foundRedOnLeft = false;
-
-    protected static final double P_TURN_COEFF = 0.5;    
-    protected static final double HEADING_THRESHOLD = 1;
 
     private Orientation angles;
 /*
@@ -174,13 +177,14 @@ public abstract class BoKAutoCommon implements BoKAuto
                  * it is perhaps unlikely that you will actually need to act on this pose information, but
                  * we illustrate it nevertheless, for completeness. */
                 OpenGLMatrix pose =
-                        ((VuforiaTrackableDefaultListener) relicTemplate.getListener()).getRawUpdatedPose();
+                    ((VuforiaTrackableDefaultListener)
+                        relicTemplate.getListener()).getRawUpdatedPose();
                 // opMode.telemetry.addData("Pose", format(pose));
 
 
                 if (pose != null) {
                     Log.v("BOK", "Img processing: " + String.format("%.2f", runTime.seconds()));
-
+/*
                     VuforiaLocalizer.CloseableFrame frame;
                     // takes the frame at the head of the queue
                     try {
@@ -189,7 +193,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                         Log.v("BOK", "Exception!!");
                         break;
                     }
-/*
+
                     // Convert the data in rawPose back to the format that Vuforia expects -
                     // 3x4 row major matrix. where as the OpenGLMatrix is 4x4
                     // column major matrix.
@@ -274,11 +278,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                             break;
                         } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
                     } // for (int i = 0; i < numImages; i++)
-
                     frame.close();
-                    */
+*/
                 } // if (pose != null)
-                foundRedOnLeft = true;
                 relicTrackables.deactivate();
             } else {
                 opMode.telemetry.addData("VuMark", "not visible");
@@ -335,8 +337,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             runTime.reset();
             while (opMode.opModeIsActive() &&
-                    /*(robot.getDTCurrentPosition() == false) &&
-                    robot.areDTMotorsBusy() &&*/
+                    robot.areDTMotorsBusy() &&
                     (runTime.seconds() < waitForSec)) {
                 //opMode.telemetry.update();
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
@@ -346,74 +347,65 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
-    public boolean hitCryptoWithTouch(boolean forward, double waitForSeconds)
+    public void moveTowardsCrypto(double power,
+                                  double distance,
+                                  boolean forward,
+                                  double waitForSeconds)
     {
-        boolean flickerTouchState = true;
-        ((BoKMecanumDT)robot).setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        double cmCurrent;
+        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         runTime.reset();
         if(forward){
-            Log.v("BOK", "forward");
-            robot.setPowerToDTMotors(DT_POWER_FOR_CRYPTO,
-                                     DT_POWER_FOR_CRYPTO,
-                                     -DT_POWER_FOR_CRYPTO,
-                                     -DT_POWER_FOR_CRYPTO);
+            robot.setPowerToDTMotors(power, power, -power, -power);
         }
         else{
-            robot.setPowerToDTMotors(-DT_POWER_FOR_CRYPTO,
-                                     -DT_POWER_FOR_CRYPTO,
-                                     DT_POWER_FOR_CRYPTO,
-                                     DT_POWER_FOR_CRYPTO);
+            robot.setPowerToDTMotors(-power, -power, power, power);
         }
 
-        flickerTouchState = robot.flickerTouch.getState();
+        cmCurrent = robot.colorRangeSensor.getDistance(DistanceUnit.CM);
         while(opMode.opModeIsActive() &&
                 (runTime.seconds() < waitForSeconds) &&
-                (flickerTouchState == true)){
-            flickerTouchState = robot.flickerTouch.getState();
+                (cmCurrent > distance)) {
+            opMode.telemetry.addData("Distance CRS", cmCurrent);
+            opMode.telemetry.update();
+            cmCurrent = robot.colorRangeSensor.getDistance(DistanceUnit.CM);
         }
 
         robot.setPowerToDTMotors(0, 0, 0, 0);
-        // Return true if we touched the crypto box
-        return (flickerTouchState == false);
     }
-
-    public void moveWithRangeSensor(boolean forward, int distance, double waitForSeconds)
+    
+    public void moveWithRangeSensor(double power,
+                                    int distance,
+                                    boolean forward,
+                                    double waitForSeconds)
     {
-        //byte[] range;
         double cmCurrent;
-        //((BoKMecanumDT)robot).setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         runTime.reset();
 
         if(forward){
-            Log.v("BOK", "forward");
-            //robot.setPowerToDTMotors(DT_POWER_FOR_WALL,
-            //        DT_POWER_FOR_WALL,
-            //        -DT_POWER_FOR_WALL,
-            //        -DT_POWER_FOR_WALL);
-            cmCurrent = robot.rangeSensorFront.cmUltrasonic();
+            robot.setPowerToDTMotors(power, power, -power, -power);
         }
         else{
-            //robot.setPowerToDTMotors(-DT_POWER_FOR_WALL,
-            //        -DT_POWER_FOR_WALL,
-            //        DT_POWER_FOR_WALL,
-            //        DT_POWER_FOR_WALL);
-            cmCurrent = robot.rangeSensorBack.cmUltrasonic();
+            robot.setPowerToDTMotors(-power, -power, power, power);
         }
 
-        while(opMode.opModeIsActive() /*&&
+        cmCurrent = robot.rangeSensorFront.cmUltrasonic();
+        while(opMode.opModeIsActive() &&
                 (cmCurrent >= distance) &&
-                (runTime.seconds() < waitForSeconds)*/) {
+                (runTime.seconds() < waitForSeconds)) {
             if (forward) {
                 cmCurrent = robot.rangeSensorFront.cmUltrasonic();
             }
             else {
                 cmCurrent = robot.rangeSensorBack.cmUltrasonic();
             }
-            opMode.telemetry.addData("Distance", cmCurrent);
+            Log.v("BOK", "Distance RS: " + cmCurrent);
+            opMode.telemetry.addData("Distance RS", cmCurrent);
             opMode.telemetry.update();
         }
 
-        //robot.setPowerToDTMotors(0, 0, 0, 0);
+        robot.setPowerToDTMotors(0, 0, 0, 0);
     }
 
     // Code copied from the sample PushbotAutoDriveByGyro_Linear
@@ -428,13 +420,15 @@ public abstract class BoKAutoCommon implements BoKAuto
      *              0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
      *              If a relative angle is required, add/subtract from current heading.
      */
-    public void gyroTurn ( double speed, double angle) {
-
-        //robot.setModeForMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void gyroTurn(double speed, double angle, double waitForSeconds)
+    {
+        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        runTime.reset();
 
         // keep looping while we are still active, and not on heading.
         while (opMode.opModeIsActive() && 
-               !onHeading(speed, angle, P_TURN_COEFF)) {
+               !onHeading(speed, angle, P_TURN_COEFF) &&
+               (runTime.seconds() < waitForSeconds)) {
             // Update telemetry & Allow time for other processes to run.
             opMode.telemetry.update();
             //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
@@ -455,7 +449,8 @@ public abstract class BoKAutoCommon implements BoKAuto
      */
     protected boolean onHeading(double speed,
                                 double angle, 
-                                double PCoeff) {
+                                double PCoeff)
+    {
         double   error ;
         double   steer ;
         boolean  onTarget = false;
@@ -501,12 +496,14 @@ public abstract class BoKAutoCommon implements BoKAuto
      * @return  error angle: Degrees in the range +/- 180. Centered on the robot's frame of
      *          reference; +ve error means the robot should turn LEFT (CCW) to reduce error.
      */
-    protected double getError(double targetAngle) {
-
+    protected double getError(double targetAngle)
+    {
         double robotError;
 
         // calculate error in -179 to +180 range  (
-        angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
+        angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
+                                                 AxesOrder.XYZ,
+                                                 AngleUnit.DEGREES);
         robotError = targetAngle - angles.thirdAngle;
         while (robotError > 180)  robotError -= 360;
         while (robotError <= -180) robotError += 360;
@@ -519,7 +516,8 @@ public abstract class BoKAutoCommon implements BoKAuto
      * @param PCoeff  Proportional Gain Coefficient
      * @return
      */
-    protected double getSteer(double error, double PCoeff) {
+    protected double getSteer(double error, double PCoeff)
+    {
         return Range.clip(error * PCoeff, -1, 1);
     }
 }
