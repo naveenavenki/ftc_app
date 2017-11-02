@@ -63,8 +63,6 @@ public class BoKMecanumDT extends BoKHardwareBot
         }
 
         setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        //leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        //leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Drive train is initialized, initialize sensors
         return BoKHardwareStatus.BOK_HARDWARE_SUCCESS;
@@ -104,7 +102,8 @@ public class BoKMecanumDT extends BoKHardwareBot
         opMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
-    public void setZeroPowerBehaviorDTMotors() {
+    public void setZeroPowerBehaviorDTMotors()
+    {
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

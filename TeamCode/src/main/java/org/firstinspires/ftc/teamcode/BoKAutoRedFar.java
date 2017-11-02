@@ -5,42 +5,50 @@ package org.firstinspires.ftc.teamcode;
  */
 
 public class BoKAutoRedFar extends BoKAutoCommon {
+    private static double DT_TIMEOUT = 4;
+    private static double TIMEOUT_RIGHT = 4;
+    private static double TIMEOUT_CENTER = 5;
+    private static double TIMEOUT_LEFT = 6;
+    private static int TURN_LEFT_DEGREES = 90;
+
     @Override
     public void runSoftware() {
-        // move backwards
-        // detect Vuforia image
+        // Detect Vuforia image
         getCryptoColumn(VUFORIA_TIMEOUT);
-        // setup flicker
+        // Setup flicker
         setJewelFlicker();
+        opMode.sleep(WAIT_FOR_SERVO_MS);
 
-        opMode.sleep(500);
-        if (foundRedOnLeft)
-            robot.jewelFlicker.setPosition(1);
-        else
-            robot.jewelFlicker.setPosition(0);
-
-        opMode.sleep(1000);
-        robot.jewelFlicker.setPosition(robot.JF_INIT);
-        robot.jewelArm.setPosition(robot.JA_MID);
-        robot.jewelFlicker.setPosition(robot.JF_INIT);
-        robot.jewelArm.setPosition(robot.JA_MID);
-        //Widen glyph claw
-        robot.glyphArm.clawGrab.setPosition(robot.CG_MID);
-        //lower glyph claw
-        for(double i = robot.glyphArm.clawWrist.getPosition() ; i>0.89 ; i-=0.01 )
-        {
-            robot.glyphArm.clawWrist.setPosition(i);
+        if (foundRedOnLeft) {
+            robot.jewelFlicker.setPosition(robot.JF_RIGHT);
+        } else {
+            robot.jewelFlicker.setPosition(robot.JF_LEFT);
         }
-        //raise the flicker again
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+
+        // Raise the flicker arm and position the flicker to face the cryptobox
+        robot.jewelFlicker.setPosition(robot.JF_FINAL);
         robot.jewelArm.setPosition(robot.JA_INIT);
 
-        robot.resetDTEncoders();
-        robot.startMove(0.2,0.2,25,true);
-        while (opMode.opModeIsActive() &&
-                (robot.areDTMotorsBusy())) {
-        }
+        // Move out of the balancing stone, distance: TBD?
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 15, false, DT_TIMEOUT);
 
-        // Stop all motion;
-        robot.stopMove();
+        // turn left 90 degrees
+        gyroTurn(DT_TURN_SPEED_HIGH, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
+
+        // Move backwards to wall: TBD? (if there isn't enough space)
+
+        // Move forwards towards cryptobox
+        // Distance and timeout depends on column number; TBD
+        move(DT_POWER_FOR_CRYPTO, DT_POWER_FOR_STONE, 15, false, TIMEOUT_RIGHT);
+
+        // prepare the jewel arm & the optical color/range sensor
+        robot.jewelArm.setPosition(robot.JA_MID);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+
+        // move forward towards cryptobox using optical color/range sensor
+        moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, true, CRS_CRYPTO_TIMEOUT);
+
+        // Rest of the code is similar to Red near: TBD
     }
 }

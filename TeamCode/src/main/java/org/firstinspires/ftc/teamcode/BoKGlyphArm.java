@@ -10,10 +10,15 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Krishna Saxena on 10/6/2017.
  */
 
-public class BoKGlyphArm {
+public class BoKGlyphArm
+{
+    // CONSTANTS
+    private static final double COUNTS_PER_MOTOR_REV    = 1120;
+    private static final double DRIVE_GEAR_REDUCTION    = 5.0;
+    private static final int JOYSTICK_RATIO = 100;
 
-    BoKHardwareBot robot;
-    LinearOpMode opMode;
+    private BoKHardwareBot robot;
+    private LinearOpMode opMode;
     protected Servo clawWrist;
     protected Servo clawGrab;
     
@@ -28,29 +33,24 @@ public class BoKGlyphArm {
         this.clawGrab = clawGrab;
     }
     
-    private static final double   COUNTS_PER_MOTOR_REV    = 1120;
-    private static final double   DRIVE_GEAR_REDUCTION    = 5.0;
-
     private double getTargetEncCount(double targetAngleDegrees)
     {
         double degreesOfMotorTurn = DRIVE_GEAR_REDUCTION * targetAngleDegrees;
         return (COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
     }
 
-    public void moveUpperArm(double targetAngleDegrees, double power) {
-
+    public void moveUpperArm(double targetAngleDegrees, double power)
+    {
         robot.upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         int target = (int) getTargetEncCount(targetAngleDegrees);
-        Log.v("BOK", "Target: " + target);
+        Log.v("BOK", "Target (arm): " + target);
 
         robot.upperArm.setTargetPosition((int)getTargetEncCount(targetAngleDegrees));
         robot.upperArm.setPower(power);
-        while (opMode.opModeIsActive() &&
-                /*(robot.getDTCurrentPosition() == false) &&*/
-                robot.upperArm.isBusy()) {
+        while (opMode.opModeIsActive() && robot.upperArm.isBusy()) {
             //opMode.telemetry.update();
             opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
@@ -63,10 +63,9 @@ public class BoKGlyphArm {
         double pos = clawWrist.getPosition();
 
         if(pos > robot.CW_INIT) {
-
         }
         else {
-            clawWrist.setPosition(pos - stick_y/100);
+            clawWrist.setPosition(pos - stick_y/JOYSTICK_RATIO);
         }
     }
 
@@ -74,21 +73,20 @@ public class BoKGlyphArm {
     {
         double pos = clawWrist.getPosition();
 
-        if(pos < 0.1) {
+        if(pos < robot.CW_MIN) {
         }
         else {
-            clawWrist.setPosition(pos - stick_y/100);
+            clawWrist.setPosition(pos - stick_y/JOYSTICK_RATIO);
         }
     }
 
-    public void setClawGrabOpen(){
-
+    public void setClawGrabOpen()
+    {
         clawGrab.setPosition(BoKHardwareBot.CG_MID);
     }
 
-    public void setClawGrabClose(){
-
+    public void setClawGrabClose()
+    {
         clawGrab.setPosition(BoKHardwareBot.CG_CLOSE);
     }
-
 }
