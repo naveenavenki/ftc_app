@@ -19,8 +19,8 @@ public class BoKTele
     private static final double TURNTABLE_MOTOR_POWER = 0.2;
     private static final double UPPER_ARM_MOTOR_POWER_SLOW = 0.2;
     private static final double UPPER_ARM_MOTOR_POWER_FAST = 0.4;
-    private static final double SPEED_COEFF_SLOW = 0.5;
-    private static final double SPEED_COEFF_FAST = 0.2;
+    private static final double SPEED_COEFF_SLOW = 0.2;
+    private static final double SPEED_COEFF_FAST = 0.5;
     private static final int WAIT_PERIOD = 40;
 
     private double posOfUpperArm = 0;
@@ -64,10 +64,10 @@ public class BoKTele
             }
 
             if (opMode.gamepad1.y) {
-                speedCoef = SPEED_COEFF_FAST;
+                speedCoef = SPEED_COEFF_SLOW;
             }
             if (opMode.gamepad1.a) {
-                speedCoef = 0.5;
+                speedCoef = SPEED_COEFF_FAST;
             }
             
             // GAMEPAD 2 CONTROLS
@@ -127,12 +127,12 @@ public class BoKTele
             }
 
             if (opMode.gamepad2.left_trigger > GAME_TRIGGER_DEAD_ZONE) {
-               robot.glyphArm.decreaseClawWristPos(-opMode.gamepad2.left_trigger);
+               robot.glyphArm.decreaseClawWristPos(opMode.gamepad2.left_trigger);
                 //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
             }
 
             if (opMode.gamepad2.right_trigger > GAME_TRIGGER_DEAD_ZONE) {
-                robot.glyphArm.increaseClawWristPos(opMode.gamepad2.right_trigger);
+                robot.glyphArm.increaseClawWristPos(-opMode.gamepad2.right_trigger);
                 //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
             }
 

@@ -360,11 +360,13 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
 
         cmCurrent = robot.colorRangeSensor.getDistance(DistanceUnit.CM);
+        Log.v("BOK", "Distance CRS: " + cmCurrent);
         while(opMode.opModeIsActive() &&
                 (runTime.seconds() < waitForSeconds) &&
                 (cmCurrent > distance)) {
             opMode.telemetry.addData("Distance CRS", cmCurrent);
             opMode.telemetry.update();
+            Log.v("BOK", "Distance CRS: " + cmCurrent);
             cmCurrent = robot.colorRangeSensor.getDistance(DistanceUnit.CM);
         }
 
@@ -431,7 +433,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
 
-        //Log.v("BOK", "turnF: " + robot.imu.getIntegratedZValue());
+        Log.v("BOK", "turnF: " + angles.thirdAngle);
     }   
 
     /**

@@ -20,16 +20,17 @@ public abstract class BoKHardwareBot
 
     protected static final double CW_INIT = 0.94;
     protected static final double CW_MIN = 0.1;
-    protected static final double CG_INIT = 0.92;
-    protected static final double CG_MID = 0.5;
-    protected static final double CG_CLOSE = 0.92;
+    protected static final double CW_MID = 0.45;
+    protected static final double CG_INIT = 0.8; // Closed at initialization
+    protected static final double CG_OPEN = 0.4;
+    protected static final double CG_CLOSE = 0.8;
     protected static final double JF_INIT = 0.0;
     protected static final double JF_FINAL = 0.5;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
     protected static final double JA_INIT = 0.04;
     protected static final double JA_MID = 0.4;
-    protected static final double JA_FINAL = 0.5;
+    protected static final double JA_FINAL = 0.55;
 
     protected static final double RA_INIT = 0.85;
 

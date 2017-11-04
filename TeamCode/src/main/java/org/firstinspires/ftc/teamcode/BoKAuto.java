@@ -26,14 +26,16 @@ public interface BoKAuto
 
     public static double DT_POWER_FOR_STONE = 0.2;
     public static double DT_POWER_FOR_STRAFE = 0.15;
-    public static double DT_POWER_FOR_CRYPTO = 0.15;
+    public static double DT_POWER_FOR_CRYPTO = 0.1;
     public static double DT_TURN_SPEED_LOW  = 0.15;
     public static double DT_TURN_SPEED_HIGH = 0.4;
     
-    public static double UPPER_ARM_POWER = 0.3;
+    public static double UPPER_ARM_POWER = 0.1;
 
     public static double DISTANCE_TO_CRYPTO = 7.0;
+    public static double DISTANCE_TO_COLUMN = 1.5;
     public static double ROTATIONS_STRAFE_TO_WALL = 0.15;
+    public static double ROTATIONS_STRAFE_FROM_WALL = 0.25;
     public static double DEGREES_UPPER_ARM_FOR_GLYPH = 40;
 
     public BoKAutoStatus initSoftware(LinearOpMode opMode,

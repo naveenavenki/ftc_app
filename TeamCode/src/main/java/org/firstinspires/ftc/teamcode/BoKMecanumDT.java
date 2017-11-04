@@ -165,11 +165,11 @@ public class BoKMecanumDT extends BoKHardwareBot
         // Turn On RUN_TO_POSITION
         setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
 
-        Log.v("BOK", "START: LF: " + leftFront.getCurrentPosition() + ", " +
-                currentLeftFrontTarget + ", LB: " +
-                leftBack.getCurrentPosition() + ", " + currentLeftBackTarget + ", RF: " +
-                rightFront.getCurrentPosition() + ",  " + currentRightFrontTarget + " RB: " +
-                rightBack.getCurrentPosition() + ",  " + currentRightBackTarget);
+        //Log.v("BOK", "START: LF: " + leftFront.getCurrentPosition() + ", " +
+        //        currentLeftFrontTarget + ", LB: " +
+        //        leftBack.getCurrentPosition() + ", " + currentLeftBackTarget + ", RF: " +
+        //        rightFront.getCurrentPosition() + ",  " + currentRightFrontTarget + " RB: " +
+        //        rightBack.getCurrentPosition() + ",  " + currentRightBackTarget);
     }
 
     /*
@@ -216,10 +216,10 @@ public class BoKMecanumDT extends BoKHardwareBot
 
     public boolean areDTMotorsBusy()
     {
-        Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
-                ", RF " + rightFront.getCurrentPosition() +
-                ", LB " + leftBack.getCurrentPosition() +
-                ", RB " + rightBack.getCurrentPosition());
+        //Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
+        //        ", RF " + rightFront.getCurrentPosition() +
+        //        ", LB " + leftBack.getCurrentPosition() +
+        //        ", RB " + rightBack.getCurrentPosition());
         return (leftFront.isBusy() &&
                 rightFront.isBusy() &&
                 leftBack.isBusy() &&

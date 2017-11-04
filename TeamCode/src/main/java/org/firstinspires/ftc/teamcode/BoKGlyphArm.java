@@ -82,7 +82,7 @@ public class BoKGlyphArm
 
     public void setClawGrabOpen()
     {
-        clawGrab.setPosition(BoKHardwareBot.CG_MID);
+        clawGrab.setPosition(BoKHardwareBot.CG_OPEN);
     }
 
     public void setClawGrabClose()

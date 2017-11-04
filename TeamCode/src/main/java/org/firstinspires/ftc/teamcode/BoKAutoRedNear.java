@@ -5,9 +5,13 @@ package org.firstinspires.ftc.teamcode;
  */
 
 public class BoKAutoRedNear extends BoKAutoCommon {
-    private static double TIMEOUT_RIGHT = 4;
-    private static double TIMEOUT_CENTER = 5;
-    private static double TIMEOUT_LEFT = 6;
+    private static final double TIMEOUT_RIGHT = 4;
+    private static final double TIMEOUT_CENTER = 5;
+    private static final double TIMEOUT_LEFT = 6;
+    
+    private static final double DISTANCE_TO_RIGHT_COL = 16.5;
+    private static final double DISTANCE_TO_CENTER_COL = 26;
+    private static final double DISTANCE_TO_LEFT_COL = 33;
 
     @Override
     public void runSoftware() {
@@ -30,7 +34,7 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
         // Move forward out of balancing stone
         // Distance and timeout depends on column number; TBD
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 15, true, TIMEOUT_RIGHT);
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, DISTANCE_TO_LEFT_COL, true, TIMEOUT_RIGHT);
 
         // Prepare the jewel arm & the optical color/range sensor
         robot.jewelArm.setPosition(robot.JA_MID);
@@ -41,15 +45,18 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
         // Move forward towards cryptobox using optical color/range sensor
         moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, true, CRS_CRYPTO_TIMEOUT);
-/*
-        move(DT_POWER_FOR_BACK,
-             DT_POWER_FOR_BACK,
-             DISTANCE_BACK_FOR_CRYPTO,
-             false,
-             DT_BACK_TIMEOUT);
+        
+        robot.jewelArm.setPosition(robot.JA_INIT);
+        
+        move(DT_POWER_FOR_CRYPTO,
+             DT_POWER_FOR_CRYPTO,
+             DISTANCE_TO_COLUMN,
+             true,
+             CRS_CRYPTO_TIMEOUT);
+            
 
         // Determine how many rotations to strafe to the left?
-        strafe(DT_POWER_FOR_STRAFE, 0.4, false, DT_STRAFE_TIMEOUT);
+        strafe(DT_POWER_FOR_STRAFE,ROTATIONS_STRAFE_FROM_WALL, false, DT_STRAFE_TIMEOUT);
 
         // Now prepare to unload the glyph
         robot.glyphArm.moveUpperArm(DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
@@ -59,9 +66,9 @@ public class BoKAutoRedNear extends BoKAutoCommon {
             opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
 
-        robot.glyphArm.clawGrab.setPosition(robot.CG_INIT);
+        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
 
         robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
-        */
+    
     }
 }
