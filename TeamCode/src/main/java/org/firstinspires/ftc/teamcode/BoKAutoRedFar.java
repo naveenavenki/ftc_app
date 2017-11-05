@@ -10,7 +10,7 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     private static double TIMEOUT_CENTER = 5;
     private static double TIMEOUT_LEFT = 6;
     private static int TURN_LEFT_DEGREES = 90;
-    private static double DT_MOVE_TO_CRYPTO = 16;
+    private static double DT_MOVE_TO_CRYPTO = 17;
 
     @Override
     public void runSoftware() {
@@ -47,7 +47,7 @@ public class BoKAutoRedFar extends BoKAutoCommon {
 
         // move forward towards cryptobox using optical color/range sensor
         
-        moveWithRangeSensor(0.15, 25, false, 4);
+        moveWithRangeSensor(0.15, 43, false, 4);
     
       //  moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, true, CRS_CRYPTO_TIMEOUT);
 
