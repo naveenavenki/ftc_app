@@ -71,7 +71,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected LinearOpMode opMode;  // save a copy of the current opMode and robot
     protected BoKHardwareBot robot;
 
-    protected RelicRecoveryVuMark cryptoColumn;
+    protected RelicRecoveryVuMark cryptoColumn = RelicRecoveryVuMark.LEFT;
     protected boolean foundRedOnLeft = false;
 
     private Orientation angles;
@@ -150,7 +150,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     public void getCryptoColumn(double waitForSec)
     {
         boolean vuMarkVisible = false;
-        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.LEFT;
         // activate
         relicTrackables.activate();
         runTime.reset();
@@ -280,9 +280,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                 } // if (pose != null)
                 relicTrackables.deactivate();
             } else {
-                opMode.telemetry.addData("VuMark", "not visible");
-                opMode.telemetry.update();
-                // Log.v("BOK", "VuMark not visible");
+                //opMode.telemetry.addData("VuMark", "not visible");
+                //opMode.telemetry.update();
+                //Log.v("BOK", "VuMark not visible");
             }
         } // while (!vuMarkVisible)
         cryptoColumn = vuMark;
@@ -349,7 +349,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                                   boolean forward,
                                   double waitForSeconds)
     {
-        double cmCurrent;
+        double cmCurrent = 0;
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         runTime.reset();
         if(forward){
@@ -359,18 +359,18 @@ public abstract class BoKAutoCommon implements BoKAuto
             robot.setPowerToDTMotors(-power, -power, power, power);
         }
 
-        cmCurrent = robot.colorRangeSensor.getDistance(DistanceUnit.CM);
-        Log.v("BOK", "Distance CRS: " + cmCurrent);
+        cmCurrent = robot.rangeSensorJA.cmUltrasonic();
+        Log.v("BOK", "Distance RS (start): " + cmCurrent);
         while(opMode.opModeIsActive() &&
                 (runTime.seconds() < waitForSeconds) &&
                 (cmCurrent > distance)) {
-            opMode.telemetry.addData("Distance CRS", cmCurrent);
-            opMode.telemetry.update();
-            Log.v("BOK", "Distance CRS: " + cmCurrent);
-            cmCurrent = robot.colorRangeSensor.getDistance(DistanceUnit.CM);
+            //Log.v("BOK", "Distance RS: " + cmCurrent);
+            cmCurrent = robot.rangeSensorJA.cmUltrasonic();
         }
 
         robot.setPowerToDTMotors(0, 0, 0, 0);
+        robot.setZeroPowerBehaviorDTMotors();
+        Log.v("BOK", "Distance RS (end): " + cmCurrent + "(current): " + robot.rangeSensorJA.cmUltrasonic());
     }
     
     public void moveWithRangeSensor(double power,
@@ -518,5 +518,109 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected double getSteer(double error, double PCoeff)
     {
         return Range.clip(error * PCoeff, -1, 1);
+    }
+    
+    protected void moveRedCrypto()
+    {
+        if (opMode.opModeIsActive()) {
+            // Prepare the jewel arm & the optical color/range sensor
+            robot.jewelArm.setPosition(robot.JA_MID);
+            opMode.sleep(WAIT_FOR_SERVO_MS * 3);
+
+            // Move forward towards cryptobox using optical color/range sensor
+            moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
+                    DISTANCE_TO_CRYPTO_CM,
+                    true,
+                    CRS_CRYPTO_TIMEOUT);
+
+            robot.jewelArm.setPosition(robot.JA_INIT);
+            opMode.sleep(WAIT_FOR_SERVO_MS);
+
+            //move(DT_POWER_FOR_CRYPTO,
+            //     DT_POWER_FOR_CRYPTO,
+            //     DISTANCE_TO_COLUMN,
+            //     true,
+            //     CRS_CRYPTO_TIMEOUT);
+
+
+            // Determine how many rotations to strafe to the left?
+            //strafe(DT_POWER_FOR_STRAFE,ROTATIONS_STRAFE_FROM_WALL, false, DT_STRAFE_TIMEOUT);
+
+
+            // Now prepare to unload the glyph
+            for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
+                robot.glyphArm.clawWrist.setPosition(i);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            }
+
+            //robot.glyphArm.moveUpperArm(DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
+
+            robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+
+            // Strafe to the right
+            strafe(DT_POWER_FOR_STRAFE,
+                    ROTATIONS_STRAFE_TO_WALL * 4,
+                    true,
+                    DT_STRAFE_TIMEOUT);
+
+            //robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
+            strafe(DT_POWER_FOR_STRAFE,
+                    ROTATIONS_STRAFE_TO_WALL * 2,
+                    false,
+                    DT_STRAFE_TIMEOUT);
+            robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
+        }
+    }
+
+
+    protected void moveBlueCrypto()
+    {
+        if (opMode.opModeIsActive()) {
+            // Prepare the jewel arm & the optical color/range sensor
+            robot.jewelArm.setPosition(robot.JA_MID);
+            opMode.sleep(WAIT_FOR_SERVO_MS * 3);
+
+            // Move forward towards cryptobox using optical color/range sensor
+            moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
+                    DISTANCE_TO_CRYPTO_CM,
+                    false,
+                    CRS_CRYPTO_TIMEOUT);
+
+            robot.jewelArm.setPosition(robot.JA_INIT);
+            opMode.sleep(WAIT_FOR_SERVO_MS);
+
+            move(DT_POWER_FOR_CRYPTO,
+                 DT_POWER_FOR_CRYPTO,
+                 DISTANCE_BLUE_BACK_TO_COLUMN,
+                 false,
+                 BLUE_CRYPTO_BACK_TIMEOUT);
+
+            // Determine how many rotations to strafe to the left?
+            //strafe(DT_POWER_FOR_STRAFE,ROTATIONS_STRAFE_FROM_WALL, false, DT_STRAFE_TIMEOUT);
+
+
+            // Now prepare to unload the glyph
+            for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
+                robot.glyphArm.clawWrist.setPosition(i);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            }
+
+            //robot.glyphArm.moveUpperArm(DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
+
+            robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+
+            // Strafe to the right
+            strafe(DT_POWER_FOR_STRAFE,
+                    ROTATIONS_STRAFE_TO_WALL * 4,
+                    true,
+                    DT_STRAFE_TIMEOUT);
+
+            //robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
+            strafe(DT_POWER_FOR_STRAFE,
+                    ROTATIONS_STRAFE_TO_WALL * 2,
+                    false,
+                    DT_STRAFE_TIMEOUT);
+            robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
+        }
     }
 }

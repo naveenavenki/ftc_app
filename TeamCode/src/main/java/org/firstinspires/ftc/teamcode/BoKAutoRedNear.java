@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+
 /**
  * Created by Krishna Saxena on 10/3/2017.
  */
@@ -34,41 +36,29 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
         // Move forward out of balancing stone
         // Distance and timeout depends on column number; TBD
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, DISTANCE_TO_LEFT_COL, true, TIMEOUT_RIGHT);
-
-        // Prepare the jewel arm & the optical color/range sensor
-        robot.jewelArm.setPosition(robot.JA_MID);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-
-        // Strafe to the right
-        strafe(DT_POWER_FOR_STRAFE, ROTATIONS_STRAFE_TO_WALL, true, DT_STRAFE_TIMEOUT);
-
-        // Move forward towards cryptobox using optical color/range sensor
-        moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, true, CRS_CRYPTO_TIMEOUT);
-        
-        robot.jewelArm.setPosition(robot.JA_INIT);
-        
-        move(DT_POWER_FOR_CRYPTO,
-             DT_POWER_FOR_CRYPTO,
-             DISTANCE_TO_COLUMN,
-             true,
-             CRS_CRYPTO_TIMEOUT);
-            
-
-        // Determine how many rotations to strafe to the left?
-        strafe(DT_POWER_FOR_STRAFE,ROTATIONS_STRAFE_FROM_WALL, false, DT_STRAFE_TIMEOUT);
-
-        // Now prepare to unload the glyph
-        robot.glyphArm.moveUpperArm(DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
-
-        for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
-            robot.glyphArm.clawWrist.setPosition(i);
-            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        double distance = DISTANCE_TO_RIGHT_COL;
+        double timeout = TIMEOUT_RIGHT;
+        if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
+            distance = DISTANCE_TO_CENTER_COL;
+            timeout = TIMEOUT_CENTER;
+        }
+        else if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
+            distance = DISTANCE_TO_LEFT_COL;
+            timeout = TIMEOUT_LEFT;
         }
 
-        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+        move(DT_POWER_FOR_STONE, 
+             DT_POWER_FOR_STONE, 
+             distance,
+             true, 
+             timeout);
 
-        robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
-    
+        // Strafe to the right
+        strafe(DT_POWER_FOR_STRAFE, 
+               ROTATIONS_STRAFE_TO_WALL, 
+               true, 
+               DT_STRAFE_TIMEOUT);
+               
+        moveRedCrypto(); 
     }
 }

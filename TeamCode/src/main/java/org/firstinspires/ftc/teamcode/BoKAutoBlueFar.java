@@ -11,6 +11,7 @@ public class BoKAutoBlueFar extends BoKAutoCommon
     private static double TIMEOUT_CENTER = 5;
     private static double TIMEOUT_RIGHT = 6;
     private static int TURN_RIGHT_DEGREES = -90;
+    private static double DT_MOVE_TO_CRYPTO = 16;
 
     @Override
     public void runSoftware() {
@@ -32,7 +33,7 @@ public class BoKAutoBlueFar extends BoKAutoCommon
         robot.jewelArm.setPosition(robot.JA_INIT);
 
         // Move out of the balancing stone, distance: TBD?
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 15, false, DT_TIMEOUT);
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, DT_MOVE_TO_CRYPTO, false, DT_TIMEOUT);
 
         // turn right 90 degrees
         gyroTurn(DT_TURN_SPEED_HIGH, TURN_RIGHT_DEGREES, DT_TURN_TIMEOUT);
@@ -41,14 +42,14 @@ public class BoKAutoBlueFar extends BoKAutoCommon
 
         // Move back towards cryptobox
         // Distance and timeout depends on column number; TBD
-        move(DT_POWER_FOR_CRYPTO, DT_POWER_FOR_CRYPTO, 15, false, TIMEOUT_LEFT);
+        moveWithRangeSensor(0.15, 25, true, 4);
 
         // Pepare the jewel arm & the optical color/range sensor
-        robot.jewelArm.setPosition(robot.JA_MID);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
+        moveBlueCrypto();
+
 
         // Move backward towards cryptobox using optical color/range sensor
-        moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, false, CRS_CRYPTO_TIMEOUT);
+        //moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, false, CRS_CRYPTO_TIMEOUT);
 
         // Rest of the code is similar to Blue near
     }

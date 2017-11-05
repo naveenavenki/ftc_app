@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.robotcore.util.ReadWriteFile;
+import java.io.File;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -9,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import android.util.Log;
 
 /**
  * Created by Krishna Saxena on 9/24/2016.
@@ -18,7 +21,7 @@ public abstract class BoKHardwareBot
     // Constants
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
 
-    protected static final double CW_INIT = 0.94;
+    protected static final double CW_INIT = 0.92;
     protected static final double CW_MIN = 0.1;
     protected static final double CW_MID = 0.45;
     protected static final double CG_INIT = 0.8; // Closed at initialization
@@ -29,7 +32,7 @@ public abstract class BoKHardwareBot
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
     protected static final double JA_INIT = 0.04;
-    protected static final double JA_MID = 0.4;
+    protected static final double JA_MID = 0.45;
     protected static final double JA_FINAL = 0.55;
 
     protected static final double RA_INIT = 0.85;
@@ -41,8 +44,8 @@ public abstract class BoKHardwareBot
     private static final String CLAW_GRAB_SERVO  = "cg";
     private static final String JEWEL_ARM  = "ja";
     private static final String JEWEL_FLICKER  = "jf";
-    private static final String RELIC_ARM_SERVO  = "ra";
-    private static final String JEWEL_CRS = "crs";
+    private static final String RELIC_ARM_SERVO = "ra";
+    private static final String RANGE_SENSOR_JA = "rs";
     private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
     private static final String IMU_TOP = "imu_top";
@@ -61,8 +64,8 @@ public abstract class BoKHardwareBot
 
     // Sensors
     protected BNO055IMU imu;
-    protected LynxI2cColorRangeSensor colorRangeSensor;
-
+    
+    protected ModernRoboticsI2cRangeSensor rangeSensorJA;
     protected ModernRoboticsI2cRangeSensor rangeSensorFront;
     protected ModernRoboticsI2cRangeSensor rangeSensorBack;
 
@@ -141,13 +144,15 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        colorRangeSensor = opMode.hardwareMap.get(LynxI2cColorRangeSensor.class, JEWEL_CRS);
-        if(colorRangeSensor == null){
-            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
-        }
 
         imu = opMode.hardwareMap.get(BNO055IMU.class, IMU_TOP);
         if(imu == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        rangeSensorJA = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class,
+                RANGE_SENSOR_JA);
+        if (rangeSensorJA == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
@@ -173,7 +178,24 @@ public abstract class BoKHardwareBot
         //angles = new Orientation();
         imu.initialize(parameters);
         
-        clawWrist.setPosition(CW_INIT);
+        File file = AppUtil.getInstance().getSettingsFile("BoKArmCalibration.txt");
+        String value = ReadWriteFile.readFile(file);
+        if (value.isEmpty()) {
+            Log.v("BOK", "File not found");
+            clawWrist.setPosition(CW_INIT);
+        }
+        else {
+            Log.v("BOK", "Calibration data: " + value);
+            clawWrist.setPosition(Double.parseDouble(value));
+        }
+
+        turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turnTable.setPower(0);
+        turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         clawGrab.setPosition(CG_INIT);
         jewelArm.setPosition(JA_INIT);
         jewelFlicker.setPosition(JF_INIT);
@@ -184,14 +206,8 @@ public abstract class BoKHardwareBot
         //upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turnTable.setPower(0);
-        turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         glyphArm = new BoKGlyphArm(this, opMode, clawWrist, clawGrab);
+       
         return BoKHardwareStatus.BOK_HARDWARE_SUCCESS;
     }
 

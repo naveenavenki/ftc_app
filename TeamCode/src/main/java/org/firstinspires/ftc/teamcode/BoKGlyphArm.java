@@ -58,25 +58,25 @@ public class BoKGlyphArm
         robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void increaseClawWristPos(double stick_y)
+    public void increaseClawWristPos(double trigger)
     {
         double pos = clawWrist.getPosition();
 
-        if(pos > robot.CW_INIT) {
+        if(pos > 1) {
         }
         else {
-            clawWrist.setPosition(pos - stick_y/JOYSTICK_RATIO);
+            clawWrist.setPosition(pos + trigger/JOYSTICK_RATIO);
         }
     }
 
-    public void decreaseClawWristPos(double stick_y)
+    public void decreaseClawWristPos(double trigger)
     {
         double pos = clawWrist.getPosition();
 
         if(pos < robot.CW_MIN) {
         }
         else {
-            clawWrist.setPosition(pos - stick_y/JOYSTICK_RATIO);
+            clawWrist.setPosition(pos - trigger/JOYSTICK_RATIO);
         }
     }
 

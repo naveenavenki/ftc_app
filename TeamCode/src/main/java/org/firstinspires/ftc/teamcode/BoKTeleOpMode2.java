@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * Registers the opMode with the driver station.
  * It uses BoKMecanumDT and BoKTele objects
  */
-@TeleOp(name="BOK TELEOP 1", group="BoKTele")
-public class BoKTeleOpMode extends LinearOpMode
+@TeleOp(name="BoK Teleop 2", group="BoKTele")
+public class BoKTeleOpMode2 extends LinearOpMode
 {
     @Override
     public void runOpMode()
@@ -32,7 +32,7 @@ public class BoKTeleOpMode extends LinearOpMode
             telemetry.update();
 
             opMode = new BoKTele();
-            if (BoKTele.BoKTeleStatus.BOK_TELE_FAILURE == opMode.initSoftware(this, robot, true)) {
+            if (BoKTele.BoKTeleStatus.BOK_TELE_FAILURE == opMode.initSoftware(this, robot, false)) {
                 telemetry.addData("Status", "Software NOT initialized");
                 telemetry.update();
             } else {

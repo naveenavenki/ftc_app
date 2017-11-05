@@ -27,6 +27,8 @@ public class BoKTele
     private boolean clawClosed = false;
 
     private boolean tank = false;
+    private boolean end_game = false;
+    private boolean trigger_left_decrease = false;
     private double speedCoef = SPEED_COEFF_FAST;
 
     public enum BoKTeleStatus
@@ -36,13 +38,17 @@ public class BoKTele
     }
 
     public BoKTeleStatus initSoftware(LinearOpMode opMode,
-                                      BoKHardwareBot robot)
+                                      BoKHardwareBot robot,
+                                      boolean trigger_left_decrease)
     {
+        this.trigger_left_decrease = trigger_left_decrease;
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
     public BoKTeleStatus runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
     {
+        robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.jewelFlicker.setPosition(BoKHardwareBot.JF_FINAL);
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
             // GAMEPAD 1 CONTROLS:
@@ -76,6 +82,14 @@ public class BoKTele
             // Left and right trigger: Claw wrist down and up
             // B:                      Claw open
             // A:                      Claw closed
+            // Y:                      End Game
+            // X:                      Not End Game
+            if (opMode.gamepad2.y) {
+                end_game = true;
+            }
+            if (opMode.gamepad2.x) {
+                end_game = false;
+            }
             if ((Math.abs(opMode.gamepad2.right_stick_y) >= TURNTABLE_STICK_DEAD_ZONE) ||
                     (Math.abs(opMode.gamepad2.right_stick_x) >= TURNTABLE_STICK_DEAD_ZONE)) {
                 double y = -opMode.gamepad2.right_stick_y;
@@ -99,40 +113,50 @@ public class BoKTele
             }
 
             if (opMode.gamepad2.left_stick_y < -UPPER_ARM_STICK_DEAD_ZONE) {
-                double posOfArm = robot.upperArm.getCurrentPosition();
-                double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
-                robot.glyphArm.clawWrist.setPosition(
-                        robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
-                posOfUpperArm = posOfArm;
+                if (!end_game) {
+                    double posOfArm = robot.upperArm.getCurrentPosition();
+                    double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
+                    robot.glyphArm.clawWrist.setPosition(
+                            robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
+                    posOfUpperArm = posOfArm;
+                }
                 if (clawClosed)
                     robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_FAST);
                 else
                     robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_SLOW);
             } else if (opMode.gamepad2.left_stick_y > UPPER_ARM_STICK_DEAD_ZONE) {
-                double posOfArm = robot.upperArm.getCurrentPosition();
-                double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
-                robot.glyphArm.clawWrist.setPosition(
-                        robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
+                if (!end_game) {
+                    double posOfArm = robot.upperArm.getCurrentPosition();
+                    double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
+                    robot.glyphArm.clawWrist.setPosition(
+                            robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
+                    posOfUpperArm = posOfArm;
+                }
                 if (clawClosed)
                     robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_FAST);
                 else
                     robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_SLOW);
-                posOfUpperArm = posOfArm;
             } else {
                 robot.upperArm.setPower(0);
                 robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                double posOfArm = robot.upperArm.getCurrentPosition();
+                //double posOfArm = robot.upperArm.getCurrentPosition();
                 //opMode.telemetry.addData("upperArm", posOfArm);
                 //opMode.telemetry.update();
             }
 
             if (opMode.gamepad2.left_trigger > GAME_TRIGGER_DEAD_ZONE) {
-               robot.glyphArm.decreaseClawWristPos(opMode.gamepad2.left_trigger);
+                if (trigger_left_decrease)
+                    robot.glyphArm.decreaseClawWristPos(opMode.gamepad2.left_trigger);
+                else
+                    robot.glyphArm.increaseClawWristPos(opMode.gamepad2.left_trigger);
                 //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
             }
 
             if (opMode.gamepad2.right_trigger > GAME_TRIGGER_DEAD_ZONE) {
-                robot.glyphArm.increaseClawWristPos(-opMode.gamepad2.right_trigger);
+                if (trigger_left_decrease)
+                    robot.glyphArm.increaseClawWristPos(opMode.gamepad2.right_trigger);
+                else
+                    robot.glyphArm.decreaseClawWristPos(opMode.gamepad2.right_trigger);
                 //Log.v("BOK", String.format("%f", opMode.gamepad2.right_stick_y) );
             }
 
