@@ -50,7 +50,6 @@ public class BoKAutoBlueFar extends BoKAutoCommon
         // Distance to crypto and timeout depends on column number
         int distance = DISTANCE_TO_RIGHT_COL_CM;
         double timeout = TIMEOUT_RIGHT;
-        cryptoColumn = RelicRecoveryVuMark.LEFT;
         if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
             distance = DISTANCE_TO_CENTER_COL_CM;
             timeout = TIMEOUT_CENTER;
