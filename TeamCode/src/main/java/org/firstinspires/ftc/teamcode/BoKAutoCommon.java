@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Bitmap;
+
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import android.util.Log;
@@ -59,6 +61,8 @@ public abstract class BoKAutoCommon implements BoKAuto
     // CONSTANTS
     private static final double P_TURN_COEFF = 0.5;
     private static final double HEADING_THRESHOLD = 1;
+    private static final int RS_DIFF_THRESHOLD_CM = 1;
+    private static final double DT_POWER_FOR_RS_MIN = 0.15;
 
     private AppUtil appUtil = AppUtil.getInstance();
     private VuforiaLocalizer vuforiaFTC;
@@ -71,6 +75,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected LinearOpMode opMode;  // save a copy of the current opMode and robot
     protected BoKHardwareBot robot;
 
+    // NOTE: Even if we are unsuccessful with Vuforia, we will still go to the left column
     protected RelicRecoveryVuMark cryptoColumn = RelicRecoveryVuMark.LEFT;
     protected boolean foundRedOnLeft = false;
 
@@ -89,7 +94,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                                       BoKHardwareBot robot,
                                       BoKAllianceColor redOrBlue)
     {
-
         Log.v("BOK", "Initializing OpenCV");
         // Initialize OpenCV
         if (!OpenCVLoader.initDebug()) {
@@ -147,9 +151,10 @@ public abstract class BoKAutoCommon implements BoKAuto
     @Override
     public abstract void runSoftware();
 
-    public void getCryptoColumn(double waitForSec)
+    public boolean getCryptoColumn(double waitForSec)
     {
         boolean vuMarkVisible = false;
+        boolean vuforiaSuccess = false;
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.LEFT;
         // activate
         relicTrackables.activate();
@@ -196,7 +201,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                     // 3x4 row major matrix. where as the OpenGLMatrix is 4x4
                     // column major matrix.
                     Matrix34F raw = new Matrix34F();
-                    Log.v("BOK", "copy");
                     float[] rawData = Arrays.copyOfRange(pose.transposed().getData(), 0, 12);
                     raw.setData(rawData);
 
@@ -272,6 +276,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                                 } else {
                                     Log.v("BOK", "Left is BLUE");
                                 }
+                                vuforiaSuccess = true;
                             }
                             break;
                         } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
@@ -287,6 +292,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         } // while (!vuMarkVisible)
         cryptoColumn = vuMark;
         Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
+        return vuforiaSuccess;
     }
 
     public void setJewelFlicker()
@@ -374,89 +380,59 @@ public abstract class BoKAutoCommon implements BoKAuto
     }
     
     public void moveWithRangeSensor(double power,
-                                    int distance,
+                                    int targetDistanceCm,
                                     boolean sensorFront,
                                     double waitForSeconds)
     {
+        double cmCurrent, diffFromTarget, pCoeff, wheelPower = power;
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        runTime.reset();
-        
-        double cmCurrent;
-        ModernRoboticsI2cRangeSensor rangeSensor;
+
+        ModernRoboticsI2cRangeSensor rangeSensor; // First choose which range sensor to use
         if(sensorFront) {
             rangeSensor = robot.rangeSensorFront;
         }
         else {
             rangeSensor = robot.rangeSensorBack;
         }
-        double difference;
-        double pwrCoeff;
-        double pwr = power;
+
         cmCurrent = rangeSensor.cmUltrasonic();
-        difference = distance - cmCurrent;
-        while (opMode.opModeIsActive() && Math.abs(difference) >= 1  &&
+        diffFromTarget = targetDistanceCm - cmCurrent;
+        runTime.reset();
+
+        while (opMode.opModeIsActive() &&
+                (Math.abs(diffFromTarget) >= RS_DIFF_THRESHOLD_CM) &&
                 (runTime.seconds() < waitForSeconds)) {
             cmCurrent = rangeSensor.cmUltrasonic();
-            if (cmCurrent == 255)
+            if (cmCurrent == 255) // Invalid sensor reading
                 continue;
-        
-            difference = distance - cmCurrent;
-            pwrCoeff = difference / 15;
-            pwr *= pwrCoeff;
-            pwr = Range.clip(pwr, -power, power);
-                if(pwr > 0 && pwr < 0.1) {
-                    pwr = 0.1;
-                }
-                if(pwr < 0 && pwr > -0.1) {
-                    pwr = -0.1;
-                }
-            if(sensorFront) { //BLUE neg-forward pos-back
-                
-                robot.setPowerToDTMotors(-pwr, -pwr, pwr, pwr);
+
+            diffFromTarget = targetDistanceCm - cmCurrent;
+            pCoeff = diffFromTarget/2;
+            wheelPower = Range.clip(wheelPower*pCoeff, -power, power);
+            if (wheelPower > 0 && wheelPower < DT_POWER_FOR_RS_MIN)
+                wheelPower = DT_POWER_FOR_RS_MIN; // min power to move
+            if (wheelPower < 0 && wheelPower > -DT_POWER_FOR_RS_MIN)
+                wheelPower = -DT_POWER_FOR_RS_MIN;
+
+            if (sensorFront) {
+                // if diffFromTarget > 0 then wheelPower is +ve, but we need to move
+                // backward (BLUE FAR).
+                Log.v("BOK", "Front current RS: " + cmCurrent +
+                        " Difference: " + diffFromTarget +
+                        " Power: " + wheelPower);
+                robot.setPowerToDTMotors(-wheelPower, -wheelPower, wheelPower, wheelPower);
             }
-        
-            if(!sensorFront) {//RED
-               
-                robot.setPowerToDTMotors(pwr, pwr, -pwr, -pwr);
+            else { // back range sensor
+                // if diffFromTarget > 0 then wheelPower is +ve
+                Log.v("BOK", "Back current RS: " + cmCurrent +
+                        " Difference: " + diffFromTarget +
+                        " Power: (move fwd) " + wheelPower);
+                robot.setPowerToDTMotors(wheelPower, wheelPower, -wheelPower, -wheelPower);
             }
-            
-            Log.v("BOK", "Distance RS: " + cmCurrent + " Difference: " + difference + " Power: " + power);
-            opMode.telemetry.addData("Distance RS", cmCurrent);
-            opMode.telemetry.update();
-        }
-        
-        
-        
-        
-/*
-        if(forward){
-            robot.setPowerToDTMotors(power, power, -power, -power);
-        }
-        else{
-            robot.setPowerToDTMotors(-power, -power, power, power);
         }
 
-        cmCurrent = robot.rangeSensorFront.cmUltrasonic();
-        while(opMode.opModeIsActive() &&
-                (cmCurrent >= distance) &&
-                (runTime.seconds() < waitForSeconds)) {
-            if (forward) {
-                cmCurrent = robot.rangeSensorFront.cmUltrasonic();
-            }
-            else {
-                cmCurrent = robot.rangeSensorBack.cmUltrasonic();
-            }
-            Log.v("BOK", "Distance RS: " + cmCurrent);
-            opMode.telemetry.addData("Distance RS", cmCurrent);
-            opMode.telemetry.update();
-        }
-        */
-           
-            
-            
         robot.setPowerToDTMotors(0, 0, 0, 0);
         robot.setZeroPowerBehaviorDTMotors();
-        
     }
 
     // Code copied from the sample PushbotAutoDriveByGyro_Linear
@@ -572,7 +548,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         return Range.clip(error * PCoeff, -1, 1);
     }
     
-    protected void moveRedCrypto()
+    protected void moveToRedCrypto()
     {
         if (opMode.opModeIsActive()) {
             // Prepare the jewel arm & the optical color/range sensor
@@ -594,10 +570,8 @@ public abstract class BoKAutoCommon implements BoKAuto
             //     true,
             //     CRS_CRYPTO_TIMEOUT);
 
-
             // Determine how many rotations to strafe to the left?
             //strafe(DT_POWER_FOR_STRAFE,ROTATIONS_STRAFE_FROM_WALL, false, DT_STRAFE_TIMEOUT);
-
 
             // Now prepare to unload the glyph
             for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
@@ -624,8 +598,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
-
-    protected void moveBlueCrypto()
+    protected void moveToBlueCrypto()
     {
         if (opMode.opModeIsActive()) {
             // Prepare the jewel arm & the optical color/range sensor
@@ -649,7 +622,6 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             // Determine how many rotations to strafe to the left?
             //strafe(DT_POWER_FOR_STRAFE,ROTATIONS_STRAFE_FROM_WALL, false, DT_STRAFE_TIMEOUT);
-
 
             // Now prepare to unload the glyph
             for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
