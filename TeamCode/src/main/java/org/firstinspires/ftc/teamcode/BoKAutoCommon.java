@@ -375,13 +375,60 @@ public abstract class BoKAutoCommon implements BoKAuto
     
     public void moveWithRangeSensor(double power,
                                     int distance,
-                                    boolean forward,
+                                    boolean sensorFront,
                                     double waitForSeconds)
     {
-        double cmCurrent;
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         runTime.reset();
-
+        
+        double cmCurrent;
+        ModernRoboticsI2cRangeSensor rangeSensor;
+        if(sensorFront) {
+            rangeSensor = robot.rangeSensorFront;
+        }
+        else {
+            rangeSensor = robot.rangeSensorBack;
+        }
+        double difference;
+        double pwrCoeff;
+        double pwr = power;
+        cmCurrent = rangeSensor.cmUltrasonic();
+        difference = distance - cmCurrent;
+        while (opMode.opModeIsActive() && Math.abs(difference) >= 1  &&
+                (runTime.seconds() < waitForSeconds)) {
+            cmCurrent = rangeSensor.cmUltrasonic();
+            if (cmCurrent == 255)
+                continue;
+        
+            difference = distance - cmCurrent;
+            pwrCoeff = difference / 15;
+            pwr *= pwrCoeff;
+            pwr = Range.clip(pwr, -power, power);
+                if(pwr > 0 && pwr < 0.1) {
+                    pwr = 0.1;
+                }
+                if(pwr < 0 && pwr > -0.1) {
+                    pwr = -0.1;
+                }
+            if(sensorFront) { //BLUE neg-forward pos-back
+                
+                robot.setPowerToDTMotors(-pwr, -pwr, pwr, pwr);
+            }
+        
+            if(!sensorFront) {//RED
+               
+                robot.setPowerToDTMotors(pwr, pwr, -pwr, -pwr);
+            }
+            
+            Log.v("BOK", "Distance RS: " + cmCurrent + " Difference: " + difference + " Power: " + power);
+            opMode.telemetry.addData("Distance RS", cmCurrent);
+            opMode.telemetry.update();
+        }
+        
+        
+        
+        
+/*
         if(forward){
             robot.setPowerToDTMotors(power, power, -power, -power);
         }
@@ -403,8 +450,13 @@ public abstract class BoKAutoCommon implements BoKAuto
             opMode.telemetry.addData("Distance RS", cmCurrent);
             opMode.telemetry.update();
         }
-
+        */
+           
+            
+            
         robot.setPowerToDTMotors(0, 0, 0, 0);
+        robot.setZeroPowerBehaviorDTMotors();
+        
     }
 
     // Code copied from the sample PushbotAutoDriveByGyro_Linear

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+
 /**
  * Created by Krishna Saxena on 10/3/2017.
  */
@@ -10,7 +12,10 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     private static double TIMEOUT_CENTER = 5;
     private static double TIMEOUT_LEFT = 6;
     private static int TURN_LEFT_DEGREES = 90;
-    private static double DT_MOVE_TO_CRYPTO = 17;
+    private static double DT_MOVE_TO_CRYPTO = 24;//inches
+    private static int DISTANCE_TO_LEFT_COL = 63;//cm
+    private static int DISTANCE_TO_CENTER_COL = 40;//cm
+    private static int DISTANCE_TO_RIGHT_COL = 43;//cm
 
     @Override
     public void runSoftware() {
@@ -41,15 +46,27 @@ public class BoKAutoRedFar extends BoKAutoCommon {
 
         // Move forwards towards cryptobox
         // Distance and timeout depends on column number; TBD
-        //move(DT_POWER_FOR_CRYPTO, DT_POWER_FOR_STONE, 15, false, TIMEOUT_RIGHT);
+        
+        int distance = DISTANCE_TO_RIGHT_COL;
+        double timeout = TIMEOUT_RIGHT;
+        cryptoColumn = RelicRecoveryVuMark.CENTER;
+        if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
+            distance = DISTANCE_TO_CENTER_COL;
+            timeout = TIMEOUT_CENTER;
+        }
+        else if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
+            distance = DISTANCE_TO_LEFT_COL;
+            timeout = TIMEOUT_LEFT;
+        }
+        
 
         // prepare the jewel arm & the optical color/range sensor
 
         // move forward towards cryptobox using optical color/range sensor
         
-        moveWithRangeSensor(0.15, 43, false, 4);
+        moveWithRangeSensor(DT_POWER_FOR_RS, distance, false, timeout);
     
-      //  moveTowardsCrypto(DT_POWER_FOR_CRYPTO, DISTANCE_TO_CRYPTO, true, CRS_CRYPTO_TIMEOUT);
+        moveRedCrypto();
 
         // Rest of the code is similar to Red near: TBD
     }

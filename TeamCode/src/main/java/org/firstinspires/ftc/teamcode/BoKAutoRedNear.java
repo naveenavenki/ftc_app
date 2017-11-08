@@ -11,7 +11,7 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     private static final double TIMEOUT_CENTER = 5;
     private static final double TIMEOUT_LEFT = 6;
     
-    private static final double DISTANCE_TO_RIGHT_COL = 16.5;
+    private static final double DISTANCE_TO_RIGHT_COL = 16.5; // inches!!
     private static final double DISTANCE_TO_CENTER_COL = 26;
     private static final double DISTANCE_TO_LEFT_COL = 33;
 

@@ -27,6 +27,7 @@ public interface BoKAuto
 
     public static double DT_POWER_FOR_STONE = 0.2;
     public static double DT_POWER_FOR_STRAFE = 0.15;
+    public static double DT_POWER_FOR_RS = 0.15;
     public static double DT_POWER_FOR_CRYPTO = 0.1;
     public static double DT_TURN_SPEED_LOW  = 0.15;
     public static double DT_TURN_SPEED_HIGH = 0.4;
