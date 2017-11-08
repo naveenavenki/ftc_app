@@ -13,27 +13,30 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     private static double TIMEOUT_LEFT = 6;
     private static int TURN_LEFT_DEGREES = 90;
     private static double DT_MOVE_TO_CRYPTO = 24;//inches
-    private static int DISTANCE_TO_LEFT_COL = 63;//cm
-    private static int DISTANCE_TO_CENTER_COL = 40;//cm
-    private static int DISTANCE_TO_RIGHT_COL = 43;//cm
+    private static int DISTANCE_TO_CENTER_COL_CM = 40;//cm
+    private static int DISTANCE_TO_RIGHT_COL_CM = 43;//cm
+    private static int DISTANCE_TO_LEFT_COL_CM = 63;//cm
 
     @Override
     public void runSoftware() {
         // Detect Vuforia image
-        getCryptoColumn(VUFORIA_TIMEOUT);
-        // Setup flicker
-        setJewelFlicker();
-        opMode.sleep(WAIT_FOR_SERVO_MS);
+        if (getCryptoColumn(VUFORIA_TIMEOUT)) {
+            // Setup flicker
+            setJewelFlicker();
+            opMode.sleep(WAIT_FOR_SERVO_MS);
 
-        if (foundRedOnLeft) {
-            robot.jewelFlicker.setPosition(robot.JF_RIGHT);
-        } else {
-            robot.jewelFlicker.setPosition(robot.JF_LEFT);
+            if (foundRedOnLeft) {
+                robot.jewelFlicker.setPosition(robot.JF_RIGHT);
+            } else {
+                robot.jewelFlicker.setPosition(robot.JF_LEFT);
+            }
+            opMode.sleep(WAIT_FOR_SERVO_MS);
+
+            // Raise the flicker arm
+            robot.jewelFlicker.setPosition(robot.JF_FINAL);
         }
-        opMode.sleep(WAIT_FOR_SERVO_MS);
 
-        // Raise the flicker arm and position the flicker to face the cryptobox
-        robot.jewelFlicker.setPosition(robot.JF_FINAL);
+        // Position the flicker to face the cryptobox
         robot.jewelArm.setPosition(robot.JA_INIT);
 
         // Move out of the balancing stone, distance: TBD?
@@ -45,29 +48,23 @@ public class BoKAutoRedFar extends BoKAutoCommon {
         // Move backwards to wall: TBD? (if there isn't enough space)
 
         // Move forwards towards cryptobox
-        // Distance and timeout depends on column number; TBD
-        
-        int distance = DISTANCE_TO_RIGHT_COL;
+        // Distance and timeout depends on column number
+        int distance = DISTANCE_TO_RIGHT_COL_CM;
         double timeout = TIMEOUT_RIGHT;
         cryptoColumn = RelicRecoveryVuMark.CENTER;
         if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
-            distance = DISTANCE_TO_CENTER_COL;
+            distance = DISTANCE_TO_CENTER_COL_CM;
             timeout = TIMEOUT_CENTER;
         }
         else if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
-            distance = DISTANCE_TO_LEFT_COL;
+            distance = DISTANCE_TO_LEFT_COL_CM;
             timeout = TIMEOUT_LEFT;
         }
-        
 
-        // prepare the jewel arm & the optical color/range sensor
+        // Move towards the crypto
+        moveWithRangeSensor(DT_POWER_FOR_RS, distance, false, timeout); // CM
 
-        // move forward towards cryptobox using optical color/range sensor
-        
-        moveWithRangeSensor(DT_POWER_FOR_RS, distance, false, timeout);
-    
-        moveRedCrypto();
-
-        // Rest of the code is similar to Red near: TBD
+        // Prepare to unload the glyph
+        moveToRedCrypto();
     }
 }

@@ -14,7 +14,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     private static final double TIMEOUT_CENTER = 5;
     private static final double TIMEOUT_LEFT = 6;
 
-    private static final double DISTANCE_TO_LEFT_COL = 26;
+    private static final double DISTANCE_TO_LEFT_COL = 26; // inches!!
     private static final double DISTANCE_TO_CENTER_COL = 33;
     private static final double DISTANCE_TO_RIGHT_COL = 40;
 
@@ -23,23 +23,25 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     {
         // NOTE: Move backwards towards crypto
         // Detect Vuforia image
-        getCryptoColumn(VUFORIA_TIMEOUT);
-        // Setup flicker
-        setJewelFlicker();
-        opMode.sleep(WAIT_FOR_SERVO_MS);
+        if (getCryptoColumn(VUFORIA_TIMEOUT)) {
+            // Setup flicker
+            setJewelFlicker();
+            opMode.sleep(WAIT_FOR_SERVO_MS);
 
-        if (foundRedOnLeft) {
-            robot.jewelFlicker.setPosition(robot.JF_LEFT);
-            Log.v("BOK", "FOUND RED LEFT");
-        }
-        else {
-            robot.jewelFlicker.setPosition(robot.JF_RIGHT);
-            Log.v("BOK", "FOUND RED NOT ON LEFT");
-        }
-        opMode.sleep(WAIT_FOR_SERVO_MS);
+            if (foundRedOnLeft) {
+                robot.jewelFlicker.setPosition(robot.JF_LEFT);
+                Log.v("BOK", "FOUND RED LEFT");
+            } else {
+                robot.jewelFlicker.setPosition(robot.JF_RIGHT);
+                Log.v("BOK", "FOUND RED NOT ON LEFT");
+            }
+            opMode.sleep(WAIT_FOR_SERVO_MS);
 
-        // Raise the flicker arm and position the flicker to face the cryptobox
-        robot.jewelFlicker.setPosition(robot.JF_FINAL);
+            // Raise the flicker arm
+            robot.jewelFlicker.setPosition(robot.JF_FINAL);
+        }
+
+        // Position the flicker to face the cryptobox
         robot.jewelArm.setPosition(robot.JA_INIT);
 
         // Move forward out of balancing stone
@@ -56,7 +58,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         }
 
         // Move backward out of balancing stone
-        // Distance and timeout depends on column number; TBD
+        // Distance and timeout depends on column number;
         move(DT_POWER_FOR_STONE,
              DT_POWER_FOR_STONE,
              distance,
@@ -69,6 +71,6 @@ public class BoKAutoBlueNear extends BoKAutoCommon
                true,
                DT_STRAFE_TIMEOUT);
 
-        moveBlueCrypto();
+        moveToBlueCrypto();
     }
 }
