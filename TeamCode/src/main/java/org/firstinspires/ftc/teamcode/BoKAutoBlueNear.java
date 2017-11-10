@@ -66,10 +66,10 @@ public class BoKAutoBlueNear extends BoKAutoCommon
              timeout);
 
         // Strafe to the right
-        strafe(DT_POWER_FOR_STRAFE,
-               ROTATIONS_STRAFE_TO_WALL,
-               true,
-               DT_STRAFE_TIMEOUT);
+        //strafe(DT_POWER_FOR_STRAFE,
+        //       ROTATIONS_STRAFE_TO_WALL,
+        //      true,
+        //       DT_STRAFE_TIMEOUT);
 
         moveToBlueCrypto();
     }

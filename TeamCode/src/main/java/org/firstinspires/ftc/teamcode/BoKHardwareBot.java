@@ -64,7 +64,7 @@ public abstract class BoKHardwareBot
 
     // Sensors
     protected BNO055IMU imu;
-    
+
     protected ModernRoboticsI2cRangeSensor rangeSensorJA;
     protected ModernRoboticsI2cRangeSensor rangeSensorFront;
     protected ModernRoboticsI2cRangeSensor rangeSensorBack;
@@ -171,10 +171,10 @@ public abstract class BoKHardwareBot
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        //parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        //parameters.loggingEnabled      = true;
+        //parameters.loggingTag          = "IMU";
+        //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         //angles = new Orientation();
         imu.initialize(parameters);
         

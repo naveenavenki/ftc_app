@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import android.util.Log;
 
@@ -62,7 +64,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     private static final double P_TURN_COEFF = 0.5;
     private static final double HEADING_THRESHOLD = 1;
     private static final int RS_DIFF_THRESHOLD_CM = 1;
-    private static final double DT_POWER_FOR_RS_MIN = 0.15;
+    private static final double DT_POWER_FOR_RS_MIN = 0.1;
 
     private AppUtil appUtil = AppUtil.getInstance();
     private VuforiaLocalizer vuforiaFTC;
@@ -135,10 +137,10 @@ public abstract class BoKAutoCommon implements BoKAuto
         alliance = redOrBlue;
 
         Log.v("BOK", "Done initializing software");
-
         this.opMode = opMode;
         this.robot = robot;
 
+        setupRobot();
         //robot.resetDTEncoders(); // prepare for autonomous
         return BoKAutoStatus.BOK_AUTO_SUCCESS;
     }
@@ -151,6 +153,82 @@ public abstract class BoKAutoCommon implements BoKAuto
     @Override
     public abstract void runSoftware();
 
+    public void setupRobot()
+    {
+        boolean vuMarkVisible = false;
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
+        // activate
+        relicTrackables.activate();
+        runTime.reset();
+
+        while (true) {
+            vuMark = RelicRecoveryVuMark.from(relicTemplate);
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+
+                /* Found an instance of the template. In the actual game, you will probably
+                 * loop until this condition occurs, then move on to act accordingly depending
+                 * on which VuMark was visible. */
+                //opMode.telemetry.addData("VuMark", "%s visible", vuMark);
+                vuMarkVisible = true;
+                //Log.v("BOK", "VuMark " + vuMark + " visible");
+
+                if (opMode.gamepad1.y) {
+                    relicTrackables.deactivate();
+                    break;
+                }
+
+                /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
+                 * it is perhaps unlikely that you will actually need to act on this pose information, but
+                 * we illustrate it nevertheless, for completeness. */
+                OpenGLMatrix rawPose =
+                        ((VuforiaTrackableDefaultListener)
+                                relicTemplate.getListener()).getRawUpdatedPose();
+                if (rawPose != null) {
+                    //opMode.telemetry.addData("Raw Pose", format(rawPose));
+                    //Log.v("BOK", "Raw pose " + format(rawPose));
+
+                    Matrix34F raw = new Matrix34F();
+                    float[] rawData = Arrays.copyOfRange(rawPose.transposed().getData(), 0, 12);
+                    raw.setData(rawData);
+
+                    Vec2F pointCenter =
+                            Tool.projectPoint(vuforiaFTC.getCameraCalibration(),
+                                    raw, new Vec3F(0, 0, 0));
+
+                    opMode.telemetry.addData("VuMark", "CENTER:(" + (int)pointCenter.getData()[0] +
+                            ", " + (int)pointCenter.getData()[1] + ")");
+                    Log.v("BOK", "Center: ("+ (int)pointCenter.getData()[0] +
+                            ", " + (int)pointCenter.getData()[1] + ")");
+
+
+                    VectorF trans = rawPose.getTranslation();
+                    Orientation rot = Orientation.getOrientation(rawPose, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
+
+                    // Extract the X, Y, and Z components of the offset of the target relative to the robot
+                    double tX = trans.get(0);
+                    double tY = trans.get(1);
+                    double tZ = trans.get(2);
+
+                    /*opMode.telemetry.addData("Trans", String.format("(x, y, z): %.1f, %.1f, %.1f", tX, tY, tZ));
+                    Log.v("BOK", "(x, y, z)" + tX + ", " + tY + ", " + tZ);
+                    double rX = rot.firstAngle;
+                    double rY = rot.secondAngle;
+                    double rZ = rot.thirdAngle;
+                    Log.v("BOK", String.format("(Rx, Ry, Rz): %.1f, %.1f, %.1f", rX, rY, rZ));*/
+
+                    double rX = rot.firstAngle;
+                    double rY = rot.secondAngle;
+                    double rZ = rot.thirdAngle;
+                    opMode.telemetry.addData("Trans", String.format("X: %.1f, Z: %.1f, ROT Y: %.1f", tX + 183.5, tZ - 562, rY));
+                    Log.v("BOK", "(x, y, z)" + tX + ", " + tY + ", " + tZ);
+                    Log.v("BOK", String.format("(Rx, Ry, Rz): %.1f, %.1f, %.1f", rX, rY, rZ));
+                }
+                opMode.telemetry.update();
+            }
+            robot.waitForTick(40);
+        }
+    }
+
     public boolean getCryptoColumn(double waitForSec)
     {
         boolean vuMarkVisible = false;
@@ -160,7 +238,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         relicTrackables.activate();
         runTime.reset();
 
-        while (!vuMarkVisible && runTime.seconds() < waitForSec) {
+        while (opMode.opModeIsActive() && !vuMarkVisible && runTime.seconds() < waitForSec) {
             /**
              * See if any of the instances of relicTemplate are currently visible.
              * RelicRecoveryVuMark is an enum which can have the following values:
@@ -173,7 +251,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                 /* Found an instance of the template. In the actual game, you will probably
                  * loop until this condition occurs, then move on to act accordingly depending
                  * on which VuMark was visible. */
-                opMode.telemetry.addData("VuMark", "%s visible", vuMark);
+                //opMode.telemetry.addData("VuMark", "%s visible", vuMark);
                 vuMarkVisible = true;
                 Log.v("BOK", "VuMark " + vuMark + " visible");
 
@@ -240,10 +318,10 @@ public abstract class BoKAutoCommon implements BoKAuto
                                 // OpenCV only deals with BGR
 
                                 Rect roi = new Rect(505, 540, 95, 100);
-                                Imgproc.rectangle(img, new Point(roi.x, roi.y),
-                                        new Point(roi.x + 95, roi.y + 100),
-                                        new Scalar(255, 255, 255));
-                                //Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
+                                //Imgproc.rectangle(img, new Point(roi.x, roi.y),
+                                //        new Point(roi.x + 95, roi.y + 100),
+                                //        new Scalar(0, 255, 0), 10);
+                                //Imgcodecs.imwrite("/sdcard/FIRST/myImageR.png", img);
                                 Mat subMask = mask.submat(roi);
                                 subMask.setTo(new Scalar(255));
 
@@ -407,8 +485,8 @@ public abstract class BoKAutoCommon implements BoKAuto
                 continue;
 
             diffFromTarget = targetDistanceCm - cmCurrent;
-            pCoeff = diffFromTarget/2;
-            wheelPower = Range.clip(wheelPower*pCoeff, -power, power);
+            pCoeff = diffFromTarget/15;
+            wheelPower = Range.clip(power*pCoeff, -power, power);
             if (wheelPower > 0 && wheelPower < DT_POWER_FOR_RS_MIN)
                 wheelPower = DT_POWER_FOR_RS_MIN; // min power to move
             if (wheelPower < 0 && wheelPower > -DT_POWER_FOR_RS_MIN)
@@ -595,6 +673,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     false,
                     DT_STRAFE_TIMEOUT);
             robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
+            opMode.sleep(WAIT_FOR_SERVO_MS);
         }
     }
 
@@ -634,17 +713,18 @@ public abstract class BoKAutoCommon implements BoKAuto
             robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
 
             // Strafe to the right
-            strafe(DT_POWER_FOR_STRAFE,
+            strafe(DT_POWER_FOR_STRAFE * 1.5,
                     ROTATIONS_STRAFE_TO_WALL * 4,
                     true,
                     DT_STRAFE_TIMEOUT);
 
             //robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
-            strafe(DT_POWER_FOR_STRAFE,
+            strafe(DT_POWER_FOR_STRAFE * 1.5,
                     ROTATIONS_STRAFE_TO_WALL * 2,
                     false,
                     DT_STRAFE_TIMEOUT);
             robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
+            opMode.sleep(WAIT_FOR_SERVO_MS);
         }
     }
 }
