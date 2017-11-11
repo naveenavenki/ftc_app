@@ -205,6 +205,7 @@ public abstract class BoKHardwareBot
         upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         glyphArm = new BoKGlyphArm(this, opMode, clawWrist, clawGrab);
        
@@ -234,8 +235,6 @@ public abstract class BoKHardwareBot
     public abstract void startStrafe(double power, double rotations,
                                      boolean right);
 
-    public abstract void setZeroPowerBehaviorDTMotors();
-    
     public abstract void stopMove();
 
     /*

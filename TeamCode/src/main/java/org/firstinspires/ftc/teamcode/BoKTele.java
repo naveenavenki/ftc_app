@@ -19,9 +19,12 @@ public class BoKTele
     private static final double TURNTABLE_MOTOR_POWER = 0.2;
     private static final double UPPER_ARM_MOTOR_POWER_SLOW = 0.2;
     private static final double UPPER_ARM_MOTOR_POWER_FAST = 0.4;
-    private static final double SPEED_COEFF_SLOW = 0.2;
+    private static final double SPEED_COEFF_SLOW = 0.25;
     private static final double SPEED_COEFF_FAST = 0.5;
-    private static final int WAIT_PERIOD = 40;
+    protected static final int WAIT_PERIOD = 40;
+
+    private BoKHardwareBot robot;
+    private LinearOpMode opMode;
 
     private double posOfUpperArm = 0;
     private boolean clawClosed = false;
@@ -42,10 +45,12 @@ public class BoKTele
                                       boolean trigger_left_decrease)
     {
         this.trigger_left_decrease = trigger_left_decrease;
+        this.opMode = opMode;
+        this.robot = robot;
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
-    public BoKTeleStatus runSoftware(LinearOpMode opMode, BoKHardwareBot robot)
+    public BoKTeleStatus runSoftware()
     {
         robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.jewelFlicker.setPosition(BoKHardwareBot.JF_FINAL);
@@ -64,9 +69,9 @@ public class BoKTele
                 tank = false;
             }
             if (!tank) {
-                moveRobot(opMode, robot);
+                moveRobot();
             } else {
-                moveRobotTank(opMode, robot);
+                moveRobotTank();
             }
 
             if (opMode.gamepad1.y) {
@@ -84,6 +89,7 @@ public class BoKTele
             // A:                      Claw closed
             // Y:                      End Game
             // X:                      Not End Game
+            // DPad Up & Down:         Relic Arm
             if (opMode.gamepad2.y) {
                 end_game = true;
             }
@@ -107,9 +113,8 @@ public class BoKTele
                 robot.turnTable.setPower(TURNTABLE_MOTOR_POWER);
             }
             else {
-
                 robot.turnTable.setPower(0.0);
-                robot.turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                //robot.turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
 
             if (opMode.gamepad2.left_stick_y < -UPPER_ARM_STICK_DEAD_ZONE) {
@@ -138,7 +143,7 @@ public class BoKTele
                     robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_SLOW);
             } else {
                 robot.upperArm.setPower(0);
-                robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                //robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 //double posOfArm = robot.upperArm.getCurrentPosition();
                 //opMode.telemetry.addData("upperArm", posOfArm);
                 //opMode.telemetry.update();
@@ -170,31 +175,36 @@ public class BoKTele
                 clawClosed = true;
             }
 
-/*
-            if (opMode.gamepad1.a) {
-                robot.spool.setPower(-0.15);
-            } 
-            if (opMode.gamepad1.b) {
-                robot.spool.setPower(0.15);
-            }
-            if (opMode.gamepad1.y) {
-                robot.spool.setPower(0);
+            if(opMode.gamepad2.dpad_up){
+                moveRelicArm(false);
             }
 
-            if (opMode.gamepad1.dpad_up) {
-                currentPos = robot.relicArm.getPosition() - 0.01;
-                robot.relicArm.setPosition(currentPos);
-            } else if (opMode.gamepad1.dpad_down) {
-                currentPos = robot.relicArm.getPosition() + 0.01;
-                robot.relicArm.setPosition(currentPos);
+            if(opMode.gamepad2.dpad_down) {
+                moveRelicArm(false);
             }
-*/
+
             robot.waitForTick(WAIT_PERIOD);
         }
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
-    private void moveRobot(LinearOpMode opMode, BoKHardwareBot robot)
+    private void moveRelicArm(boolean right)
+    {
+        if (right) {
+            for (double i = robot.relicArm.getPosition(); i >= 0.0; i -= 0.01) {
+                robot.relicArm.setPosition(i);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            }
+        }
+        else {
+            for (double i = robot.relicArm.getPosition(); i <= 1; i += 0.01) {
+                robot.relicArm.setPosition(i);
+                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            }
+        }
+    }
+
+    private void moveRobot()
     {
         /*
          * Gamepad1: Driver 1 controls the robot using the left joystick for throttle and
@@ -209,7 +219,6 @@ public class BoKTele
         double motorPowerLB = 0;
         double motorPowerRF = 0;
         double motorPowerRB = 0;
-        boolean moving = false;
 
         //telemetry.addData("Throttle:",  "%.2f" + " Direction %.2f",
         // gamePad1LeftStickY, gamePad1RightStickX);
@@ -228,7 +237,6 @@ public class BoKTele
             motorPowerLB = -gamePad1LeftStickY - gamePad1LeftStickX;
             motorPowerRF = gamePad1LeftStickY - (-gamePad1LeftStickX);
             motorPowerRB = gamePad1LeftStickY - gamePad1LeftStickX;
-            moving = true;
 
             Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF) +
                     "LB: " + String.format("%.2f", motorPowerLB) +
@@ -240,7 +248,6 @@ public class BoKTele
             // Right joystick is for turning
             motorPowerLF = motorPowerLB = gamePad1RightStickX;
             motorPowerRF = motorPowerRB = gamePad1RightStickX;
-            moving = true;
 
             Log.v("BOK","Turn: LF:" + String.format("%.2f", motorPowerLF) +
                     "LB: " + String.format("%.2f", motorPowerLB) +
@@ -252,12 +259,9 @@ public class BoKTele
                 (motorPowerLB * speedCoef),
                 (motorPowerRF * speedCoef),
                 (motorPowerRB * speedCoef));
-        if (!moving) {
-            robot.setZeroPowerBehaviorDTMotors();
-        }
     }
 
-    public void moveRobotTank(LinearOpMode opMode, BoKHardwareBot robot)
+    private void moveRobotTank()
     {
         double gamePad1LeftStickY = opMode.gamepad1.left_stick_y;
         double gamePad1RightStickY = opMode.gamepad1.right_stick_y;
@@ -266,14 +270,12 @@ public class BoKTele
         double motorPowerLB = 0;
         double motorPowerRF = 0;
         double motorPowerRB = 0;
-        boolean moving = false;
 
         if((Math.abs(gamePad1LeftStickY) > GAME_STICK_DEAD_ZONE) ||
         (Math.abs(gamePad1LeftStickY) < -GAME_STICK_DEAD_ZONE))
         {
             motorPowerLB = -gamePad1LeftStickY;
             motorPowerLF = -gamePad1LeftStickY;
-            moving = true;
         }
 
         if((Math.abs(gamePad1RightStickY) > GAME_STICK_DEAD_ZONE) ||
@@ -281,15 +283,15 @@ public class BoKTele
         {
             motorPowerRB = gamePad1RightStickY;
             motorPowerRF = gamePad1RightStickY;
-            moving = true;
         }
+
+
         robot.setPowerToDTMotors(
                 (motorPowerLF * speedCoef),
                 (motorPowerLB * speedCoef),
                 (motorPowerRF * speedCoef),
                 (motorPowerRB * speedCoef));
-        if (!moving) {
-            robot.setZeroPowerBehaviorDTMotors();
-        }
     }
+
+
 }

@@ -178,8 +178,8 @@ public abstract class BoKAutoCommon implements BoKAuto
                 }
 
                 /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
-                 * it is perhaps unlikely that you will actually need to act on this pose information, but
-                 * we illustrate it nevertheless, for completeness. */
+                 * it is perhaps unlikely that you will actually need to act on this pose
+                 * information, but we illustrate it nevertheless, for completeness. */
                 OpenGLMatrix rawPose =
                         ((VuforiaTrackableDefaultListener)
                                 relicTemplate.getListener()).getRawUpdatedPose();
@@ -202,30 +202,25 @@ public abstract class BoKAutoCommon implements BoKAuto
 
 
                     VectorF trans = rawPose.getTranslation();
-                    Orientation rot = Orientation.getOrientation(rawPose, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
+                    Orientation rot = Orientation.getOrientation(rawPose,
+                            AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
 
-                    // Extract the X, Y, and Z components of the offset of the target relative to the robot
+                    // Extract the X, Y, and Z components of the offset of the target
+                    // relative to the robot
                     double tX = trans.get(0);
-                    double tY = trans.get(1);
+                    //double tY = trans.get(1);
                     double tZ = trans.get(2);
 
-                    /*opMode.telemetry.addData("Trans", String.format("(x, y, z): %.1f, %.1f, %.1f", tX, tY, tZ));
-                    Log.v("BOK", "(x, y, z)" + tX + ", " + tY + ", " + tZ);
-                    double rX = rot.firstAngle;
+                    //double rX = rot.firstAngle;
                     double rY = rot.secondAngle;
-                    double rZ = rot.thirdAngle;
-                    Log.v("BOK", String.format("(Rx, Ry, Rz): %.1f, %.1f, %.1f", rX, rY, rZ));*/
-
-                    double rX = rot.firstAngle;
-                    double rY = rot.secondAngle;
-                    double rZ = rot.thirdAngle;
-                    opMode.telemetry.addData("Trans", String.format("X: %.1f, Z: %.1f, ROT Y: %.1f", tX + 183.5, tZ - 562, rY));
-                    Log.v("BOK", "(x, y, z)" + tX + ", " + tY + ", " + tZ);
-                    Log.v("BOK", String.format("(Rx, Ry, Rz): %.1f, %.1f, %.1f", rX, rY, rZ));
+                    //double rZ = rot.thirdAngle;
+                    opMode.telemetry.addData("Trans",
+                            "X: %.1f, Z: %.1f, ROT Y: %.1f", tX + 183.5, tZ - 562, rY);
+                    Log.v("BOK", String.format("(X, Z): %.1f, %.1f, Ry: %.1f", tX, tZ, rY));
                 }
                 opMode.telemetry.update();
             }
-            robot.waitForTick(40);
+            robot.waitForTick(BoKTele.WAIT_PERIOD);
         }
     }
 
@@ -453,7 +448,6 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
 
         robot.setPowerToDTMotors(0, 0, 0, 0);
-        robot.setZeroPowerBehaviorDTMotors();
         Log.v("BOK", "Distance RS (end): " + cmCurrent + "(current): " + robot.rangeSensorJA.cmUltrasonic());
     }
     
@@ -510,7 +504,6 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
 
         robot.setPowerToDTMotors(0, 0, 0, 0);
-        robot.setZeroPowerBehaviorDTMotors();
     }
 
     // Code copied from the sample PushbotAutoDriveByGyro_Linear

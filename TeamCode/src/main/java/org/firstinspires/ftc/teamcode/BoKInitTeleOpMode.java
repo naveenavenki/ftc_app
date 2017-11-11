@@ -22,7 +22,6 @@ public class BoKInitTeleOpMode extends LinearOpMode {
     private static final double GAME_TRIGGER_DEAD_ZONE = 0.2;
     private static final double UPPER_ARM_STICK_DEAD_ZONE = 0.2;
     private static final double UPPER_ARM_MOTOR_POWER_SLOW = 0.2;
-    private static final int WAIT_PERIOD = 40;
 
     BoKHardwareBot robot = new BoKMecanumDT();
     private boolean writeOnce = false;
@@ -63,7 +62,7 @@ public class BoKInitTeleOpMode extends LinearOpMode {
                 ReadWriteFile.writeFile(file, Double.toString(robot.glyphArm.clawWrist.getPosition()));
                 Log.v("BOK", "Value written to file: " + Double.toString(robot.glyphArm.clawWrist.getPosition()));   
             }
-            robot.waitForTick(WAIT_PERIOD);
+            robot.waitForTick(BoKTele.WAIT_PERIOD);
         }
     }
 }
