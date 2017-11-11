@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
 /**
  * Created by Krishna Saxena on 10/14/2016.
  * Define all the CONSTANTS used for autonomous mode.
@@ -41,7 +39,7 @@ public interface BoKAuto
     //public static double ROTATIONS_STRAFE_FROM_WALL = 0.25;
     public static double DEGREES_UPPER_ARM_FOR_GLYPH = 20;
 
-    public BoKAutoStatus initSoftware(LinearOpMode opMode,
+    public BoKAutoStatus initSoftware(BoKAutoOpMode opMode,
                                       BoKHardwareBot robot,
                                       BoKAllianceColor redOrBlue);
 

@@ -73,8 +73,8 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     protected ElapsedTime runTime  = new ElapsedTime();
 
-    protected BoKAllianceColor alliance; // BOK_ALLIANCE_RED or BOK_ALLIANCE_BLUE
-    protected LinearOpMode opMode;  // save a copy of the current opMode and robot
+    private BoKAllianceColor alliance; // BOK_ALLIANCE_RED or BOK_ALLIANCE_BLUE
+    protected BoKAutoOpMode opMode;  // save a copy of the current opMode and robot
     protected BoKHardwareBot robot;
 
     // NOTE: Even if we are unsuccessful with Vuforia, we will still go to the left column
@@ -92,7 +92,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     };
 
     @Override
-    public BoKAutoStatus initSoftware(LinearOpMode opMode,
+    public BoKAutoStatus initSoftware(BoKAutoOpMode opMode,
                                       BoKHardwareBot robot,
                                       BoKAllianceColor redOrBlue)
     {

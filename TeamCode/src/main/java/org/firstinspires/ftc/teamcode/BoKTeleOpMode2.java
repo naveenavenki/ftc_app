@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class BoKTeleOpMode2 extends BoKTeleOpMode
 {
     @Override
-    public void runOpMode()
+    public void runOpMode() throws InterruptedException
     {
         //
         trigger_left_decrease = false;
