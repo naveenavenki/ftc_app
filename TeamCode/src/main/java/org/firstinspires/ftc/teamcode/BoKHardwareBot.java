@@ -50,6 +50,8 @@ public abstract class BoKHardwareBot
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
     private static final String IMU_TOP = "imu_top";
 
+    protected static final int WAIT_PERIOD = 40; // 40 ms
+
     // DC motors
     protected DcMotor turnTable;
     protected DcMotor upperArm;
@@ -144,7 +146,6 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-
         imu = opMode.hardwareMap.get(BNO055IMU.class, IMU_TOP);
         if(imu == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
@@ -192,8 +193,8 @@ public abstract class BoKHardwareBot
         turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turnTable.setPower(0);
         turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turnTable.setPower(0);
         //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         clawGrab.setPosition(CG_INIT);
@@ -206,6 +207,7 @@ public abstract class BoKHardwareBot
         //upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        upperArm.setPower(0);
 
         glyphArm = new BoKGlyphArm(this, opMode, clawWrist, clawGrab);
        
@@ -258,7 +260,6 @@ public abstract class BoKHardwareBot
             catch (InterruptedException e) {
             }
         }
-
 
         // Reset the cycle clock for the next pass.
         period.reset();

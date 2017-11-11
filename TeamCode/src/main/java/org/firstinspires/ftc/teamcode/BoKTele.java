@@ -21,7 +21,6 @@ public class BoKTele
     private static final double UPPER_ARM_MOTOR_POWER_FAST = 0.4;
     private static final double SPEED_COEFF_SLOW = 0.25;
     private static final double SPEED_COEFF_FAST = 0.5;
-    protected static final int WAIT_PERIOD = 40;
 
     private BoKHardwareBot robot;
     private LinearOpMode opMode;
@@ -54,6 +53,7 @@ public class BoKTele
     {
         robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.jewelFlicker.setPosition(BoKHardwareBot.JF_FINAL);
+
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
             // GAMEPAD 1 CONTROLS:
@@ -183,7 +183,7 @@ public class BoKTele
                 moveRelicArm(false);
             }
 
-            robot.waitForTick(WAIT_PERIOD);
+            robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
         }
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
@@ -238,10 +238,10 @@ public class BoKTele
             motorPowerRF = gamePad1LeftStickY - (-gamePad1LeftStickX);
             motorPowerRB = gamePad1LeftStickY - gamePad1LeftStickX;
 
-            Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF) +
-                    "LB: " + String.format("%.2f", motorPowerLB) +
-                    "RF: " + String.format("%.2f", motorPowerRF) +
-                    "RB: " + String.format("%.2f", motorPowerRB));
+            //Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF) +
+            //        "LB: " + String.format("%.2f", motorPowerLB) +
+            //        "RF: " + String.format("%.2f", motorPowerRF) +
+            //        "RB: " + String.format("%.2f", motorPowerRB));
         }
         else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) ||
                 (gamePad1RightStickX < -GAME_STICK_DEAD_ZONE)) {
@@ -249,10 +249,10 @@ public class BoKTele
             motorPowerLF = motorPowerLB = gamePad1RightStickX;
             motorPowerRF = motorPowerRB = gamePad1RightStickX;
 
-            Log.v("BOK","Turn: LF:" + String.format("%.2f", motorPowerLF) +
-                    "LB: " + String.format("%.2f", motorPowerLB) +
-                    "RF: " + String.format("%.2f", motorPowerRF) +
-                    "RB: " + String.format("%.2f", motorPowerRB));
+            //Log.v("BOK","Turn: LF:" + String.format("%.2f", motorPowerLF) +
+            //        "LB: " + String.format("%.2f", motorPowerLB) +
+            //        "RF: " + String.format("%.2f", motorPowerRF) +
+            //        "RB: " + String.format("%.2f", motorPowerRB));
         }
         robot.setPowerToDTMotors(
                 (motorPowerLF * speedCoef),
@@ -292,6 +292,4 @@ public class BoKTele
                 (motorPowerRF * speedCoef),
                 (motorPowerRB * speedCoef));
     }
-
-
 }

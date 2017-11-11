@@ -220,7 +220,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                 }
                 opMode.telemetry.update();
             }
-            robot.waitForTick(BoKTele.WAIT_PERIOD);
+            robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
         }
     }
 
