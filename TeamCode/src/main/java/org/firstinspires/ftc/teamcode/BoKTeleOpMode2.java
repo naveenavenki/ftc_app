@@ -14,7 +14,7 @@ public class BoKTeleOpMode2 extends BoKTeleOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        //
+        // Use left trigger to increase wrist position
         trigger_left_decrease = false;
         super.runOpMode();
     }

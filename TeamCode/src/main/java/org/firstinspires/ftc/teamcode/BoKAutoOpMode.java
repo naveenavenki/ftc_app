@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 public class BoKAutoOpMode extends LinearOpMode
 {
     protected BoKAuto autoImpl; // use interface (polymorphism)
-    protected BoKAuto.BoKAllianceColor allianceColor;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -31,7 +30,7 @@ public class BoKAutoOpMode extends LinearOpMode
             telemetry.update();
 
             if (BoKAuto.BoKAutoStatus.BOK_AUTO_FAILURE ==
-                    autoImpl.initSoftware(this, robot, allianceColor)) {
+                    autoImpl.initSoftware(this, robot)) {
                 telemetry.addData("Status", "ERROR: Software NOT initialized");
                 telemetry.update();
             } else {

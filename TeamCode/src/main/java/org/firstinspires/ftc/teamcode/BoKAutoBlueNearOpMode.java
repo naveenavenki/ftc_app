@@ -16,7 +16,6 @@ public class BoKAutoBlueNearOpMode extends BoKAutoOpMode
     public void runOpMode() throws InterruptedException
     {
         autoImpl = new BoKAutoBlueNear(); // use interface (polymorphism)
-        allianceColor = BoKAuto.BoKAllianceColor.BOK_ALLIANCE_BLUE;
         super.runOpMode();
     }
 }

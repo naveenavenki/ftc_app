@@ -40,8 +40,7 @@ public interface BoKAuto
     public static double DEGREES_UPPER_ARM_FOR_GLYPH = 20;
 
     public BoKAutoStatus initSoftware(BoKAutoOpMode opMode,
-                                      BoKHardwareBot robot,
-                                      BoKAllianceColor redOrBlue);
+                                      BoKHardwareBot robot);
 
     public void runSoftware();
 }

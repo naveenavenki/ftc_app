@@ -73,7 +73,6 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     protected ElapsedTime runTime  = new ElapsedTime();
 
-    private BoKAllianceColor alliance; // BOK_ALLIANCE_RED or BOK_ALLIANCE_BLUE
     protected BoKAutoOpMode opMode;  // save a copy of the current opMode and robot
     protected BoKHardwareBot robot;
 
@@ -93,8 +92,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     @Override
     public BoKAutoStatus initSoftware(BoKAutoOpMode opMode,
-                                      BoKHardwareBot robot,
-                                      BoKAllianceColor redOrBlue)
+                                      BoKHardwareBot robot)
     {
         Log.v("BOK", "Initializing OpenCV");
         // Initialize OpenCV
@@ -134,8 +132,6 @@ public abstract class BoKAutoCommon implements BoKAuto
         relicTemplate = relicTrackables.get(0);
 
         //robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        alliance = redOrBlue;
-
         Log.v("BOK", "Done initializing software");
         this.opMode = opMode;
         this.robot = robot;
