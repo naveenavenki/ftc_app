@@ -35,7 +35,7 @@ public abstract class BoKHardwareBot
     protected static final double JA_MID = 0.45;
     protected static final double JA_FINAL = 0.55;
 
-    protected static final double RA_INIT = 0.85;
+    protected static final double RA_INIT = 0.1;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";

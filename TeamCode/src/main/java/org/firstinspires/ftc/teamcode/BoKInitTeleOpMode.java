@@ -28,6 +28,7 @@ public class BoKInitTeleOpMode extends LinearOpMode
     {
         boolean writeOnce = false;
         boolean moveOnce = false;
+
         robot.initHardware(this);
         telemetry.addData("Status", "Hardware initialized");
         telemetry.update();

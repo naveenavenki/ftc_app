@@ -6,7 +6,6 @@ import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -153,6 +152,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     {
         boolean vuMarkVisible = false;
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
+
         // activate
         relicTrackables.activate();
         runTime.reset();
@@ -168,10 +168,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                 vuMarkVisible = true;
                 //Log.v("BOK", "VuMark " + vuMark + " visible");
 
-                if (opMode.gamepad1.y) {
-                    relicTrackables.deactivate();
-                    break;
-                }
 
                 /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
                  * it is perhaps unlikely that you will actually need to act on this pose
@@ -215,6 +211,10 @@ public abstract class BoKAutoCommon implements BoKAuto
                     Log.v("BOK", String.format("(X, Z): %.1f, %.1f, Ry: %.1f", tX, tZ, rY));
                 }
                 opMode.telemetry.update();
+            }
+            if (opMode.gamepad1.y) {
+                relicTrackables.deactivate();
+                break;
             }
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
         }
