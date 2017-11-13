@@ -11,6 +11,7 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.vuforia.CameraDevice;
 import com.vuforia.Image;
 import com.vuforia.Matrix34F;
 import com.vuforia.PIXEL_FORMAT;
@@ -155,6 +156,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
         // activate
         relicTrackables.activate();
+        CameraDevice.getInstance().setFlashTorchMode(true);
         runTime.reset();
 
         while (true) {
@@ -214,6 +216,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             }
             if (opMode.gamepad1.y) {
                 relicTrackables.deactivate();
+                CameraDevice.getInstance().setFlashTorchMode(false);
                 break;
             }
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
