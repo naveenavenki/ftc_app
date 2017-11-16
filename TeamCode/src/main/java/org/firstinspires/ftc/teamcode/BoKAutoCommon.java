@@ -44,6 +44,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -65,6 +66,25 @@ public abstract class BoKAutoCommon implements BoKAuto
     private static final double HEADING_THRESHOLD = 1;
     private static final int RS_DIFF_THRESHOLD_CM = 1;
     private static final double DT_POWER_FOR_RS_MIN = 0.1;
+    private static final int VUFORIA_LOCK_BALL_X_OFFSET = 230; // pixels offset from the center
+    private static final int VUFORIA_LOCK_BALL_Y_OFFSET = 130; // of the Vuforia image
+    private static final int VUFORIA_LOCK_BALL_RECT_WIDTH = 95;
+    private static final int VUFORIA_LOCK_BALL_RECT_HEIGHT = 100;
+    private static final double VUFORIA_TIMEOUT_SECONDS = 1.5;
+    private static final boolean USE_OPEN_CV = true;
+    private static final boolean USE_OPEN_CV_RESULTS = false; // Still experimental
+    protected static final boolean DEBUG_OPEN_CV = true;
+    private static final String VUFORIA_LOCK_IMG = "vuImage.png";
+    private static final String ROI_IMG = "roiImage.png";
+    //private static final String HSV_IMG = "hsvImage.png";
+    protected static final String OCV_LOW_IMG = "ocvLow.png";
+    protected static final String OCV_HIGH_IMG = "ocvHigh.png";
+    protected static final String OCV_LOW_EDGES_IMG = "ocvLowEdges.png";
+    protected static final String OCV_HIGH_EDGES_IMG = "ocvHighEdges.png";
+    private static final String OCV_CONTOUR_IMG = "ocvContours.png";
+    private static final int OCV_X_OFFSET = 175; // pixels, approx 50 pixels per inch, offset
+    private static final int OCV_Y_OFFSET = 50;  // from the top-left corner of the white tape
+    private static final String OCV_ROI_IMG = "ocvRoi.png";
 
     private AppUtil appUtil = AppUtil.getInstance();
     private VuforiaLocalizer vuforiaFTC;
@@ -189,11 +209,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                             Tool.projectPoint(vuforiaFTC.getCameraCalibration(),
                                     raw, new Vec3F(0, 0, 0));
 
-                    opMode.telemetry.addData("VuMark", "CENTER:(" + (int)pointCenter.getData()[0] +
-                            ", " + (int)pointCenter.getData()[1] + ")");
-                    Log.v("BOK", "Center: ("+ (int)pointCenter.getData()[0] +
-                            ", " + (int)pointCenter.getData()[1] + ")");
-
+                    Vec2F focalLength = vuforiaFTC.getCameraCalibration().getFocalLength();
 
                     VectorF trans = rawPose.getTranslation();
                     Orientation rot = Orientation.getOrientation(rawPose,
@@ -210,7 +226,14 @@ public abstract class BoKAutoCommon implements BoKAuto
                     //double rZ = rot.thirdAngle;
                     opMode.telemetry.addData("Trans",
                             "X: %.1f, Z: %.1f, ROT Y: %.1f", tX + 183.5, tZ - 562, rY);
-                    Log.v("BOK", String.format("(X, Z): %.1f, %.1f, Ry: %.1f", tX, tZ, rY));
+                    opMode.telemetry.addData("VuMark", vuMark + " at :(" +
+                            (int)pointCenter.getData()[0] + ", " +
+                            (int)pointCenter.getData()[1] + ")");
+                    opMode.telemetry.addData("Raw", "X: %.1f", tX);
+                    Log.v("BOK", "Center: ("+ (int)pointCenter.getData()[0] +
+                            ", " + (int)pointCenter.getData()[1] + ")");
+                    Log.v("BOK", String.format("(X, Z): %.1f, %.1f, Ry: %.1f, f: (%.2f, %.2f)",
+                            tX, tZ, rY, focalLength.getData()[0], focalLength.getData()[1]));
                 }
                 opMode.telemetry.update();
             }
@@ -221,6 +244,89 @@ public abstract class BoKAutoCommon implements BoKAuto
             }
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
         }
+    }
+
+    protected static void writeFile(String fname, Mat img, boolean always)
+    {
+        if (always || DEBUG_OPEN_CV) {
+            String filePath = "/sdcard/FIRST/" + fname;
+            Log.v("BOK", "Saving image" + filePath);
+            Imgcodecs.imwrite(filePath, img);
+        }
+    }
+
+    private Mat setupOpenCVImg(Image rgb)
+    {
+        Bitmap bm = Bitmap.createBitmap(rgb.getWidth(),
+                                        rgb.getHeight(),
+                                        Bitmap.Config.RGB_565);
+        bm.copyPixelsFromBuffer(rgb.getPixels());
+
+        Mat img = new Mat(rgb.getHeight(), rgb.getWidth(),
+                CvType.CV_8UC3);
+        Utils.bitmapToMat(bm, img);
+
+        // OpenCV only deals with BGR
+        Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
+        writeFile(VUFORIA_LOCK_IMG, img, true);
+
+        // First convert from BGR to HSV; separate the color components from intensity.
+        // Increase robustness to lighting changes.
+        Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2HSV);
+        return img;
+    }
+
+    private boolean calcNumRedPixels(Mat img, Rect roi)
+    {
+        Mat hist = new Mat();
+        MatOfInt histSize = new MatOfInt(180);
+        MatOfFloat ranges = new MatOfFloat(0f, 180f);
+        Mat mask = new Mat(img.rows(), img.cols(),
+                CvType.CV_8UC1, new Scalar(0));
+        float[] resFloat = new float[180];
+        boolean foundRed = false;
+
+        Imgproc.rectangle(img, new Point(roi.x, roi.y),
+                new Point(roi.x + VUFORIA_LOCK_BALL_RECT_WIDTH,
+                          roi.y + VUFORIA_LOCK_BALL_RECT_HEIGHT),
+                new Scalar(0, 255, 0), 10);
+        writeFile(ROI_IMG, img, DEBUG_OPEN_CV);
+        Mat subMask = mask.submat(roi);
+        subMask.setTo(new Scalar(255));
+
+        Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0),
+                mask, hist, histSize, ranges);
+        //writeFile(HSV_IMG, img, DEBUG_OPEN_CV);
+        //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
+        hist.get(0, 0, resFloat);
+
+        int p, nRedPixels = 0;
+        int numPixels = roi.width * roi.height;
+        // Red is 0 (in HSV),
+        // but we need to check between 160-179 and 0-9
+        for (p = 0; p < 10; p++) {
+            nRedPixels += (int) resFloat[p];
+        }
+        for (p = 160; p < 180; p++) {
+            nRedPixels += (int) resFloat[p];
+        }
+
+        if (nRedPixels >= (numPixels / 2))
+            foundRed = true;
+
+        Log.v("BOK", "num Red pixels: " + nRedPixels + " out of " + numPixels);
+        if (foundRed == true) {
+            Log.v("BOK", "Left is RED");
+        } else {
+            Log.v("BOK", "Left is BLUE");
+        }
+
+        hist.release();
+        histSize.release();
+        ranges.release();
+        mask.release();
+
+        return foundRed;
     }
 
     public boolean getCryptoColumn(double waitForSec)
@@ -289,78 +395,95 @@ public abstract class BoKAutoCommon implements BoKAuto
                             Image rgb = frame.getImage(i);
                             // rgb is now the Image object that we’ve used in the video
                             if (rgb != null) {
-                                Bitmap bm = Bitmap.createBitmap(rgb.getWidth(), rgb.getHeight(),
-                                        Bitmap.Config.RGB_565);
-                                bm.copyPixelsFromBuffer(rgb.getPixels());
+                                Mat img = setupOpenCVImg(rgb);
 
-                                Mat img = new Mat(rgb.getHeight(), rgb.getWidth(),
-                                        CvType.CV_8UC3);
-                                Utils.bitmapToMat(bm, img);
+                                Rect roi = new Rect((int)pointCenter.getData()[0] +
+                                                         VUFORIA_LOCK_BALL_X_OFFSET,
+                                                    (int)pointCenter.getData()[1] +
+                                                         VUFORIA_LOCK_BALL_Y_OFFSET,
+                                                    VUFORIA_LOCK_BALL_RECT_WIDTH,
+                                                    VUFORIA_LOCK_BALL_RECT_HEIGHT);
 
-                                Mat hist = new Mat();
-                                MatOfInt histSize = new MatOfInt(180);
-                                MatOfFloat ranges = new MatOfFloat(0f, 180f);
-                                Mat mask = new Mat(img.rows(), img.cols(),
-                                        CvType.CV_8UC1, new Scalar(0));
-                                float[] resFloat = new float[180];
-
-                                Log.v("BOK", "Saving image");
-                                Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
-                                Imgcodecs.imwrite("/sdcard/FIRST/myImage.png", img);
-
-
-                                // OpenCV only deals with BGR
-
-                                Rect roi = new Rect(505, 540, 95, 100);
-                                //Imgproc.rectangle(img, new Point(roi.x, roi.y),
-                                //        new Point(roi.x + 95, roi.y + 100),
-                                //        new Scalar(0, 255, 0), 10);
-                                //Imgcodecs.imwrite("/sdcard/FIRST/myImageR.png", img);
-                                Mat subMask = mask.submat(roi);
-                                subMask.setTo(new Scalar(255));
-
-                                Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2HSV);
-                                Imgproc.calcHist(Arrays.asList(img), new MatOfInt(0),
-                                        mask, hist, histSize, ranges);
-                                //Imgcodecs.imwrite("/sdcard/FIRST/myImageH.png", img);
-                                //Core.normalize(hist, hist, 256, 0, Core.NORM_MINMAX);
-                                hist.get(0, 0, resFloat);
-
-                                int p, nRedPixels = 0, numPixels = 95*100;
-                                // Red is 0 (in HSV),
-                                // but we need to check between 160-179 and 0-9
-                                for (p = 0; p < 10; p++) {
-                                    nRedPixels += (int) resFloat[p];
-                                }
-                                for (p = 160; p < 180; p++) {
-                                    nRedPixels += (int) resFloat[p];
-                                }
-
-                                boolean foundRed = false;
-                                foundRedOnLeft = false;
-                                if (nRedPixels >= (numPixels / 2))
-                                    foundRed = true;
-
-                                Log.v("BOK", "numPixels: " + nRedPixels + ", " + numImages);
-                                if (foundRed == true) {
-                                    foundRedOnLeft = true;
-                                    Log.v("BOK", "Left is RED");
-                                } else {
-                                    Log.v("BOK", "Left is BLUE");
-                                }
+                                // Next check if Red ball is on the left
+                                foundRedOnLeft = calcNumRedPixels(img, roi);
                                 vuforiaSuccess = true;
-                            }
+                                img.release();
+                            } // if (rgb != null)
                             break;
                         } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
                     } // for (int i = 0; i < numImages; i++)
                     frame.close();
                 } // if (pose != null)
                 relicTrackables.deactivate();
-            } else {
+            } else if ((runTime.seconds() > VUFORIA_TIMEOUT_SECONDS) && USE_OPEN_CV) {
                 //opMode.telemetry.addData("VuMark", "not visible");
                 //opMode.telemetry.update();
-                //Log.v("BOK", "VuMark not visible");
-            }
+                Log.v("BOK", "VuMark not visible; moving to OpenCV");
+                VuforiaLocalizer.CloseableFrame frame;
+                try {
+                    frame = vuforiaFTC.getFrameQueue().take();
+                } catch (InterruptedException e) {
+                    Log.v("BOK", "Exception OpenCV does NOT have an image!!");
+                    break;
+                }
+                for (int i = 0; i < frame.getNumImages(); i++) {
+                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                        Image rgb = frame.getImage(i);
+                        // rgb is now the Image object that we’ve used in the video
+                        if (rgb != null) {
+                            // RGB to BGR (for saving the image) to HSV
+                            Mat img = setupOpenCVImg(rgb);
+                            Mat contourImg = null;
+
+                            // First blur the image to reduce noise
+                            Imgproc.blur(img, img, new Size(3, 3));
+
+                            if (DEBUG_OPEN_CV) {
+                                // draw the results for further analysis
+                                contourImg = new Mat(img.size(),
+                                        CvType.CV_8UC3,
+                                        new Scalar(0, 255, 0)); // green background!
+                            }
+
+                            // Find the VuMark
+                            vuMark = BoKAutoOCVHelper.findVuMark(img, contourImg);
+                            // Find the coordinates for the tape between the jewels
+                            Rect tapeRect = BoKAutoOCVHelper.findWhiteRectangle(img, contourImg);
+
+                            if (DEBUG_OPEN_CV) {
+                                // write the results for further analysis
+                                writeFile(OCV_CONTOUR_IMG, contourImg, DEBUG_OPEN_CV);
+                                // done with contourImg
+                                contourImg.release();
+                            }
+
+                            if ((tapeRect != null) &&
+                                (vuMark != RelicRecoveryVuMark.UNKNOWN) && USE_OPEN_CV_RESULTS) {
+                                // approx 50 pixels = 1 inch
+                                Rect roi = new Rect(tapeRect.x - OCV_X_OFFSET,
+                                                    tapeRect.y - OCV_Y_OFFSET,
+                                                    VUFORIA_LOCK_BALL_RECT_WIDTH,
+                                                    VUFORIA_LOCK_BALL_RECT_HEIGHT);
+                                // Next check if Red ball is on the left
+                                foundRedOnLeft = calcNumRedPixels(img, roi);
+                                vuforiaSuccess = true;
+                                vuMarkVisible = true;
+                                if (DEBUG_OPEN_CV) {
+                                    Imgproc.rectangle(img,
+                                            new Point(roi.x, roi.y),
+                                            new Point(roi.x + VUFORIA_LOCK_BALL_RECT_WIDTH,
+                                                      roi.y + VUFORIA_LOCK_BALL_RECT_HEIGHT),
+                                            new Scalar(0, 255, 0), 10);
+                                    writeFile(OCV_ROI_IMG, img, DEBUG_OPEN_CV);
+                                }
+                            } // if we found the white tape rectangle && vuMark
+                            img.release();
+                        } // if (rgb != null)
+                        break;
+                    } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
+                } // for (int i = 0; i < numImages; i++)
+                frame.close();
+            } // using OpenCV instead of Vuforia
         } // while (!vuMarkVisible)
         cryptoColumn = vuMark;
         Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
