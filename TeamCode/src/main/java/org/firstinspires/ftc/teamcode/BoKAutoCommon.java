@@ -333,6 +333,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     {
         boolean vuMarkVisible = false;
         boolean vuforiaSuccess = false;
+        boolean withBlur = false; // first use OpenCV without blurring the image
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.LEFT;
         // activate
         relicTrackables.activate();
@@ -435,8 +436,11 @@ public abstract class BoKAutoCommon implements BoKAuto
                             Mat img = setupOpenCVImg(rgb);
                             Mat contourImg = null;
 
-                            // First blur the image to reduce noise
-                            Imgproc.blur(img, img, new Size(3, 3));
+                            if (withBlur)
+                                // First blur the image to reduce noise
+                                Imgproc.blur(img, img, new Size(3, 3));
+                            else // if we don't succeed the first time, try blurring the image
+                                withBlur = true;
 
                             if (DEBUG_OPEN_CV) {
                                 // draw the results for further analysis
