@@ -35,9 +35,9 @@ public interface BoKAuto
     public static double DISTANCE_TO_CRYPTO_CM = 4.0;
 
     public static double DISTANCE_BLUE_BACK_TO_COLUMN = 3.25;
-    public static double DISTANCE_RED_FWD_TO_COLUMN = 1;
+    public static double DISTANCE_RED_FWD_TO_COLUMN = 1.0;
     //public static double DISTANCE_TO_COLUMN = 1.5;
-    public static double ROTATIONS_STRAFE_TO_WALL = 0.5;
+    public static double ROTATIONS_STRAFE_TO_WALL = 0.15;
     //public static double ROTATIONS_STRAFE_FROM_WALL = 0.25;
     public static double DEGREES_UPPER_ARM_FOR_GLYPH = 20;
 

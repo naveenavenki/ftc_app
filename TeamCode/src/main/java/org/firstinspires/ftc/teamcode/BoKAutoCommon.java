@@ -421,7 +421,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     frame.close();
                 } // if (pose != null)
                 relicTrackables.deactivate();
-            } else if ((runTime.seconds() > VUFORIA_TIMEOUT_SECONDS) && USE_OPEN_CV) {
+            }/* else if ((runTime.seconds() > VUFORIA_TIMEOUT_SECONDS) && USE_OPEN_CV) {
                 //opMode.telemetry.addData("VuMark", "not visible");
                 //opMode.telemetry.update();
                 Log.v("BOK", "VuMark not visible; moving to OpenCV");
@@ -493,6 +493,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                 } // for (int i = 0; i < numImages; i++)
                 frame.close();
             } // using OpenCV instead of Vuforia
+            */
         } // while (!vuMarkVisible)
         cryptoColumn = vuMark;
         Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
@@ -845,8 +846,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             else {
                 // Need to move past the crypto column for blue
                 double distanceFwd = DISTANCE_RED_FWD_TO_COLUMN;
-                if (cryptoColumn == RelicRecoveryVuMark.CENTER)
-                    distanceFwd -= 0.25;
+
                 move(DT_POWER_FOR_CRYPTO,
                      DT_POWER_FOR_CRYPTO,
                         distanceFwd,
@@ -869,15 +869,11 @@ public abstract class BoKAutoCommon implements BoKAuto
             // Push the glyph
             // Strafe to the right
             strafe(DT_POWER_FOR_STRAFE,
-                   ROTATIONS_STRAFE_TO_WALL * 6,
+                   ROTATIONS_STRAFE_TO_WALL * 8.5,
                    true,
                    DT_STRAFE_TIMEOUT);
 
-            double distanceLeftStrafe = ROTATIONS_STRAFE_TO_WALL * 2;
-            if (cryptoColumn != RelicRecoveryVuMark.LEFT) {
-                distanceLeftStrafe = ROTATIONS_STRAFE_TO_WALL;
-            }
-
+            double distanceLeftStrafe = ROTATIONS_STRAFE_TO_WALL * 3;
             //robot.glyphArm.moveUpperArm(-DEGREES_UPPER_ARM_FOR_GLYPH, UPPER_ARM_POWER);
             strafe(DT_POWER_FOR_STRAFE,
                     distanceLeftStrafe,
