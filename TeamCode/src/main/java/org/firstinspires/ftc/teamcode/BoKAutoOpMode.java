@@ -48,6 +48,8 @@ public class BoKAutoOpMode extends LinearOpMode
         // else do nothing
         if (status && opModeIsActive()) {
             autoImpl.runSoftware();
+            while (opModeIsActive()) {
+            }
         }
     }
 }

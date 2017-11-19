@@ -55,7 +55,8 @@ public class BoKGlyphArm
             opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
         robot.upperArm.setPower(0);
-        robot.upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // Turn off RUN_TO_POSITION
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void increaseClawWristPos(double trigger)

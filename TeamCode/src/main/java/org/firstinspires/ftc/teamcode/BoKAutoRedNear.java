@@ -18,25 +18,10 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     @Override
     public void runSoftware()
     {
-        // Detect Vuforia image
-        if (getCryptoColumn(VUFORIA_TIMEOUT)) {
-            // Setup flicker
-            setJewelFlicker();
-            opMode.sleep(WAIT_FOR_SERVO_MS);
+        allianceColor = BoKAllianceColor.BOK_ALLIANCE_RED;
 
-            if (foundRedOnLeft) {
-                robot.jewelFlicker.setPosition(robot.JF_RIGHT);
-            } else {
-                robot.jewelFlicker.setPosition(robot.JF_LEFT);
-            }
-            opMode.sleep(WAIT_FOR_SERVO_MS);
-
-            // Raise the flicker arm
-            robot.jewelFlicker.setPosition(robot.JF_FINAL);
-        }
-
-        // Position the flicker to face the cryptobox
-        robot.jewelArm.setPosition(robot.JA_INIT);
+        // Detect Vuforia image and flick the jewel
+        detectVuforiaImgAndFlick();
 
         // Move forward out of balancing stone
         // Distance and timeout depends on column number; TBD
@@ -45,25 +30,24 @@ public class BoKAutoRedNear extends BoKAutoCommon {
         if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
             distance = DISTANCE_TO_CENTER_COL;
             timeout = TIMEOUT_CENTER;
-        }
-        else if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
+        } else if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
             distance = DISTANCE_TO_LEFT_COL;
             timeout = TIMEOUT_LEFT;
         }
 
-        move(DT_POWER_FOR_STONE, 
-             DT_POWER_FOR_STONE, 
+        move(DT_POWER_FOR_STONE,
+             DT_POWER_FOR_STONE,
              distance,
-             true, 
+             true,
              timeout);
 
         // Strafe to the right
-        strafe(DT_POWER_FOR_STRAFE, 
-               ROTATIONS_STRAFE_TO_WALL, 
-               true, 
-               DT_STRAFE_TIMEOUT);
+        //strafe(DT_POWER_FOR_STRAFE,
+        //       ROTATIONS_STRAFE_TO_WALL,
+        //       true,
+        //       DT_STRAFE_TIMEOUT);
 
         // Prepare to unload the glyph
-        moveToRedCrypto();
+        moveToCrypto();
     }
 }

@@ -17,29 +17,15 @@ public class BoKAutoBlueFar extends BoKAutoCommon
     private static int DISTANCE_TO_LEFT_COL_CM = 44;
     private static int DISTANCE_TO_CENTER_COL_CM = 60;
     private static int DISTANCE_TO_RIGHT_COL_CM = 78;
+
     @Override
     public void runSoftware()
     {
+        allianceColor = BoKAllianceColor.BOK_ALLIANCE_BLUE;
         // NOTE: Move backwards towards crypto
 
-        // Detect Vuforia image
-        if (getCryptoColumn(VUFORIA_TIMEOUT)) {
-            // Setup flicker
-            setJewelFlicker();
-
-            opMode.sleep(WAIT_FOR_SERVO_MS);
-            if (foundRedOnLeft)
-                robot.jewelFlicker.setPosition(robot.JF_LEFT);
-            else
-                robot.jewelFlicker.setPosition(robot.JF_RIGHT);
-            opMode.sleep(WAIT_FOR_SERVO_MS);
-
-            // Raise the flicker arm
-            robot.jewelFlicker.setPosition(robot.JF_FINAL);
-        }
-
-        // Position the flicker to face the cryptobox
-        robot.jewelArm.setPosition(robot.JA_INIT);
+        // Detect Vuforia image and flick the jewel
+        detectVuforiaImgAndFlick();
 
         // Move back out of the balancing stone
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, DT_MOVE_TO_CRYPTO, false, DT_TIMEOUT);
@@ -63,6 +49,6 @@ public class BoKAutoBlueFar extends BoKAutoCommon
         moveWithRangeSensor(DT_POWER_FOR_RS, distance, true, timeout); // CM
 
         // Prepare to unload the glyph
-        moveToBlueCrypto();
+        moveToCrypto();
     }
 }

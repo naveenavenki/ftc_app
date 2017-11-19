@@ -21,28 +21,11 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     @Override
     public void runSoftware()
     {
+        allianceColor = BoKAllianceColor.BOK_ALLIANCE_BLUE;
         // NOTE: Move backwards towards crypto
-        // Detect Vuforia image
-        if (getCryptoColumn(VUFORIA_TIMEOUT)) {
-            // Setup flicker
-            setJewelFlicker();
-            opMode.sleep(WAIT_FOR_SERVO_MS);
 
-            if (foundRedOnLeft) {
-                robot.jewelFlicker.setPosition(robot.JF_LEFT);
-                Log.v("BOK", "FOUND RED LEFT");
-            } else {
-                robot.jewelFlicker.setPosition(robot.JF_RIGHT);
-                Log.v("BOK", "FOUND RED NOT ON LEFT");
-            }
-            opMode.sleep(WAIT_FOR_SERVO_MS);
-
-            // Raise the flicker arm
-            robot.jewelFlicker.setPosition(robot.JF_FINAL);
-        }
-
-        // Position the flicker to face the cryptobox
-        robot.jewelArm.setPosition(robot.JA_INIT);
+        // Detect Vuforia image and flick the jewel
+        detectVuforiaImgAndFlick();
 
         // Move forward out of balancing stone
         // Distance and timeout depends on column number; TBD
@@ -71,6 +54,6 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         //      true,
         //       DT_STRAFE_TIMEOUT);
 
-        moveToBlueCrypto();
+        moveToCrypto();
     }
 }

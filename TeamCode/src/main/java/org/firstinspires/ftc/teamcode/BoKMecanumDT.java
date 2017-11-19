@@ -31,6 +31,12 @@ public class BoKMecanumDT extends BoKHardwareBot
     public DcMotor rightBack;
     public DcMotor rightFront;
 
+    // Strafe target
+    private int leftFrontTarget;
+    private int leftBackTarget;
+    private int rightFrontTarget;
+    private int rightBackTarget;
+
     LinearOpMode opMode; // current opMode
 
     /*
@@ -143,10 +149,10 @@ public class BoKMecanumDT extends BoKHardwareBot
                 rightFront.getCurrentPosition() + ", " + currentRightTarget);
     }
     
-    private void setDTMotorEncoderTarget(int leftFrontTarget,
-                                         int leftBackTarget,
-                                         int rightFrontTarget,
-                                         int rightBackTarget)
+    private void setDTMotorEncoderTargetStrafe(int leftFrontTarget,
+                                              int leftBackTarget,
+                                              int rightFrontTarget,
+                                              int rightBackTarget)
     {
         int currentLeftFrontTarget = leftFront.getCurrentPosition() + leftFrontTarget;
         int currentLeftBackTarget = leftBack.getCurrentPosition() + leftBackTarget;
@@ -159,7 +165,7 @@ public class BoKMecanumDT extends BoKHardwareBot
         rightBack.setTargetPosition(currentRightBackTarget);
 
         // Turn On RUN_TO_POSITION
-        setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
+        //setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Log.v("BOK", "START: LF: " + leftFront.getCurrentPosition() + ", " +
         //        currentLeftFrontTarget + ", LB: " +
@@ -191,15 +197,27 @@ public class BoKMecanumDT extends BoKHardwareBot
     {
         double targetEncCount = (rotations*COUNTS_PER_MOTOR_REV) * DRIVE_GEAR_REDUCTION;
         if (right) {
-            setDTMotorEncoderTarget((int) targetEncCount, (int) -targetEncCount,
-            (int) targetEncCount, (int) -targetEncCount);
+            leftFrontTarget = (int) targetEncCount;
+            leftBackTarget = (int) -targetEncCount;
+            rightFrontTarget = (int) targetEncCount;
+            rightBackTarget = (int)-targetEncCount;
+            setDTMotorEncoderTargetStrafe(leftFrontTarget, leftBackTarget,
+                    rightFrontTarget, rightBackTarget);
             setPowerToDTMotors(power, -power, power, -power);
         }
         else {
-            setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount,
-            (int) -targetEncCount, (int) targetEncCount);
+            leftFrontTarget = (int) -targetEncCount;
+            leftBackTarget = (int) targetEncCount;
+            rightFrontTarget = (int) -targetEncCount;
+            rightBackTarget = (int)targetEncCount;
+            setDTMotorEncoderTargetStrafe(leftFrontTarget, leftBackTarget,
+                    rightFrontTarget, rightBackTarget);
             setPowerToDTMotors(-power, power, -power, power);
         }
+        Log.v("BOK", "Target LF " + leftFrontTarget +
+                ", LB " + leftBackTarget +
+                ", RF" + rightFrontTarget +
+                ", RB " + rightBackTarget);
     }
 
     public void stopMove()
@@ -220,5 +238,21 @@ public class BoKMecanumDT extends BoKHardwareBot
                 rightFront.isBusy() &&
                 leftBack.isBusy() &&
                 rightBack.isBusy());
+    }
+
+    public boolean haveDTMotorsReachedTarget()
+    {
+        Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
+                ", LB " + leftBack.getCurrentPosition() +
+                ", RF " + rightFront.getCurrentPosition() +
+                ", RB " + rightBack.getCurrentPosition());
+        if ((Math.abs(leftFront.getCurrentPosition()) > Math.abs(leftFrontTarget))&&
+           (Math.abs(leftBack.getCurrentPosition()) > Math.abs(leftBackTarget)) &&
+           (Math.abs(rightFront.getCurrentPosition()) > Math.abs(rightFrontTarget)) &&
+           (Math.abs(rightBack.getCurrentPosition()) > Math.abs(rightBackTarget))) {
+           return true;
+        }
+        return false;
+
     }
 }

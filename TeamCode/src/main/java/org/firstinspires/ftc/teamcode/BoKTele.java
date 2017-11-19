@@ -55,7 +55,6 @@ public class BoKTele
     public BoKTeleStatus runSoftware()
     {
         robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.jewelFlicker.setPosition(BoKHardwareBot.JF_FINAL);
 
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
@@ -131,7 +130,7 @@ public class BoKTele
                 }
             }
             else {
-                if (!relic_mode)
+                if (!relic_mode && (robot.turnTable.getPower() != 0))
                     robot.turnTable.setPower(0.0);
                 //robot.turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
@@ -285,10 +284,10 @@ public class BoKTele
             motorPowerRF = gamePad1LeftStickY - (-gamePad1LeftStickX);
             motorPowerRB = gamePad1LeftStickY - gamePad1LeftStickX;
 
-            //Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF) +
-            //        "LB: " + String.format("%.2f", motorPowerLB) +
-            //        "RF: " + String.format("%.2f", motorPowerRF) +
-            //        "RB: " + String.format("%.2f", motorPowerRB));
+            //Log.v("BOK","LF:" + String.format("%.2f", motorPowerLF*speedCoef) +
+            //        "LB: " + String.format("%.2f", motorPowerLB*speedCoef) +
+            //        "RF: " + String.format("%.2f", motorPowerRF*speedCoef) +
+            //        "RB: " + String.format("%.2f", motorPowerRB*speedCoef));
         }
         else if ((gamePad1RightStickX > GAME_STICK_DEAD_ZONE) ||
                 (gamePad1RightStickX < -GAME_STICK_DEAD_ZONE)) {

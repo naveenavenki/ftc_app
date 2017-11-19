@@ -16,7 +16,7 @@ import android.util.Log;
 //@Disabled
 public class BoKInitTeleOpMode extends LinearOpMode
 {
-    private static final double INIT_ANGLE = 15;
+    private static final double INIT_ANGLE = 16;
     private static final double UA_POWER = 0.2;
     private static final double GAME_TRIGGER_DEAD_ZONE = 0.2;
     private static final double UPPER_ARM_STICK_DEAD_ZONE = 0.2;

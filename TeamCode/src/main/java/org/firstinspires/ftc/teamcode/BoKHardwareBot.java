@@ -27,13 +27,13 @@ public abstract class BoKHardwareBot
     protected static final double CG_INIT = 0.8; // Closed at initialization
     protected static final double CG_OPEN = 0.4;
     protected static final double CG_CLOSE = 0.8;
-    protected static final double JF_INIT = 0.0;
-    protected static final double JF_FINAL = 0.5;
+    protected static final double JF_INIT = 0.8;
+    protected static final double JF_FINAL = 0.42;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
-    protected static final double JA_INIT = 0.04;
-    protected static final double JA_MID = 0.45;
-    protected static final double JA_FINAL = 0.55;
+    protected static final double JA_INIT = 0.02;
+    protected static final double JA_MID = 0.42;
+    protected static final double JA_FINAL = 0.46;
 
     protected static final double RA_INIT = 0.1;
 
@@ -178,6 +178,10 @@ public abstract class BoKHardwareBot
         //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         //angles = new Orientation();
         imu.initialize(parameters);
+
+        //Make sure that the flicker is open
+        if (!opMode.getClass().getName().contains("Tele"))
+            jewelFlicker.setPosition(JF_FINAL);
         
         File file = AppUtil.getInstance().getSettingsFile("BoKArmCalibration.txt");
         String value = ReadWriteFile.readFile(file);
@@ -220,6 +224,7 @@ public abstract class BoKHardwareBot
     // Using the drive train is public
     public abstract void resetDTEncoders();
     public abstract boolean areDTMotorsBusy();
+    public abstract boolean haveDTMotorsReachedTarget();
 
     //public abstract void setPowerToDTMotors(double leftPower, double rightPower);
     public abstract void setPowerToDTMotors(double leftFrontPower,
