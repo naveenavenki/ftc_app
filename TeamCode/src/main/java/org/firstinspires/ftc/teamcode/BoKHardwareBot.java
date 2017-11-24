@@ -171,29 +171,30 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        //parameters.calibrationDataFile = "BNO055IMUCalibration.json";
-        //parameters.loggingEnabled      = true;
-        //parameters.loggingTag          = "IMU";
-        //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-        //angles = new Orientation();
-        imu.initialize(parameters);
+        if (!opMode.getClass().getName().contains("Tele")) {
+            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+            parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+            parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+            //parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+            //parameters.loggingEnabled      = true;
+            //parameters.loggingTag          = "IMU";
+            //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+            //angles = new Orientation();
+            imu.initialize(parameters);
 
-        //Make sure that the flicker is open
-        if (!opMode.getClass().getName().contains("Tele"))
+            //Make sure that the flicker is open
             jewelFlicker.setPosition(JF_FINAL);
-        
-        File file = AppUtil.getInstance().getSettingsFile("BoKArmCalibration.txt");
-        String value = ReadWriteFile.readFile(file);
-        if (value.isEmpty()) {
-            Log.v("BOK", "File not found");
-            clawWrist.setPosition(CW_INIT);
-        }
-        else {
-            Log.v("BOK", "Calibration data: " + value);
-            clawWrist.setPosition(Double.parseDouble(value));
+
+
+            File file = AppUtil.getInstance().getSettingsFile("BoKArmCalibration.txt");
+            String value = ReadWriteFile.readFile(file);
+            if (value.isEmpty()) {
+                Log.v("BOK", "File not found");
+                clawWrist.setPosition(CW_INIT);
+            } else {
+                Log.v("BOK", "Calibration data: " + value);
+                clawWrist.setPosition(Double.parseDouble(value));
+            }
         }
 
         turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -203,11 +204,13 @@ public abstract class BoKHardwareBot
         turnTable.setPower(0);
         //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        clawGrab.setPosition(CG_INIT);
-        jewelArm.setPosition(JA_INIT);
-        jewelFlicker.setPosition(JF_INIT);
-        relicArm.setPosition(RA_INIT);
-        spool.setPosition(SP_INIT);
+        if (!opMode.getClass().getName().contains("Tele")) {
+            clawGrab.setPosition(CG_INIT);
+            jewelArm.setPosition(JA_INIT);
+            jewelFlicker.setPosition(JF_INIT);
+            relicArm.setPosition(RA_INIT);
+            spool.setPosition(SP_INIT);
+        }
 
         upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
         upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
