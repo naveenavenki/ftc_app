@@ -58,6 +58,7 @@ public class BoKTele
 
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
+
             // GAMEPAD 1 CONTROLS:
             // Left & Right stick: Drive
             // B:                  Go in tank mode
@@ -82,7 +83,7 @@ public class BoKTele
             if (opMode.gamepad1.a) {
                 speedCoef = SPEED_COEFF_FAST;
             }
-            
+
             // GAMEPAD 2 CONTROLS
             // Left stick:             Upper Arm
             // Right stick:            Turntable
@@ -98,6 +99,7 @@ public class BoKTele
             // Right Stick:            Relic Lift
             if (opMode.gamepad2.y) {
                 end_game = true;
+                Log.v("BOK", "End Game Started");
             }
             if (opMode.gamepad2.x) {
                 end_game = false;
@@ -105,6 +107,7 @@ public class BoKTele
             if (end_game) { // You need to be in end_game to be in relic mode
                 if (opMode.gamepad2.dpad_down) {
                     relic_mode = true;
+                    Log.v("BOK", "Relic Mode Started");
                 }
                 if (opMode.gamepad2.dpad_up) {
                     relic_mode = false;
@@ -128,8 +131,7 @@ public class BoKTele
                     //opMode.telemetry.addData("Enc", (int) ((1120 * (angle - 90))) / 180);
                     robot.turnTable.setPower(TURNTABLE_MOTOR_POWER);
                 }
-            }
-            else {
+            } else {
                 if (!relic_mode && (robot.turnTable.getPower() != 0))
                     robot.turnTable.setPower(0.0);
                 //robot.turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -137,15 +139,11 @@ public class BoKTele
 
             if (relic_mode) {
                 if ((opMode.gamepad2.right_stick_y) >= GAME_TRIGGER_DEAD_ZONE) {
-                    double y = opMode.gamepad2.right_stick_y;
-                    robot.spool.setPower(Range.clip(y, 0.1, 0.1));
-                }
-                else if (opMode.gamepad2.right_stick_y <= -GAME_TRIGGER_DEAD_ZONE) {
-                    double y = opMode.gamepad2.right_stick_y;
-                    robot.spool.setPower(Range.clip(y, -0.1, -0.1));
-                }
-                else {
-                    robot.spool.setPower(0);
+                    if (robot.spool.getPosition() >= 0.06)
+                        robot.spool.setPosition(robot.spool.getPosition()-0.01);
+                } else if (opMode.gamepad2.right_stick_y <= -GAME_TRIGGER_DEAD_ZONE) {
+                    if (robot.spool.getPosition() < robot.SP_INIT)
+                        robot.spool.setPosition(robot.spool.getPosition()+0.01);
                 }
             }
 
@@ -160,16 +158,14 @@ public class BoKTele
                         robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_FAST);
                     else
                         robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_SLOW);
-                }
-                else if (relic_mode) {
+                } else if (relic_mode) {
                     Log.v("BOK", "Relic mode Left Stick Up");
                     // Move relic arm up
                     double posOfArm = robot.relicArm.getPosition();
                     if (posOfArm > 1) {
-                    }
-                    else {
+                    } else {
                         robot.relicArm.setPosition(posOfArm +
-                                (-opMode.gamepad2.left_stick_y/JOYSTICK_RATIO));
+                                (-opMode.gamepad2.left_stick_y / JOYSTICK_RATIO));
                     }
                 }
             } else if (opMode.gamepad2.left_stick_y > UPPER_ARM_STICK_DEAD_ZONE) {
@@ -183,16 +179,14 @@ public class BoKTele
                         robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_FAST);
                     else
                         robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_SLOW);
-                }
-                else if (relic_mode) {
+                } else if (relic_mode) {
                     Log.v("BOK", "Relic mode Left Stick Down");
                     // Move relic arm down
                     double posOfArm = robot.relicArm.getPosition();
                     if (posOfArm < BoKHardwareBot.RA_INIT) {
-                    }
-                    else {
+                    } else {
                         robot.relicArm.setPosition(posOfArm -
-                                (opMode.gamepad2.left_stick_y/JOYSTICK_RATIO));
+                                (opMode.gamepad2.left_stick_y / JOYSTICK_RATIO));
                     }
                 }
             } else {

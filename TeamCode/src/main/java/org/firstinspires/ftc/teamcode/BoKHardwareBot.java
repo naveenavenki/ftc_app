@@ -36,10 +36,11 @@ public abstract class BoKHardwareBot
     protected static final double JA_FINAL = 0.46;
 
     protected static final double RA_INIT = 0.1;
+    protected static final double SP_INIT = 0.95;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
-    private static final String RELIC_SPOOL_MOTOR = "sp";
+    private static final String RELIC_SPOOL_SERVO = "sp";
     private static final String CLAW_WRIST_SERVO = "cw";
     private static final String CLAW_GRAB_SERVO  = "cg";
     private static final String JEWEL_ARM  = "ja";
@@ -55,7 +56,6 @@ public abstract class BoKHardwareBot
     // DC motors
     protected DcMotor turnTable;
     protected DcMotor upperArm;
-    protected DcMotor spool;
 
     // Servos
     private Servo clawWrist; // These are used in the GlyphArm
@@ -63,6 +63,8 @@ public abstract class BoKHardwareBot
     protected Servo jewelArm;
     protected Servo jewelFlicker;
     protected Servo relicArm;
+    protected Servo spool;
+
 
     // Sensors
     protected BNO055IMU imu;
@@ -131,7 +133,7 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        spool = opMode.hardwareMap.dcMotor.get(RELIC_SPOOL_MOTOR);
+        spool = opMode.hardwareMap.servo.get(RELIC_SPOOL_SERVO);
         if(spool == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
@@ -205,6 +207,7 @@ public abstract class BoKHardwareBot
         jewelArm.setPosition(JA_INIT);
         jewelFlicker.setPosition(JF_INIT);
         relicArm.setPosition(RA_INIT);
+        spool.setPosition(SP_INIT);
 
         upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
         upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
