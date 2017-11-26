@@ -242,10 +242,10 @@ public class BoKMecanumDT extends BoKHardwareBot
 
     public boolean haveDTMotorsReachedTarget()
     {
-        Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
-                ", LB " + leftBack.getCurrentPosition() +
-                ", RF " + rightFront.getCurrentPosition() +
-                ", RB " + rightBack.getCurrentPosition());
+        //Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
+        //        ", LB " + leftBack.getCurrentPosition() +
+        //        ", RF " + rightFront.getCurrentPosition() +
+        //        ", RB " + rightBack.getCurrentPosition());
         if ((Math.abs(leftFront.getCurrentPosition()) > Math.abs(leftFrontTarget))&&
            (Math.abs(leftBack.getCurrentPosition()) > Math.abs(leftBackTarget)) &&
            (Math.abs(rightFront.getCurrentPosition()) > Math.abs(rightFrontTarget)) &&

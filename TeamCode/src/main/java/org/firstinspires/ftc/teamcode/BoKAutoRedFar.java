@@ -17,11 +17,15 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     private static int DISTANCE_TO_RIGHT_COL_CM = 25;//cm
     private static int DISTANCE_TO_LEFT_COL_CM = 63;//cm
 
+    // Constructor
+    public BoKAutoRedFar()
+    {
+        allianceColor = BoKAllianceColor.BOK_ALLIANCE_RED;
+    }
+
     @Override
     public void runSoftware()
     {
-        allianceColor = BoKAllianceColor.BOK_ALLIANCE_RED;
-
         // Detect Vuforia image, flick the jewel
         detectVuforiaImgAndFlick();
 

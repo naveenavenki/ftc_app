@@ -32,10 +32,10 @@ public interface BoKAuto
 
     //public static double UPPER_ARM_POWER = 0.2;
 
-    public static double DISTANCE_TO_CRYPTO_CM = 4.0;
+    public static double DISTANCE_TO_CRYPTO_CM = 2.5;
 
-    public static double DISTANCE_BLUE_BACK_TO_COLUMN = 3.25;
-    public static double DISTANCE_RED_FWD_TO_COLUMN = 1.0;
+    public static double DISTANCE_BLUE_BACK_TO_COLUMN = 2.65;
+    //public static double DISTANCE_RED_FWD_TO_COLUMN = 0.4;
     //public static double DISTANCE_TO_COLUMN = 1.5;
     public static double ROTATIONS_STRAFE_TO_WALL = 0.15;
     //public static double ROTATIONS_STRAFE_FROM_WALL = 0.25;

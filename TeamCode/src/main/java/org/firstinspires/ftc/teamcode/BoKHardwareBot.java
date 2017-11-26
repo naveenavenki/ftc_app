@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import java.io.File;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -35,17 +36,26 @@ public abstract class BoKHardwareBot
     protected static final double JA_MID = 0.42;
     protected static final double JA_FINAL = 0.46;
 
-    protected static final double RA_INIT = 0.1;
+    protected static final double RA_INIT = 0.11;
+    protected static final double RELIC_ARM_UPPER_LIMIT = 0.18;
     protected static final double SP_INIT = 0.95;
+    protected static final double RC_UNLOCK = 1; // initially unlocked
+    protected static final double RC_LOCK = 0.4;
+    protected static final double RL_INIT = 0.2;
+    protected static final double RL_UNLOCK = 0;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
     private static final String RELIC_SPOOL_SERVO = "sp";
     private static final String CLAW_WRIST_SERVO = "cw";
     private static final String CLAW_GRAB_SERVO  = "cg";
-    private static final String JEWEL_ARM  = "ja";
-    private static final String JEWEL_FLICKER  = "jf";
+    private static final String JEWEL_ARM_SERVO  = "ja";
+    private static final String JEWEL_FLICKER_SERVO  = "jf";
     private static final String RELIC_ARM_SERVO = "ra";
+    private static final String RELIC_CLAW_SERVO = "rc";
+    private static final String RELIC_LOCK_SERVO = "rl";
+    //private static final String RIGHT_GLYPH_CLAW_SERVO  = "rg";
+    //private static final String LEFT_GLYPH_CLAW_SERVO  = "lg";
     private static final String RANGE_SENSOR_JA = "rs";
     private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
@@ -58,13 +68,17 @@ public abstract class BoKHardwareBot
     protected DcMotor upperArm;
 
     // Servos
-    private Servo clawWrist; // These are used in the GlyphArm
-    private Servo clawGrab;
+    private Servo glyphClawWrist; // These are used in the GlyphArm
+    private Servo glyphClawGrab;
     protected Servo jewelArm;
     protected Servo jewelFlicker;
     protected Servo relicArm;
-    protected Servo spool;
+    protected Servo relicSpool;
+    protected Servo relicClaw;
+    protected Servo relicLock;
 
+    protected CRServo rightGlyphServo;
+    protected CRServo leftGlyphServo;
 
     // Sensors
     protected BNO055IMU imu;
@@ -108,22 +122,33 @@ public abstract class BoKHardwareBot
      */
     private BoKHardwareStatus initMotorsAndSensors(LinearOpMode opMode)
     {
-        clawWrist = opMode.hardwareMap.servo.get(CLAW_WRIST_SERVO);
-        if(clawWrist == null){
+/*
+        rightGlyphServo = opMode.hardwareMap.crservo.get(RIGHT_GLYPH_CLAW_SERVO);
+        if(rightGlyphServo == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        clawGrab = opMode.hardwareMap.servo.get(CLAW_GRAB_SERVO);
-        if(clawGrab == null){
+        leftGlyphServo = opMode.hardwareMap.crservo.get(LEFT_GLYPH_CLAW_SERVO);
+        if(leftGlyphServo == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+*/
+        glyphClawWrist = opMode.hardwareMap.servo.get(CLAW_WRIST_SERVO);
+        if(glyphClawWrist == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        jewelArm = opMode.hardwareMap.servo.get(JEWEL_ARM);
+        glyphClawGrab = opMode.hardwareMap.servo.get(CLAW_GRAB_SERVO);
+        if(glyphClawGrab == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        jewelArm = opMode.hardwareMap.servo.get(JEWEL_ARM_SERVO);
         if(jewelArm == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        jewelFlicker = opMode.hardwareMap.servo.get(JEWEL_FLICKER);
+        jewelFlicker = opMode.hardwareMap.servo.get(JEWEL_FLICKER_SERVO);
         if(jewelFlicker == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
@@ -133,8 +158,18 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        spool = opMode.hardwareMap.servo.get(RELIC_SPOOL_SERVO);
-        if(spool == null){
+        relicSpool = opMode.hardwareMap.servo.get(RELIC_SPOOL_SERVO);
+        if(relicSpool == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        relicClaw = opMode.hardwareMap.servo.get(RELIC_CLAW_SERVO);
+        if(relicClaw == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        relicLock = opMode.hardwareMap.servo.get(RELIC_LOCK_SERVO);
+        if(relicLock == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
@@ -166,22 +201,12 @@ public abstract class BoKHardwareBot
         }
 
         rangeSensorBack = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class,
-                RANGE_SENSOR_BACK_CFG);
+            RANGE_SENSOR_BACK_CFG);
         if (rangeSensorBack == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
         if (!opMode.getClass().getName().contains("Tele")) {
-            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-            parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-            parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-            //parameters.calibrationDataFile = "BNO055IMUCalibration.json";
-            //parameters.loggingEnabled      = true;
-            //parameters.loggingTag          = "IMU";
-            //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-            //angles = new Orientation();
-            imu.initialize(parameters);
-
             //Make sure that the flicker is open
             jewelFlicker.setPosition(JF_FINAL);
 
@@ -190,10 +215,10 @@ public abstract class BoKHardwareBot
             String value = ReadWriteFile.readFile(file);
             if (value.isEmpty()) {
                 Log.v("BOK", "File not found");
-                clawWrist.setPosition(CW_INIT);
+                glyphClawWrist.setPosition(CW_INIT);
             } else {
                 Log.v("BOK", "Calibration data: " + value);
-                clawWrist.setPosition(Double.parseDouble(value));
+                glyphClawWrist.setPosition(Double.parseDouble(value));
             }
         }
 
@@ -204,12 +229,26 @@ public abstract class BoKHardwareBot
         turnTable.setPower(0);
         //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+       // right.setDirection(CRServo.Direction.REVERSE);
+
         if (!opMode.getClass().getName().contains("Tele")) {
-            clawGrab.setPosition(CG_INIT);
+            glyphClawGrab.setPosition(CG_INIT);
             jewelArm.setPosition(JA_INIT);
             jewelFlicker.setPosition(JF_INIT);
             relicArm.setPosition(RA_INIT);
-            spool.setPosition(SP_INIT);
+            relicSpool.setPosition(SP_INIT);
+            relicClaw.setPosition(RC_UNLOCK);
+            relicLock.setPosition(RL_INIT);
+        }
+        else {
+            //glyphClawWrist.setPosition(CW_INIT);
+            //glyphClawGrab.setPosition(CG_INIT);
+            //jewelArm.setPosition(JA_INIT);
+            //jewelFlicker.setPosition(JF_INIT);
+            relicArm.setPosition(RA_INIT);
+            relicSpool.setPosition(SP_INIT);
+            relicClaw.setPosition(RC_UNLOCK);
+            relicLock.setPosition(RL_INIT);
         }
 
         upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -219,9 +258,22 @@ public abstract class BoKHardwareBot
         upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         upperArm.setPower(0);
 
-        glyphArm = new BoKGlyphArm(this, opMode, clawWrist, clawGrab);
+        glyphArm = new BoKGlyphArm(this, opMode, glyphClawWrist, glyphClawGrab);
        
         return BoKHardwareStatus.BOK_HARDWARE_SUCCESS;
+    }
+
+    protected void initializeImu()
+    {
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        //parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        //parameters.loggingEnabled      = true;
+        //parameters.loggingTag          = "IMU";
+        //parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        //angles = new Orientation();
+        imu.initialize(parameters);
     }
 
     // Initialization of drive train is protected but abstract

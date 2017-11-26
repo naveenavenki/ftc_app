@@ -11,6 +11,7 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.vuforia.CameraDevice;
 import com.vuforia.Image;
 import com.vuforia.Matrix34F;
@@ -48,7 +49,11 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Scanner;
 
 /**
  * Created by Krishna Saxena on 11/15/2016.
@@ -174,14 +179,28 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     public void setupRobot()
     {
-        boolean vuMarkVisible = false;
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
         String robotPosition = "", vuMarkInfo = "";
+        boolean writeOnce = false;
+
+        double tXOffset = ROBOT_LOCATION_OFFSET_X;
+        double tZOffset = ROBOT_LOCATION_OFFSET_Z;
+
+        String fileName = "BoKAutoPositions" + allianceColor.name() + ".txt";
+        File file = AppUtil.getInstance().getSettingsFile(fileName);
+
+        String value = ReadWriteFile.readFile(file);
+        if (!value.isEmpty()) {
+            Scanner scan = new Scanner(value);
+            tXOffset = scan.nextDouble();
+            tZOffset = scan.nextDouble();
+            Log.v("BOK", "Reading " + fileName);
+            Log.v("BOK", String.format("Read input values: %.1f, %.1f", tXOffset, tZOffset));
+        }
 
         // activate
         relicTrackables.activate();
         CameraDevice.getInstance().setFlashTorchMode(true);
-        runTime.reset();
 
         while (true) {
             vuMark = RelicRecoveryVuMark.from(relicTemplate);
@@ -191,7 +210,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                  * loop until this condition occurs, then move on to act accordingly depending
                  * on which VuMark was visible. */
                 //opMode.telemetry.addData("VuMark", "%s visible", vuMark);
-                vuMarkVisible = true;
+                //vuMarkVisible = true;
                 //Log.v("BOK", "VuMark " + vuMark + " visible");
 
 
@@ -227,28 +246,51 @@ public abstract class BoKAutoCommon implements BoKAuto
                     double rY = rot.secondAngle;
                     //double rZ = rot.thirdAngle;
                     robotPosition = String.format("X: %.1f, Z: %.1f, ROT Y: %.1f",
-                                                  tX + ROBOT_LOCATION_OFFSET_X,
-                                                  tZ - ROBOT_LOCATION_OFFSET_Z, rY);
+                                                  tX - tXOffset,
+                                                  tZ - tZOffset, rY);
                     opMode.telemetry.addData("Trans", robotPosition);
                     vuMarkInfo = vuMark + " at :(" +
                                  (int)pointCenter.getData()[0] + ", " +
                                  (int)pointCenter.getData()[1] + ")";
                     opMode.telemetry.addData("VuMark", vuMarkInfo);
-                    opMode.telemetry.addData("Raw", "X: %.1f", tX);
+                    opMode.telemetry.addData("Raw", "X: %.1f, Z: %.1f", tX, tZ);
+
+                    if (opMode.gamepad1.x && !writeOnce) {
+                        writeOnce = true;
+
+                        fileName = "BoKAutoPositions" + allianceColor.name() + ".txt";
+                        file = AppUtil.getInstance().getSettingsFile(fileName);
+
+                        String positions = String.format("%.1f %.1f", tX, tZ);
+                        ReadWriteFile.writeFile(file, positions);
+                        Log.v("BOK", "Writing " + fileName);
+                        Log.v("BOK", String.format("Write values: %.1f, %.1f", tX, tZ));
+                    }
                 }
                 opMode.telemetry.update();
             }
+
             if (opMode.gamepad1.y) {
                 relicTrackables.deactivate();
                 CameraDevice.getInstance().setFlashTorchMode(false);
                 if (!robotPosition.isEmpty()) {
                     Log.v("BOK", robotPosition);
                     Log.v("BOK", vuMarkInfo);
+                    BoKLogInfo.logInfo(robotPosition +
+                            String.format("xOffset %.1f, zOffset: %.1f\n",
+                                    tXOffset, tZOffset));
                 }
                 break;
             }
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
         }
+        // now initialize the IMU
+        robot.initializeImu();
+
+        angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
+                AxesOrder.XYZ,
+                AngleUnit.DEGREES);
+        Log.v("BOK", "Initial IMU values " + angles.thirdAngle);
     }
 
     protected static void writeFile(String fname, Mat img, boolean always)
@@ -339,7 +381,9 @@ public abstract class BoKAutoCommon implements BoKAuto
         boolean vuMarkVisible = false;
         boolean vuforiaSuccess = false;
         boolean withBlur = false; // first use OpenCV without blurring the image
-        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.LEFT;
+        // closest one in case we fail to detect Vuforia image
+        RelicRecoveryVuMark vuMark = (allianceColor == BoKAllianceColor.BOK_ALLIANCE_BLUE) ?
+                RelicRecoveryVuMark.LEFT : RelicRecoveryVuMark.RIGHT;
         // activate
         relicTrackables.activate();
         runTime.reset();
@@ -351,14 +395,15 @@ public abstract class BoKAutoCommon implements BoKAuto
              * UNKNOWN, LEFT, CENTER, and RIGHT. When a VuMark is visible, something other than
              * UNKNOWN will be returned by RelicRecoveryVuMark from VuforiaTrackable.
              */
-            vuMark = RelicRecoveryVuMark.from(relicTemplate);
-            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+            RelicRecoveryVuMark vuMarkLocal = RelicRecoveryVuMark.from(relicTemplate);
+            if (vuMarkLocal != RelicRecoveryVuMark.UNKNOWN) {
 
                 /* Found an instance of the template. In the actual game, you will probably
                  * loop until this condition occurs, then move on to act accordingly depending
                  * on which VuMark was visible. */
                 //opMode.telemetry.addData("VuMark", "%s visible", vuMark);
                 vuMarkVisible = true;
+                vuMark = vuMarkLocal;
                 Log.v("BOK", "VuMark " + vuMark + " visible");
 
                 /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
@@ -602,9 +647,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                     rightFrontP = Range.clip(-power - error, -0.24, 0.16);
                     rightBackP = Range.clip(power + error, -0.24, 0.16);
                 }
-                String info = String.format("Gyro at: %.2f, %.2f, %.2f, %.2f. %.2f", angles.thirdAngle,
-                        leftFrontP, leftBackP,rightFrontP,rightBackP);
-                Log.v("BOK", info);
+                //String info = String.format("Gyro at: %.2f, %.2f, %.2f, %.2f. %.2f", angles.thirdAngle,
+                //        leftFrontP, leftBackP,rightFrontP,rightBackP);
+                //Log.v("BOK", info);
 
                 robot.setPowerToDTMotors(leftFrontP,
                         leftBackP,
@@ -625,6 +670,24 @@ public abstract class BoKAutoCommon implements BoKAuto
         double cmCurrent = 0;
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         runTime.reset();
+/*
+        if (cryptoColumn == RelicRecoveryVuMark.RIGHT) {
+            robot.jewelArm.setPosition(robot.JA_MID - 0.05);
+            // Strafe to the right
+            strafe(DT_POWER_FOR_STRAFE,
+                    ROTATIONS_STRAFE_TO_WALL-0.05,
+                    true,
+                    DT_STRAFE_TIMEOUT);
+        }
+*/
+
+        //cmCurrent = robot.rangeSensorJA.rawOptical();
+        //Log.v("BOK", "Distance RS (start raw optical): " + cmCurrent);
+        //Log.v("BOK", "Distance RS (start optical): " + robot.rangeSensorJA.cmOptical());
+        cmCurrent = robot.rangeSensorJA.cmUltrasonic();
+        //Log.v("BOK", "Distance RS (start raw us): " + robot.rangeSensorJA.rawUltrasonic());
+        Log.v("BOK", "Distance RS (start): " + cmCurrent);
+        //BoKLogInfo.logInfo(String.format("Distance RS (start): %.2f\n", cmCurrent));
         if(forward){
             robot.setPowerToDTMotors(power, power, -power, -power);
         }
@@ -632,17 +695,29 @@ public abstract class BoKAutoCommon implements BoKAuto
             robot.setPowerToDTMotors(-power, -power, power, power);
         }
 
-        cmCurrent = robot.rangeSensorJA.cmUltrasonic();
-        Log.v("BOK", "Distance RS (start): " + cmCurrent);
         while(opMode.opModeIsActive() &&
                 (runTime.seconds() < waitForSeconds) &&
                 (cmCurrent > distance)) {
-            //Log.v("BOK", "Distance RS: " + cmCurrent);
+            opMode.sleep(40);
             cmCurrent = robot.rangeSensorJA.cmUltrasonic();
+            Log.v("BOK", "Distance RS (us): " + cmCurrent);
+            if (cmCurrent <= 5) {
+                cmCurrent = robot.rangeSensorJA.cmOptical();
+                if (cmCurrent == DistanceUnit.infinity)
+                    continue;
+                //Log.v("BOK", "Distance RS (raw optical): " + cmCurrent);
+                Log.v("BOK", String.format("Distance RS (optical): %.2f", cmCurrent));
+            }
         }
 
         robot.setPowerToDTMotors(0, 0, 0, 0);
-        Log.v("BOK", "Distance RS (end): " + cmCurrent + "(current): " + robot.rangeSensorJA.cmUltrasonic());
+        if (cmCurrent == DistanceUnit.infinity) {
+            Log.v("BOK", "Range sensor is at infinity");
+        }
+        else {
+            Log.v("BOK", String.format("Distance RS (end): %.2f", cmCurrent));
+            BoKLogInfo.logInfo(String.format("Distance RS (end): %.2f\n", cmCurrent));
+        }
     }
     
     public void moveWithRangeSensor(double power,
@@ -661,14 +736,14 @@ public abstract class BoKAutoCommon implements BoKAuto
             rangeSensor = robot.rangeSensorBack;
         }
 
-        cmCurrent = rangeSensor.cmUltrasonic();
+        cmCurrent = rangeSensor.getDistance(DistanceUnit.CM);
         diffFromTarget = targetDistanceCm - cmCurrent;
         runTime.reset();
 
         while (opMode.opModeIsActive() &&
                 (Math.abs(diffFromTarget) >= RS_DIFF_THRESHOLD_CM) &&
                 (runTime.seconds() < waitForSeconds)) {
-            cmCurrent = rangeSensor.cmUltrasonic();
+            cmCurrent = rangeSensor.getDistance(DistanceUnit.CM);
             if (cmCurrent == 255) // Invalid sensor reading
                 continue;
 
@@ -824,6 +899,12 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             opMode.sleep(WAIT_FOR_SERVO_MS * 3); // let the flicker settle down
 
+            angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
+                                                     AxesOrder.XYZ,
+                                                     AngleUnit.DEGREES);
+            Log.v("BOK", String.format("IMU values %.1f", angles.thirdAngle));
+            BoKLogInfo.logInfo(String.format("IMU angle: %.1f", angles.thirdAngle));
+
             // Move forward towards cryptobox using optical color/range sensor
             moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
                     DISTANCE_TO_CRYPTO_CM,
@@ -845,13 +926,11 @@ public abstract class BoKAutoCommon implements BoKAuto
             }
             else {
                 // Need to move past the crypto column for blue
-                double distanceFwd = DISTANCE_RED_FWD_TO_COLUMN;
-
-                move(DT_POWER_FOR_CRYPTO,
-                     DT_POWER_FOR_CRYPTO,
-                        distanceFwd,
-                     true,
-                     BLUE_CRYPTO_MOVE_TIMEOUT);
+                //move(DT_POWER_FOR_CRYPTO,
+                //     DT_POWER_FOR_CRYPTO,
+                //    DISTANCE_RED_FWD_TO_COLUMN,
+                //     true,
+                //     BLUE_CRYPTO_MOVE_TIMEOUT);
             }
 
             // Now prepare to unload the glyph

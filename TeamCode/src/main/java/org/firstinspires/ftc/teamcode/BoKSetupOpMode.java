@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.util.ReadWriteFile;
 import java.io.File;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import android.util.Log;
 
@@ -14,7 +16,7 @@ import android.util.Log;
  */
 @TeleOp(name="BOK SETUP", group= "BoKZ")
 //@Disabled
-public class BoKInitTeleOpMode extends LinearOpMode
+public class BoKSetupOpMode extends LinearOpMode
 {
     private static final double INIT_ANGLE = 16;
     private static final double UA_POWER = 0.2;
@@ -42,6 +44,7 @@ public class BoKInitTeleOpMode extends LinearOpMode
             // B:                    Reset moving upper arm
             // Left & Right Trigger: Move wrist position
             // Y:                    Save wrist position to file
+
             if (gamepad2.left_stick_y < -UPPER_ARM_STICK_DEAD_ZONE) {
                 robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_SLOW);
             }
@@ -80,7 +83,9 @@ public class BoKInitTeleOpMode extends LinearOpMode
                 Log.v("BOK", "Value written to file: " +
                        Double.toString(robot.glyphArm.clawWrist.getPosition()));
             }
+
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
+
         }
     }
 }

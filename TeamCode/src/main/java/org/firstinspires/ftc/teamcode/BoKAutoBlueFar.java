@@ -18,10 +18,15 @@ public class BoKAutoBlueFar extends BoKAutoCommon
     private static int DISTANCE_TO_CENTER_COL_CM = 60;
     private static int DISTANCE_TO_RIGHT_COL_CM = 78;
 
+    // Constructor
+    public BoKAutoBlueFar()
+    {
+        allianceColor = BoKAllianceColor.BOK_ALLIANCE_BLUE;
+    }
+
     @Override
     public void runSoftware()
     {
-        allianceColor = BoKAllianceColor.BOK_ALLIANCE_BLUE;
         // NOTE: Move backwards towards crypto
 
         // Detect Vuforia image and flick the jewel
