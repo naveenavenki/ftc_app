@@ -25,9 +25,9 @@ public abstract class BoKHardwareBot
     protected static final double CW_INIT = 0.92;
     protected static final double CW_MIN = 0.1;
     protected static final double CW_MID = 0.45;
-    protected static final double CG_INIT = 0.8; // Closed at initialization
+    protected static final double CG_INIT = 0.85; // Closed at initialization
     protected static final double CG_OPEN = 0.4;
-    protected static final double CG_CLOSE = 0.8;
+    protected static final double CG_CLOSE = 0.85;
     protected static final double JF_INIT = 0.8;
     protected static final double JF_FINAL = 0.42;
     protected static final double JF_RIGHT = 1;
@@ -75,10 +75,9 @@ public abstract class BoKHardwareBot
     protected Servo relicArm;
     protected Servo relicSpool;
     protected Servo relicClaw;
-    protected Servo relicLock;
 
-    protected CRServo rightGlyphServo;
-    protected CRServo leftGlyphServo;
+    //protected CRServo rightGlyphServo;
+    //protected CRServo leftGlyphServo;
 
     // Sensors
     protected BNO055IMU imu;
@@ -168,11 +167,6 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        relicLock = opMode.hardwareMap.servo.get(RELIC_LOCK_SERVO);
-        if(relicLock == null){
-            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
-        }
-
         upperArm = opMode.hardwareMap.dcMotor.get(UPPER_ARM_MOTOR);
         if(upperArm == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
@@ -238,7 +232,6 @@ public abstract class BoKHardwareBot
             relicArm.setPosition(RA_INIT);
             relicSpool.setPosition(SP_INIT);
             relicClaw.setPosition(RC_UNLOCK);
-            relicLock.setPosition(RL_INIT);
         }
         else {
             //glyphClawWrist.setPosition(CW_INIT);
@@ -246,9 +239,8 @@ public abstract class BoKHardwareBot
             //jewelArm.setPosition(JA_INIT);
             //jewelFlicker.setPosition(JF_INIT);
             relicArm.setPosition(RA_INIT);
-            relicSpool.setPosition(SP_INIT);
+            //relicSpool.setPosition(SP_INIT);
             relicClaw.setPosition(RC_UNLOCK);
-            relicLock.setPosition(RL_INIT);
         }
 
         upperArm.setDirection(DcMotorSimple.Direction.REVERSE);

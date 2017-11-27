@@ -57,6 +57,7 @@ public class BoKTele
         robot.jewelFlicker.setPosition(robot.JF_FINAL);
         robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
         robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+        robot.relicSpool.setPosition(robot.SP_INIT);
         robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // run until the end of the match (driver presses STOP)
@@ -112,7 +113,6 @@ public class BoKTele
             if (end_game) { // You need to be in end_game to be in relic mode
                 if (opMode.gamepad2.dpad_down) {
                     relic_mode = true;
-                    robot.relicLock.setPosition(robot.RL_UNLOCK);
                     Log.v("BOK", "Relic Mode Started");
                 }
                 if (opMode.gamepad2.dpad_up) {

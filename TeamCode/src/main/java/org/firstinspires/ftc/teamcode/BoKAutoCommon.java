@@ -71,7 +71,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     private static final double HEADING_THRESHOLD = 1;
     private static final int RS_DIFF_THRESHOLD_CM = 1;
     private static final double DT_POWER_FOR_RS_MIN = 0.1;
-    private static final double ROBOT_LOCATION_OFFSET_X = 183.5; // mm from the center of
+    private static final double ROBOT_LOCATION_OFFSET_X = -183.5; // mm from the center of
     private static final double ROBOT_LOCATION_OFFSET_Z = 562;   // the Vuforia image
     private static final int VUFORIA_LOCK_BALL_X_OFFSET = 230; // pixels offset from the center
     private static final int VUFORIA_LOCK_BALL_Y_OFFSET = 130; // of the Vuforia image
@@ -194,8 +194,8 @@ public abstract class BoKAutoCommon implements BoKAuto
             Scanner scan = new Scanner(value);
             tXOffset = scan.nextDouble();
             tZOffset = scan.nextDouble();
-            Log.v("BOK", "Reading " + fileName);
-            Log.v("BOK", String.format("Read input values: %.1f, %.1f", tXOffset, tZOffset));
+            //Log.v("BOK", "Reading " + fileName);
+            Log.v("BOK", String.format("Read offset values: %.1f, %.1f", tXOffset, tZOffset));
         }
 
         // activate
@@ -210,7 +210,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                  * loop until this condition occurs, then move on to act accordingly depending
                  * on which VuMark was visible. */
                 //opMode.telemetry.addData("VuMark", "%s visible", vuMark);
-                //vuMarkVisible = true;
                 //Log.v("BOK", "VuMark " + vuMark + " visible");
 
 
@@ -263,8 +262,9 @@ public abstract class BoKAutoCommon implements BoKAuto
 
                         String positions = String.format("%.1f %.1f", tX, tZ);
                         ReadWriteFile.writeFile(file, positions);
-                        Log.v("BOK", "Writing " + fileName);
-                        Log.v("BOK", String.format("Write values: %.1f, %.1f", tX, tZ));
+                        String infoStr = "Write " + fileName + " , pos: " + positions;
+                        Log.v("BOK", infoStr);
+                        BoKLogInfo.logInfo(infoStr);
                     }
                 }
                 opMode.telemetry.update();
@@ -275,10 +275,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                 CameraDevice.getInstance().setFlashTorchMode(false);
                 if (!robotPosition.isEmpty()) {
                     Log.v("BOK", robotPosition);
-                    Log.v("BOK", vuMarkInfo);
+                    //Log.v("BOK", vuMarkInfo);
                     BoKLogInfo.logInfo(robotPosition +
-                            String.format("xOffset %.1f, zOffset: %.1f\n",
-                                    tXOffset, tZOffset));
+                            String.format("xOffset %.1f, zOffset: %.1f", tXOffset, tZOffset));
                 }
                 break;
             }
@@ -287,17 +286,17 @@ public abstract class BoKAutoCommon implements BoKAuto
         // now initialize the IMU
         robot.initializeImu();
 
-        angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
-                AxesOrder.XYZ,
-                AngleUnit.DEGREES);
-        Log.v("BOK", "Initial IMU values " + angles.thirdAngle);
+        //angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
+        //        AxesOrder.XYZ,
+        //        AngleUnit.DEGREES);
+        //Log.v("BOK", "Initial IMU values " + angles.thirdAngle); // always 0 after init
     }
 
     protected static void writeFile(String fname, Mat img, boolean always)
     {
         if (always || DEBUG_OPEN_CV) {
             String filePath = "/sdcard/FIRST/" + fname;
-            Log.v("BOK", "Saving image" + filePath);
+            //Log.v("BOK", "Saving image" + filePath);
             Imgcodecs.imwrite(filePath, img);
         }
     }
@@ -380,7 +379,6 @@ public abstract class BoKAutoCommon implements BoKAuto
     {
         boolean vuMarkVisible = false;
         boolean vuforiaSuccess = false;
-        boolean withBlur = false; // first use OpenCV without blurring the image
         // closest one in case we fail to detect Vuforia image
         RelicRecoveryVuMark vuMark = (allianceColor == BoKAllianceColor.BOK_ALLIANCE_BLUE) ?
                 RelicRecoveryVuMark.LEFT : RelicRecoveryVuMark.RIGHT;
@@ -466,79 +464,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     frame.close();
                 } // if (pose != null)
                 relicTrackables.deactivate();
-            }/* else if ((runTime.seconds() > VUFORIA_TIMEOUT_SECONDS) && USE_OPEN_CV) {
-                //opMode.telemetry.addData("VuMark", "not visible");
-                //opMode.telemetry.update();
-                Log.v("BOK", "VuMark not visible; moving to OpenCV");
-                VuforiaLocalizer.CloseableFrame frame;
-                try {
-                    frame = vuforiaFTC.getFrameQueue().take();
-                } catch (InterruptedException e) {
-                    Log.v("BOK", "Exception OpenCV does NOT have an image!!");
-                    break;
-                }
-                for (int i = 0; i < frame.getNumImages(); i++) {
-                    if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
-                        Image rgb = frame.getImage(i);
-                        // rgb is now the Image object that we’ve used in the video
-                        if (rgb != null) {
-                            // RGB to BGR (for saving the image) to HSV
-                            Mat img = setupOpenCVImg(rgb);
-                            Mat contourImg = null;
-
-                            if (withBlur)
-                                // First blur the image to reduce noise
-                                Imgproc.blur(img, img, new Size(3, 3));
-                            else // if we don't succeed the first time, try blurring the image
-                                withBlur = true;
-
-                            if (DEBUG_OPEN_CV) {
-                                // draw the results for further analysis
-                                contourImg = new Mat(img.size(),
-                                        CvType.CV_8UC3,
-                                        new Scalar(0, 255, 0)); // green background!
-                            }
-
-                            // Find the VuMark
-                            vuMark = BoKAutoOCVHelper.findVuMark(img, contourImg);
-                            // Find the coordinates for the tape between the jewels
-                            Rect tapeRect = BoKAutoOCVHelper.findWhiteRectangle(img, contourImg);
-
-                            if (DEBUG_OPEN_CV) {
-                                // write the results for further analysis
-                                writeFile(OCV_CONTOUR_IMG, contourImg, DEBUG_OPEN_CV);
-                                // done with contourImg
-                                contourImg.release();
-                            }
-
-                            if ((tapeRect != null) &&
-                                (vuMark != RelicRecoveryVuMark.UNKNOWN) && USE_OPEN_CV_RESULTS) {
-                                // approx 50 pixels = 1 inch
-                                Rect roi = new Rect(tapeRect.x - OCV_X_OFFSET,
-                                                    tapeRect.y - OCV_Y_OFFSET,
-                                                    VUFORIA_LOCK_BALL_RECT_WIDTH,
-                                                    VUFORIA_LOCK_BALL_RECT_HEIGHT);
-                                // Next check if Red ball is on the left
-                                foundRedOnLeft = calcNumRedPixels(img, roi);
-                                vuforiaSuccess = true;
-                                vuMarkVisible = true;
-                                if (DEBUG_OPEN_CV) {
-                                    Imgproc.rectangle(img,
-                                            new Point(roi.x, roi.y),
-                                            new Point(roi.x + VUFORIA_LOCK_BALL_RECT_WIDTH,
-                                                      roi.y + VUFORIA_LOCK_BALL_RECT_HEIGHT),
-                                            new Scalar(0, 255, 0), 10);
-                                    writeFile(OCV_ROI_IMG, img, DEBUG_OPEN_CV);
-                                }
-                            } // if we found the white tape rectangle && vuMark
-                            img.release();
-                        } // if (rgb != null)
-                        break;
-                    } // if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565)
-                } // for (int i = 0; i < numImages; i++)
-                frame.close();
-            } // using OpenCV instead of Vuforia
-            */
+            }
         } // while (!vuMarkVisible)
         cryptoColumn = vuMark;
         Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
@@ -621,8 +547,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     AngleUnit.DEGREES);
             double target = angles.thirdAngle;
             robot.startStrafe(power, rotations, right);
-            String tInfo = String.format("Target: %.2f", target);
-            Log.v("BOK", tInfo);
+            Log.v("BOK", String.format("Target: %.2f", target));
 
             runTime.reset();
             while (opMode.opModeIsActive() &&
@@ -687,7 +612,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         cmCurrent = robot.rangeSensorJA.cmUltrasonic();
         //Log.v("BOK", "Distance RS (start raw us): " + robot.rangeSensorJA.rawUltrasonic());
         Log.v("BOK", "Distance RS (start): " + cmCurrent);
-        //BoKLogInfo.logInfo(String.format("Distance RS (start): %.2f\n", cmCurrent));
+        BoKLogInfo.logInfo(String.format("Distance RS (start): %.2f", cmCurrent));
         if(forward){
             robot.setPowerToDTMotors(power, power, -power, -power);
         }
@@ -698,13 +623,12 @@ public abstract class BoKAutoCommon implements BoKAuto
         while(opMode.opModeIsActive() &&
                 (runTime.seconds() < waitForSeconds) &&
                 (cmCurrent > distance)) {
-            opMode.sleep(40);
             cmCurrent = robot.rangeSensorJA.cmUltrasonic();
             Log.v("BOK", "Distance RS (us): " + cmCurrent);
             if (cmCurrent <= 5) {
                 cmCurrent = robot.rangeSensorJA.cmOptical();
-                if (cmCurrent == DistanceUnit.infinity)
-                    continue;
+                //if (cmCurrent == DistanceUnit.infinity)
+                //    continue;
                 //Log.v("BOK", "Distance RS (raw optical): " + cmCurrent);
                 Log.v("BOK", String.format("Distance RS (optical): %.2f", cmCurrent));
             }
@@ -716,7 +640,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
         else {
             Log.v("BOK", String.format("Distance RS (end): %.2f", cmCurrent));
-            BoKLogInfo.logInfo(String.format("Distance RS (end): %.2f\n", cmCurrent));
+            BoKLogInfo.logInfo(String.format("Distance RS (end): %.2f", cmCurrent));
         }
     }
     
@@ -902,7 +826,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
                                                      AxesOrder.XYZ,
                                                      AngleUnit.DEGREES);
-            Log.v("BOK", String.format("IMU values %.1f", angles.thirdAngle));
+            Log.v("BOK", String.format("IMU angle %.1f", angles.thirdAngle));
             BoKLogInfo.logInfo(String.format("IMU angle: %.1f", angles.thirdAngle));
 
             // Move forward towards cryptobox using optical color/range sensor
@@ -925,7 +849,6 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             }
             else {
-                // Need to move past the crypto column for blue
                 //move(DT_POWER_FOR_CRYPTO,
                 //     DT_POWER_FOR_CRYPTO,
                 //    DISTANCE_RED_FWD_TO_COLUMN,
