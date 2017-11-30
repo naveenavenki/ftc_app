@@ -53,8 +53,9 @@ public class BoKTele
 
     public BoKTeleStatus runSoftware()
     {
+        boolean relic_raised = false;
         robot.jewelArm.setPosition(robot.JA_INIT);
-        robot.jewelFlicker.setPosition(robot.JF_FINAL);
+        robot.jewelFlicker.setPosition(robot.JF_INIT);
         robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
         robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
         robot.relicSpool.setPosition(robot.SP_INIT);
@@ -103,6 +104,10 @@ public class BoKTele
             // Right Stick:            Relic Lift
             // B:                      Relic claw open
             // A:                      Relic claw closed
+            // Dpad Down:              Relic Arm to max
+            // Dpad Left:              Deploy relic lift (initial)
+            // Left bumper:            Lift relic to clear the wall
+
             if (opMode.gamepad2.y) {
                 end_game = true;
                 Log.v("BOK", "End Game Started");
@@ -113,6 +118,7 @@ public class BoKTele
             if (end_game) { // You need to be in end_game to be in relic mode
                 if (opMode.gamepad2.dpad_down) {
                     relic_mode = true;
+                    robot.relicArm.setPosition(robot.RELIC_ARM_DEPLOY);
                     Log.v("BOK", "Relic Mode Started");
                 }
                 if (opMode.gamepad2.dpad_up) {
@@ -144,12 +150,18 @@ public class BoKTele
             }
 
             if (relic_mode) {
-                if ((opMode.gamepad2.right_stick_y) >= GAME_TRIGGER_DEAD_ZONE) {
-                    if (robot.relicSpool.getPosition() >= 0.06)
-                        robot.relicSpool.setPosition(robot.relicSpool.getPosition()-0.005);
-                } else if (opMode.gamepad2.right_stick_y <= -GAME_TRIGGER_DEAD_ZONE) {
-                    if (robot.relicSpool.getPosition() < robot.SP_INIT)
-                        robot.relicSpool.setPosition(robot.relicSpool.getPosition()+0.005);
+                if ((opMode.gamepad2.right_stick_y) <= -GAME_TRIGGER_DEAD_ZONE) {
+                    double posOfLift = robot.relicSpool.getPosition();
+                    if (posOfLift <= 0.95) {
+                        robot.relicSpool.setPosition(posOfLift -
+                                (opMode.gamepad2.right_stick_y / JOYSTICK_RATIO));
+                    }
+                } else if (opMode.gamepad2.right_stick_y >= GAME_TRIGGER_DEAD_ZONE) {
+                    double posOfLift = robot.relicSpool.getPosition();
+                    if (posOfLift >= robot.SP_INIT) {
+                        robot.relicSpool.setPosition(posOfLift -
+                                (opMode.gamepad2.right_stick_y / JOYSTICK_RATIO));
+                    }
                 }
             }
 
@@ -168,9 +180,9 @@ public class BoKTele
                     //Log.v("BOK", "Relic mode Left Stick Up");
                     // Move relic arm up
                     double posOfArm = robot.relicArm.getPosition();
-                    if (posOfArm > robot.RELIC_ARM_UPPER_LIMIT) {
+                    if (posOfArm < BoKHardwareBot.RELIC_ARM_UPPER_LIMIT) {
                     } else {
-                        robot.relicArm.setPosition(posOfArm +
+                        robot.relicArm.setPosition(posOfArm -
                                 (-opMode.gamepad2.left_stick_y / (JOYSTICK_RATIO * 10)));
                     }
                 }
@@ -189,9 +201,9 @@ public class BoKTele
                     //Log.v("BOK", "Relic mode Left Stick Down");
                     // Move relic arm down
                     double posOfArm = robot.relicArm.getPosition();
-                    if (posOfArm < BoKHardwareBot.RA_INIT) {
+                    if (posOfArm > BoKHardwareBot.RELIC_ARM_LOWER_LIMIT) {
                     } else {
-                        robot.relicArm.setPosition(posOfArm -
+                        robot.relicArm.setPosition(posOfArm +
                                 (opMode.gamepad2.left_stick_y / (JOYSTICK_RATIO * 10)));
                     }
                 }
@@ -201,6 +213,15 @@ public class BoKTele
                 //double posOfArm = robot.upperArm.getCurrentPosition();
                 //opMode.telemetry.addData("upperArm", posOfArm);
                 //opMode.telemetry.update();
+            }
+
+            if (relic_mode && !relic_raised && opMode.gamepad2.left_bumper ) {
+                relic_raised = true;
+                robot.relicArm.setPosition(BoKHardwareBot.RELIC_HIGH_POSITION);
+            }
+            if (relic_mode && relic_raised && opMode.gamepad2.right_bumper ) {
+                relic_raised = false;
+                robot.relicArm.setPosition(BoKHardwareBot.RELIC_ARM_DEPLOY);
             }
 
             if (opMode.gamepad2.left_trigger > GAME_TRIGGER_DEAD_ZONE) {

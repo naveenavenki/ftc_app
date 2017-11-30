@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import android.util.Log;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import android.graphics.Typeface;
+import android.util.Log;
+import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -45,14 +50,11 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Scanner;
 
 /**
@@ -77,9 +79,6 @@ public abstract class BoKAutoCommon implements BoKAuto
     private static final int VUFORIA_LOCK_BALL_Y_OFFSET = 130; // of the Vuforia image
     private static final int VUFORIA_LOCK_BALL_RECT_WIDTH = 95;
     private static final int VUFORIA_LOCK_BALL_RECT_HEIGHT = 100;
-    private static final double VUFORIA_TIMEOUT_SECONDS = 1.5;
-    private static final boolean USE_OPEN_CV = true;
-    private static final boolean USE_OPEN_CV_RESULTS = false; // Still experimental
     protected static final boolean DEBUG_OPEN_CV = true;
     private static final String VUFORIA_LOCK_IMG = "vuImage.png";
     private static final String ROI_IMG = "roiImage.png";
@@ -88,10 +87,6 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected static final String OCV_HIGH_IMG = "ocvHigh.png";
     protected static final String OCV_LOW_EDGES_IMG = "ocvLowEdges.png";
     protected static final String OCV_HIGH_EDGES_IMG = "ocvHighEdges.png";
-    private static final String OCV_CONTOUR_IMG = "ocvContours.png";
-    private static final int OCV_X_OFFSET = 175; // pixels, approx 50 pixels per inch, offset
-    private static final int OCV_Y_OFFSET = 50;  // from the top-left corner of the white tape
-    private static final String OCV_ROI_IMG = "ocvRoi.png";
 
     private AppUtil appUtil = AppUtil.getInstance();
     private VuforiaLocalizer vuforiaFTC;
@@ -182,6 +177,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
         String robotPosition = "", vuMarkInfo = "";
         boolean writeOnce = false;
+        TextView errorMsgView;
 
         double tXOffset = ROBOT_LOCATION_OFFSET_X;
         double tZOffset = ROBOT_LOCATION_OFFSET_Z;
@@ -196,6 +192,49 @@ public abstract class BoKAutoCommon implements BoKAuto
             tZOffset = scan.nextDouble();
             //Log.v("BOK", "Reading " + fileName);
             Log.v("BOK", String.format("Read offset values: %.1f, %.1f", tXOffset, tZOffset));
+        }
+
+        // Show X, Z and Rotation on Y axis on the main activity
+        Activity act = AppUtil.getInstance().getActivity();
+        // Need to access xzPosView & layout in a separate thread, must declare these final
+        final RelativeLayout layout = (RelativeLayout)act.findViewById(R.id.RelativeLayout);
+        final TextView xzPosView = new TextView(act);
+        // setup the text view and set its relative position in the relative layout
+        xzPosView.setText("Setup");
+        xzPosView.setRotation(90); // Rotate to landscape mode
+        xzPosView.setTextColor(0xFFFFFF00); // Yellow (A: 0xFF, Red: 0xFF, Green: 0xFF, Blue: 0x00)
+        // Make it bold & big (size 64)
+        xzPosView.setTypeface(xzPosView.getTypeface(), Typeface.BOLD);
+        xzPosView.setTextSize(
+                act.getResources().getDimension(R.dimen.activity_horizontal_margin)*2);
+        RelativeLayout.LayoutParams params =
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+        // above textGamepad1 in the relative layout
+        params.addRule(RelativeLayout.ABOVE, R.id.textGamepad1);
+        xzPosView.setLayoutParams(params);
+
+        // we can only add the text view in the main UI thread
+        act.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                xzPosView.setVisibility(View.VISIBLE);
+                layout.addView(xzPosView);
+            }
+        });
+
+        // Must pass String in the constructor of the Runnable object
+        class UpdateRobotPosition implements Runnable
+        {
+            String pos;
+            UpdateRobotPosition(String s)
+            {
+                pos = s;
+            }
+            public void run()
+            {
+                xzPosView.setText(pos);
+            }
         }
 
         // activate
@@ -244,9 +283,14 @@ public abstract class BoKAutoCommon implements BoKAuto
                     //double rX = rot.firstAngle;
                     double rY = rot.secondAngle;
                     //double rZ = rot.thirdAngle;
-                    robotPosition = String.format("X: %.1f, Z: %.1f, ROT Y: %.1f",
+                    robotPosition = String.format("X: %.1f,  Z: %.1f,  ROT Y: %.1f",
                                                   tX - tXOffset,
                                                   tZ - tZOffset, rY);
+
+                    // we can only update the text in the main UI thread
+                    act.runOnUiThread(new UpdateRobotPosition(String.format("X: %.1f\n" +
+                            "Z: %.1f\n" + "R: %.1f", tX - tXOffset, tZ - tZOffset, rY)));
+
                     opMode.telemetry.addData("Trans", robotPosition);
                     vuMarkInfo = vuMark + " at :(" +
                                  (int)pointCenter.getData()[0] + ", " +
@@ -283,6 +327,17 @@ public abstract class BoKAutoCommon implements BoKAuto
             }
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
         }
+
+        // we can only remove the text view in the main UI thread
+        act.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                xzPosView.setVisibility(View.INVISIBLE);
+                layout.removeView(xzPosView);
+                layout.refreshDrawableState();
+            }
+        });
+
         // now initialize the IMU
         robot.initializeImu();
 
@@ -301,7 +356,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
-    private Mat setupOpenCVImg(Image rgb)
+    private Mat setupOpenCVImg(Image rgb, String fileName, boolean always)
     {
         Bitmap bm = Bitmap.createBitmap(rgb.getWidth(),
                                         rgb.getHeight(),
@@ -314,7 +369,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
         // OpenCV only deals with BGR
         Imgproc.cvtColor(img, img, Imgproc.COLOR_RGB2BGR);
-        writeFile(VUFORIA_LOCK_IMG, img, true);
+        writeFile(fileName, img, always);
 
         // First convert from BGR to HSV; separate the color components from intensity.
         // Increase robustness to lighting changes.
@@ -444,7 +499,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                             Image rgb = frame.getImage(i);
                             // rgb is now the Image object that we’ve used in the video
                             if (rgb != null) {
-                                Mat img = setupOpenCVImg(rgb);
+                                Mat img = setupOpenCVImg(rgb, VUFORIA_LOCK_IMG, true);
 
                                 Rect roi = new Rect((int)pointCenter.getData()[0] +
                                                          VUFORIA_LOCK_BALL_X_OFFSET,
@@ -463,9 +518,10 @@ public abstract class BoKAutoCommon implements BoKAuto
                     } // for (int i = 0; i < numImages; i++)
                     frame.close();
                 } // if (pose != null)
-                relicTrackables.deactivate();
             }
         } // while (!vuMarkVisible)
+        // deactivate
+        relicTrackables.deactivate();
         cryptoColumn = vuMark;
         Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
         return vuforiaSuccess;
@@ -587,14 +643,38 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
+    private void takePicture(String sFileName) {
+        VuforiaLocalizer.CloseableFrame frame;
+        // takes the frame at the head of the queue
+        try {
+            frame = vuforiaFTC.getFrameQueue().take();
+        } catch (InterruptedException e) {
+            Log.v("BOK", "Exception while taking picture!!");
+            return;
+        }
+        long numImages = frame.getNumImages();
+        for (int i = 0; i < numImages; i++) {
+            if (frame.getImage(i).getFormat() == PIXEL_FORMAT.RGB565) {
+                Image rgb = frame.getImage(i);
+                // rgb is now the Image object that we’ve used in the video
+                if (rgb != null) {
+                    Mat img = setupOpenCVImg(rgb, sFileName, true);
+                    img.release();
+                }
+                break;
+            } // PIXEL_FORMAT.RGB565
+        } // for (int i = 0; i < numImages; i++)
+        frame.close();
+    }
+
     public void moveTowardsCrypto(double power,
-                                  double distance,
                                   boolean forward,
                                   double waitForSeconds)
     {
         double cmCurrent = 0;
-        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        robot.resetDTEncoders(); // reset encoders
         runTime.reset();
+
 /*
         if (cryptoColumn == RelicRecoveryVuMark.RIGHT) {
             robot.jewelArm.setPosition(robot.JA_MID - 0.05);
@@ -610,9 +690,12 @@ public abstract class BoKAutoCommon implements BoKAuto
         //Log.v("BOK", "Distance RS (start raw optical): " + cmCurrent);
         //Log.v("BOK", "Distance RS (start optical): " + robot.rangeSensorJA.cmOptical());
         cmCurrent = robot.rangeSensorJA.cmUltrasonic();
-        //Log.v("BOK", "Distance RS (start raw us): " + robot.rangeSensorJA.rawUltrasonic());
         Log.v("BOK", "Distance RS (start): " + cmCurrent);
         BoKLogInfo.logInfo(String.format("Distance RS (start): %.2f", cmCurrent));
+
+        double targetEncCount = robot.getTargetEncCount(2); // fail safe
+        boolean targetEncCountReached = false;
+
         if(forward){
             robot.setPowerToDTMotors(power, power, -power, -power);
         }
@@ -620,27 +703,55 @@ public abstract class BoKAutoCommon implements BoKAuto
             robot.setPowerToDTMotors(-power, -power, power, power);
         }
 
-        while(opMode.opModeIsActive() &&
+        while (opMode.opModeIsActive() &&
                 (runTime.seconds() < waitForSeconds) &&
-                (cmCurrent > distance)) {
+                (cmCurrent > 20) &&
+                (!targetEncCountReached))
+        {
             cmCurrent = robot.rangeSensorJA.cmUltrasonic();
-            Log.v("BOK", "Distance RS (us): " + cmCurrent);
-            if (cmCurrent <= 5) {
-                cmCurrent = robot.rangeSensorJA.cmOptical();
-                //if (cmCurrent == DistanceUnit.infinity)
-                //    continue;
-                //Log.v("BOK", "Distance RS (raw optical): " + cmCurrent);
-                Log.v("BOK", String.format("Distance RS (optical): %.2f", cmCurrent));
+            double currentEncCount = (robot.getLFEncCount() + robot.getRFEncCount()) / 2;
+            if (currentEncCount >= targetEncCount) {
+                targetEncCountReached = true;
             }
         }
-
         robot.setPowerToDTMotors(0, 0, 0, 0);
-        if (cmCurrent == DistanceUnit.infinity) {
-            Log.v("BOK", "Range sensor is at infinity");
+
+        // Raise the jewel arm
+        robot.jewelArm.setPosition(robot.JA_INIT);
+        opMode.sleep(WAIT_FOR_SERVO_MS*2); // temp
+
+        // take a picture
+        takePicture("c_crypto.png");
+
+        if (allianceColor == BoKAllianceColor.BOK_ALLIANCE_BLUE) {
+            // Need to move past the crypto column for blue
+            double distanceToMove = 5; // in inches
+            if (!targetEncCountReached) {
+                // we got a valid ultrasonic value
+                distanceToMove = (cmCurrent/2.54) + 1.82;
+            }
+            move(DT_POWER_FOR_CRYPTO,
+                    DT_POWER_FOR_CRYPTO,
+                    distanceToMove,
+                    false,
+                    BLUE_CRYPTO_MOVE_TIMEOUT);
+
+            // take a picture
+            takePicture("cb_crypto.png");
         }
         else {
-            Log.v("BOK", String.format("Distance RS (end): %.2f", cmCurrent));
-            BoKLogInfo.logInfo(String.format("Distance RS (end): %.2f", cmCurrent));
+            double distanceToMove = 3; // in inches
+            if (!targetEncCountReached) {
+                // we got a valid ultrasonic value
+                distanceToMove = (cmCurrent / 2.54) - 1.82;
+            }
+            move(DT_POWER_FOR_CRYPTO,
+                    DT_POWER_FOR_CRYPTO,
+                    distanceToMove,
+                    true,
+                    BLUE_CRYPTO_MOVE_TIMEOUT);
+            // take a picture
+            takePicture("cr_crypto.png");
         }
     }
     
@@ -815,12 +926,11 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected void moveToCrypto()
     {
         if (opMode.opModeIsActive()) {
-            // Lower the jewel arm & the range sensor
-            if (allianceColor == BoKAllianceColor.BOK_ALLIANCE_BLUE)
-                robot.jewelArm.setPosition(robot.JA_MID);
-            else
-                robot.jewelArm.setPosition(robot.JA_MID+0.02);
+            // take a picture
+            takePicture("b_crypto.png");
 
+            // Lower the jewel arm & the range sensor
+            robot.jewelArm.setPosition(robot.JA_MID);
             opMode.sleep(WAIT_FOR_SERVO_MS * 3); // let the flicker settle down
 
             angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
@@ -829,35 +939,14 @@ public abstract class BoKAutoCommon implements BoKAuto
             Log.v("BOK", String.format("IMU angle %.1f", angles.thirdAngle));
             BoKLogInfo.logInfo(String.format("IMU angle: %.1f", angles.thirdAngle));
 
-            // Move forward towards cryptobox using optical color/range sensor
+            // Move forward towards cryptobox using range sensor
             moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
-                    DISTANCE_TO_CRYPTO_CM,
                     (allianceColor == BoKAllianceColor.BOK_ALLIANCE_RED) ? true : false,
                     CRS_CRYPTO_TIMEOUT);
 
-            // Raise the jewel arm
-            robot.jewelArm.setPosition(robot.JA_INIT);
-            opMode.sleep(WAIT_FOR_SERVO_MS);
-
-            if (allianceColor == BoKAllianceColor.BOK_ALLIANCE_BLUE) {
-                // Need to move past the crypto column for blue
-                move(DT_POWER_FOR_CRYPTO,
-                     DT_POWER_FOR_CRYPTO,
-                     DISTANCE_BLUE_BACK_TO_COLUMN,
-                     false,
-                     BLUE_CRYPTO_MOVE_TIMEOUT);
-
-            }
-            else {
-                //move(DT_POWER_FOR_CRYPTO,
-                //     DT_POWER_FOR_CRYPTO,
-                //    DISTANCE_RED_FWD_TO_COLUMN,
-                //     true,
-                //     BLUE_CRYPTO_MOVE_TIMEOUT);
-            }
-
             // Now prepare to unload the glyph
-            // slowly move the wrist down
+            // move the flicker to init and slowly move the wrist down
+            robot.jewelFlicker.setPosition(robot.JF_INIT);
             for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
                 robot.glyphArm.clawWrist.setPosition(i);
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
@@ -881,7 +970,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                     distanceLeftStrafe,
                     false,
                     DT_STRAFE_TIMEOUT);
-            robot.jewelFlicker.setPosition(robot.JF_INIT);
         }
     }
 }

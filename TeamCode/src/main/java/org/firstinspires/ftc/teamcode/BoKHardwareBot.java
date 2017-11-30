@@ -25,24 +25,25 @@ public abstract class BoKHardwareBot
     protected static final double CW_INIT = 0.92;
     protected static final double CW_MIN = 0.1;
     protected static final double CW_MID = 0.45;
-    protected static final double CG_INIT = 0.85; // Closed at initialization
+    protected static final double CG_INIT = 0.9; // Closed at initialization
     protected static final double CG_OPEN = 0.4;
-    protected static final double CG_CLOSE = 0.85;
+    protected static final double CG_CLOSE = 0.9;
     protected static final double JF_INIT = 0.8;
     protected static final double JF_FINAL = 0.42;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
     protected static final double JA_INIT = 0.02;
-    protected static final double JA_MID = 0.42;
+    protected static final double JA_MID = 0.44;
     protected static final double JA_FINAL = 0.46;
 
-    protected static final double RA_INIT = 0.11;
-    protected static final double RELIC_ARM_UPPER_LIMIT = 0.18;
-    protected static final double SP_INIT = 0.95;
+    protected static final double RA_INIT = 0.05;
+    protected static final double RELIC_ARM_UPPER_LIMIT = 0.49;
+    protected static final double RELIC_ARM_LOWER_LIMIT = 0.53;
+    protected static final double RELIC_HIGH_POSITION = 0.45;
+    protected static final double RELIC_ARM_DEPLOY = 0.52;
+    protected static final double SP_INIT = 0.05;
     protected static final double RC_UNLOCK = 1; // initially unlocked
     protected static final double RC_LOCK = 0.4;
-    protected static final double RL_INIT = 0.2;
-    protected static final double RL_UNLOCK = 0;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
@@ -53,7 +54,6 @@ public abstract class BoKHardwareBot
     private static final String JEWEL_FLICKER_SERVO  = "jf";
     private static final String RELIC_ARM_SERVO = "ra";
     private static final String RELIC_CLAW_SERVO = "rc";
-    private static final String RELIC_LOCK_SERVO = "rl";
     //private static final String RIGHT_GLYPH_CLAW_SERVO  = "rg";
     //private static final String LEFT_GLYPH_CLAW_SERVO  = "lg";
     private static final String RANGE_SENSOR_JA = "rs";
@@ -294,6 +294,9 @@ public abstract class BoKHardwareBot
 
     public abstract void stopMove();
 
+    public abstract double getTargetEncCount(double targetDistanceInches);
+    public abstract int getLFEncCount();
+    public abstract int getRFEncCount();
     /*
      *
      * waitForTick implements a periodic delay. However, this acts like a metronome with a regular

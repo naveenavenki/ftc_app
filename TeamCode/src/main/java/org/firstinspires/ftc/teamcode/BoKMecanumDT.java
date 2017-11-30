@@ -253,6 +253,15 @@ public class BoKMecanumDT extends BoKHardwareBot
            return true;
         }
         return false;
+    }
 
+    public int getLFEncCount()
+    {
+        return leftFront.getCurrentPosition();
+    }
+
+    public int getRFEncCount()
+    {
+        return rightFront.getCurrentPosition();
     }
 }
