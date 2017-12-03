@@ -721,15 +721,17 @@ public abstract class BoKAutoCommon implements BoKAuto
         opMode.sleep(WAIT_FOR_SERVO_MS*2); // temp
 
         // take a picture
-        takePicture("c_crypto.png");
+        //takePicture("c_crypto.png");
 
         if (allianceColor == BoKAllianceColor.BOK_ALLIANCE_BLUE) {
             // Need to move past the crypto column for blue
             double distanceToMove = 5; // in inches
             if (!targetEncCountReached) {
+                Log.v("BOK", "cmCurrent: " + cmCurrent);
                 // we got a valid ultrasonic value
                 distanceToMove = (cmCurrent/2.54) + 1.82;
             }
+            Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached + ", dist: " + distanceToMove );
             move(DT_POWER_FOR_CRYPTO,
                     DT_POWER_FOR_CRYPTO,
                     distanceToMove,
@@ -737,21 +739,28 @@ public abstract class BoKAutoCommon implements BoKAuto
                     BLUE_CRYPTO_MOVE_TIMEOUT);
 
             // take a picture
-            takePicture("cb_crypto.png");
+            //takePicture("cb_crypto.png");
         }
         else {
             double distanceToMove = 3; // in inches
             if (!targetEncCountReached) {
+                Log.v("BOK", "cmCurrent: " + cmCurrent);
                 // we got a valid ultrasonic value
-                distanceToMove = (cmCurrent / 2.54) - 1.82;
+                if (cryptoColumn == RelicRecoveryVuMark.RIGHT)
+                    distanceToMove = (cmCurrent / 2.54) - 1.32;
+                else if (cryptoColumn == RelicRecoveryVuMark.CENTER)
+                    distanceToMove = (cmCurrent / 2.54) - 1.25;
+                else
+                    distanceToMove = (cmCurrent / 2.54) - 1.25;
             }
+            Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached + ", dist: " + distanceToMove );
             move(DT_POWER_FOR_CRYPTO,
                     DT_POWER_FOR_CRYPTO,
                     distanceToMove,
                     true,
                     BLUE_CRYPTO_MOVE_TIMEOUT);
             // take a picture
-            takePicture("cr_crypto.png");
+            //takePicture("cr_crypto.png");
         }
     }
     
@@ -927,7 +936,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     {
         if (opMode.opModeIsActive()) {
             // take a picture
-            takePicture("b_crypto.png");
+            //takePicture("b_crypto.png");
 
             // Lower the jewel arm & the range sensor
             robot.jewelArm.setPosition(robot.JA_MID);

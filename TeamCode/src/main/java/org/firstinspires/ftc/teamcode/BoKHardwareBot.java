@@ -39,11 +39,13 @@ public abstract class BoKHardwareBot
     protected static final double RA_INIT = 0.05;
     protected static final double RELIC_ARM_UPPER_LIMIT = 0.49;
     protected static final double RELIC_ARM_LOWER_LIMIT = 0.53;
-    protected static final double RELIC_HIGH_POSITION = 0.45;
-    protected static final double RELIC_ARM_DEPLOY = 0.52;
+    protected static final double RELIC_HIGH_POSITION = 0.42;
+    protected static final double RELIC_ARM_DEPLOY = 0.51;
+
     protected static final double SP_INIT = 0.05;
     protected static final double RC_UNLOCK = 1; // initially unlocked
-    protected static final double RC_LOCK = 0.4;
+    protected static final double RC_LOCK = 0.3
+            ;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";

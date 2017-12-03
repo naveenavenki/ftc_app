@@ -5,21 +5,22 @@
             <Motor name="tt" port="1" />
             <Motor name="rb" port="2" />
             <Motor name="lb" port="3" />
+            <Servo name="rc" port="1" />
             <DigitalDevice name="ft" port="1" />
             <LynxEmbeddedIMU name="imu_bot" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="Top Module" port="3">
-            <Motor name="sp" port="0" />
             <Motor name="ua" port="1" />
             <Motor name="lf" port="2" />
             <Motor name="rf" port="3" />
-            <Servo name="cw" port="0" />
-            <Servo name="cg" port="1" />
+            <Servo name="jf" port="0" />
+            <Servo name="cw" port="1" />
             <Servo name="ja" port="2" />
-            <Servo name="jf" port="3" />
+            <Servo name="cg" port="3" />
             <Servo name="ra" port="4" />
-            <LynxEmbeddedIMU name="imu_top" port="0" bus="0" />
+            <Servo name="sp" port="5" />
             <ModernRoboticsI2cRangeSensor name="rsf" port="0" bus="1" />
+            <LynxEmbeddedIMU name="imu_top" port="0" bus="0" />
             <ModernRoboticsI2cRangeSensor name="rsb" port="0" bus="2" />
             <ModernRoboticsI2cRangeSensor name="rs" port="0" bus="3" />
         </LynxModule>
