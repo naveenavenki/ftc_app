@@ -12,9 +12,9 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     private static double TIMEOUT_CENTER = 5;
     private static double TIMEOUT_LEFT = 6;
     private static int TURN_LEFT_DEGREES = 90;
-    private static double DT_MOVE_TO_CRYPTO = 24.75;//inches
+    private static double DT_MOVE_TO_CRYPTO = 26;//inches
     private static int DISTANCE_TO_CENTER_COL_CM = 43;//cm
-    private static int DISTANCE_TO_RIGHT_COL_CM = 25;//cm
+    private static int DISTANCE_TO_RIGHT_COL_CM = 24;//cm
     private static int DISTANCE_TO_LEFT_COL_CM = 63;//cm
 
     // Constructor

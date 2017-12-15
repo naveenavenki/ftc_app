@@ -14,7 +14,7 @@ public class BoKAutoBlueFar extends BoKAutoCommon
     private static double TIMEOUT_RIGHT = 6;
     private static int TURN_RIGHT_DEGREES = -90;
     private static double DT_MOVE_TO_CRYPTO = 16.5;
-    private static int DISTANCE_TO_LEFT_COL_CM = 44;
+    private static int DISTANCE_TO_LEFT_COL_CM = 47;
     private static int DISTANCE_TO_CENTER_COL_CM = 60;
     private static int DISTANCE_TO_RIGHT_COL_CM = 78;
 

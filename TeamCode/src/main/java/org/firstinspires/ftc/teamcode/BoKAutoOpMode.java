@@ -47,9 +47,7 @@ public class BoKAutoOpMode extends LinearOpMode
         // Run the autonomous operation, if hardware and software is initialized
         // else do nothing
         if (status && opModeIsActive()) {
-            BoKLogInfo.openLog();
             autoImpl.runSoftware();
-            BoKLogInfo.closeLog();
             while (opModeIsActive()) {
             }
         }

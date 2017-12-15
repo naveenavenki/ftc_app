@@ -25,16 +25,16 @@ public abstract class BoKHardwareBot
     protected static final double CW_INIT = 0.92;
     protected static final double CW_MIN = 0.1;
     protected static final double CW_MID = 0.45;
-    protected static final double CG_INIT = 0.9; // Closed at initialization
-    protected static final double CG_OPEN = 0.4;
-    protected static final double CG_CLOSE = 0.9;
+    protected static final double CG_INIT = 0.4; // Closed at initialization
+    protected static final double CG_OPEN = 0.9;
+    protected static final double CG_CLOSE = 0.4;
     protected static final double JF_INIT = 0.8;
     protected static final double JF_FINAL = 0.42;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
     protected static final double JA_INIT = 0.02;
     protected static final double JA_MID = 0.44;
-    protected static final double JA_FINAL = 0.46;
+    protected static final double JA_FINAL = 0.48;
 
     protected static final double RA_INIT = 0.05;
     protected static final double RELIC_ARM_UPPER_LIMIT = 0.49;
@@ -44,8 +44,7 @@ public abstract class BoKHardwareBot
 
     protected static final double SP_INIT = 0.05;
     protected static final double RC_UNLOCK = 1; // initially unlocked
-    protected static final double RC_LOCK = 0.3
-            ;
+    protected static final double RC_LOCK = 0.3;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";

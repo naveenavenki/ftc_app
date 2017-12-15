@@ -17,8 +17,8 @@ public class BoKTele
     private static final double TURNTABLE_STICK_DEAD_ZONE = 0.8;
     private static final double UPPER_ARM_STICK_DEAD_ZONE = 0.2;
     private static final double TURNTABLE_MOTOR_POWER = 0.2;
-    private static final double UPPER_ARM_MOTOR_POWER_SLOW = 0.2;
-    private static final double UPPER_ARM_MOTOR_POWER_FAST = 0.4;
+    private static final double UPPER_ARM_MOTOR_POWER_SLOW = 0.4;//0.2
+    private static final double UPPER_ARM_MOTOR_POWER_FAST = 0.6;//0.4
     private static final double SPEED_COEFF_SLOW = 0.25;
     private static final double SPEED_COEFF_FAST = 0.5;
     private static final int JOYSTICK_RATIO = 100;
@@ -126,6 +126,9 @@ public class BoKTele
                 if (opMode.gamepad2.dpad_up) {
                     relic_mode = false;
                     extend = false;
+                    for(double spoolPos = robot.relicSpool.getPosition(); spoolPos > 0.05 ; spoolPos -= 0.02){
+                        robot.relicSpool.setPosition(spoolPos);
+                    }
                 }
             }
 
@@ -175,11 +178,10 @@ public class BoKTele
                 } else if (opMode.gamepad2.right_stick_y >= GAME_TRIGGER_DEAD_ZONE) {
                     double posOfLift = robot.relicSpool.getPosition();
                     if (posOfLift >= robot.SP_INIT) {
-                        robot.relicSpool.setPosition(posOfLift -
-                                (opMode.gamepad2.right_stick_y / (JOYSTICK_RATIO/2)));
+                        robot.relicSpool.setPosition(posOfLift - (opMode.gamepad2.right_stick_y / (JOYSTICK_RATIO/2)));
                     }
                 }
-                Log.v("BOK", "Pos of Lift: "+ robot.relicSpool.getPosition());
+                //Log.v("BOK", "Pos of Lift: "+ robot.relicSpool.getPosition());
             }
 
             if (opMode.gamepad2.left_stick_y < -UPPER_ARM_STICK_DEAD_ZONE) {
