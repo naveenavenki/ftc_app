@@ -308,7 +308,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                         ReadWriteFile.writeFile(file, positions);
                         String infoStr = "Write " + fileName + " , pos: " + positions;
                         Log.v("BOK", infoStr);
-                        BoKLogInfo.logInfo(infoStr);
                     }
                 }
                 opMode.telemetry.update();
@@ -318,10 +317,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                 relicTrackables.deactivate();
                 CameraDevice.getInstance().setFlashTorchMode(false);
                 if (!robotPosition.isEmpty()) {
-                    Log.v("BOK", robotPosition);
-                    //Log.v("BOK", vuMarkInfo);
-                    BoKLogInfo.logInfo(robotPosition +
+                    Log.v("BOK", robotPosition +
                             String.format("xOffset %.1f, zOffset: %.1f", tXOffset, tZOffset));
+                    //Log.v("BOK", vuMarkInfo);
                 }
                 break;
             }
@@ -690,8 +688,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         //Log.v("BOK", "Distance RS (start raw optical): " + cmCurrent);
         //Log.v("BOK", "Distance RS (start optical): " + robot.rangeSensorJA.cmOptical());
         cmCurrent = robot.rangeSensorJA.cmUltrasonic();
-        Log.v("BOK", "Distance RS (start): " + cmCurrent);
-        BoKLogInfo.logInfo(String.format("Distance RS (start): %.2f", cmCurrent));
+        Log.v("BOK", String.format("Distance RS (start): %.2f", cmCurrent));
 
         double targetEncCount = robot.getTargetEncCount(2); // fail safe
         boolean targetEncCountReached = false;
@@ -946,7 +943,6 @@ public abstract class BoKAutoCommon implements BoKAuto
                                                      AxesOrder.XYZ,
                                                      AngleUnit.DEGREES);
             Log.v("BOK", String.format("IMU angle %.1f", angles.thirdAngle));
-            BoKLogInfo.logInfo(String.format("IMU angle: %.1f", angles.thirdAngle));
 
             // Move forward towards cryptobox using range sensor
             moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
@@ -961,8 +957,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             }
 
-            // Unload the glyph, raise tge wrist
+            // Unload the glyph, raise the wrist
             robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+            opMode.sleep(WAIT_FOR_SERVO_MS);
             robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
             opMode.sleep(WAIT_FOR_SERVO_MS);
 
