@@ -26,6 +26,8 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     @Override
     public void runSoftware()
     {
+        far = true;
+
         // Detect Vuforia image, flick the jewel
         detectVuforiaImgAndFlick();
 

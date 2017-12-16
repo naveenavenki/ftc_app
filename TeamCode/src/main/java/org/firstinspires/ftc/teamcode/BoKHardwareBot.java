@@ -285,13 +285,13 @@ public abstract class BoKHardwareBot
     public abstract void setModeForDTMotors(DcMotor.RunMode runMode);
 
     // Autonomous driving
-    public abstract void startMove(double leftPower,
-                                   double rightPower,
-                                   double inches,
-                                   boolean backward);
+    public abstract int startMove(double leftPower,
+                                  double rightPower,
+                                  double inches,
+                                  boolean backward);
 
-    public abstract void startStrafe(double power, double rotations,
-                                     boolean right);
+    public abstract int startStrafe(double power, double rotations,
+                                    boolean right);
 
     public abstract void stopMove();
 

@@ -96,6 +96,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected ElapsedTime runTime  = new ElapsedTime();
 
     protected BoKAllianceColor allianceColor;
+    protected boolean far = false;
     protected BoKAutoOpMode opMode;  // save a copy of the current opMode and robot
     protected BoKHardwareBot robot;
 
@@ -580,7 +581,69 @@ public abstract class BoKAutoCommon implements BoKAuto
                     robot.areDTMotorsBusy() &&
                     (runTime.seconds() < waitForSec)) {
                 //opMode.telemetry.update();
-                opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            }
+
+            robot.stopMove();
+        }
+    }
+
+    protected void moveRamp(double maxPower,
+                            double inches,
+                            boolean forward,
+                            double waitForSec)
+    {
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+
+            robot.resetDTEncoders();
+            int targetEncCount = robot.startMove(DT_RAMP_SPEED_INIT,
+                                                 DT_RAMP_SPEED_INIT,
+                                                 inches,
+                                                 forward);
+            // speed up during the initial 1/4 enc counts
+            // maintain max power during the next 1/2 enc counts
+            // speed down during the last 1/4 enc counts
+            int rampupEncCount = targetEncCount/4;
+            int rampdnEncCount = targetEncCount - rampupEncCount;
+            double ratePower = (maxPower - DT_RAMP_SPEED_INIT)/rampupEncCount;
+
+            runTime.reset();
+            while (opMode.opModeIsActive() &&
+                    /*(robot.getDTCurrentPosition() == false) &&*/
+                    robot.areDTMotorsBusy() &&
+                    (runTime.seconds() < waitForSec)) {
+                //opMode.telemetry.update();
+                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                int lfEncCount = Math.abs(robot.getLFEncCount());
+                if (lfEncCount < rampupEncCount) {
+                    double power = DT_RAMP_SPEED_INIT + ratePower*lfEncCount;
+                    //Log.v("BOK", lfEncCount + " power Up: " + String.format("%.2f", power));
+                    if (forward) {
+                        robot.setPowerToDTMotors(power, power, -power, -power);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-power, -power, power, power);
+                    }
+                }
+                else if (lfEncCount < rampdnEncCount) {
+                    if (forward) {
+                        robot.setPowerToDTMotors(maxPower, maxPower, -maxPower, -maxPower);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-maxPower, -maxPower, maxPower, maxPower);
+                    }
+                }
+                else {
+                    double power = DT_RAMP_SPEED_INIT - ratePower*(lfEncCount - targetEncCount);
+                    //Log.v("BOK", lfEncCount + " power dn: " + String.format("%.2f", power));
+                    if (forward) {
+                        robot.setPowerToDTMotors(power, power, -power, -power);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-power, -power, power, power);
+                    }
+                }
             }
 
             robot.stopMove();
@@ -637,6 +700,65 @@ public abstract class BoKAutoCommon implements BoKAuto
                 //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             }
 
+            robot.stopMove();
+        }
+    }
+
+    protected void strafeRamp(double maxPower,
+                              double rotations,
+                              boolean right,
+                              double waitForSec)
+    {
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+
+            robot.resetDTEncoders();
+            int targetEncCount = robot.startStrafe(DT_RAMP_SPEED_INIT, rotations, right);
+
+            // speed up during the initial 1/4 enc counts
+            // maintain max power during the next 1/2 enc counts
+            // speed down during the last 1/4 enc counts
+            int rampupEncCount = targetEncCount/4;
+            int rampdnEncCount = targetEncCount - rampupEncCount;
+            double ratePower = (maxPower - DT_RAMP_SPEED_INIT)/rampupEncCount;
+
+            runTime.reset();
+            while (opMode.opModeIsActive() &&
+                    /*(robot.getDTCurrentPosition() == false) &&*/
+                    robot.areDTMotorsBusy() &&
+                    (runTime.seconds() < waitForSec)) {
+                //opMode.telemetry.update();
+                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                int lfEncCount = Math.abs(robot.getLFEncCount());
+                if (lfEncCount < rampupEncCount) {
+                    double power = DT_RAMP_SPEED_INIT + ratePower*lfEncCount;
+                    //Log.v("BOK", lfEncCount + " power Up: " + String.format("%.2f", power));
+                    if (right) {
+                        robot.setPowerToDTMotors(power, -power, power, -power);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-power, power, -power, power);
+                    }
+                }
+                else if (lfEncCount < rampdnEncCount) {
+                    if (right) {
+                        robot.setPowerToDTMotors(maxPower, -maxPower, maxPower, -maxPower);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-maxPower, maxPower, -maxPower, maxPower);
+                    }
+                }
+                else {
+                    double power = DT_RAMP_SPEED_INIT - ratePower*(lfEncCount - targetEncCount);
+                    //Log.v("BOK", lfEncCount + " power dn: " + String.format("%.2f", power));
+                    if (right) {
+                        robot.setPowerToDTMotors(power, -power, power, -power);
+                    }
+                    else {
+                        robot.setPowerToDTMotors(-power, power, -power, power);
+                    }
+                }
+            }
             robot.stopMove();
         }
     }
@@ -711,11 +833,11 @@ public abstract class BoKAutoCommon implements BoKAuto
                 targetEncCountReached = true;
             }
         }
-        robot.setPowerToDTMotors(0, 0, 0, 0);
+        robot.stopMove();
 
         // Raise the jewel arm
         robot.jewelArm.setPosition(robot.JA_INIT);
-        opMode.sleep(WAIT_FOR_SERVO_MS*2); // temp
+        opMode.sleep(WAIT_FOR_SERVO_MS); // temp
 
         // take a picture
         //takePicture("c_crypto.png");
@@ -726,7 +848,12 @@ public abstract class BoKAutoCommon implements BoKAuto
             if (!targetEncCountReached) {
                 Log.v("BOK", "cmCurrent: " + cmCurrent);
                 // we got a valid ultrasonic value
-                distanceToMove = (cmCurrent/2.54) + 1.82;
+                distanceToMove = (cmCurrent/2.54) + 2.4;
+                if (far) {
+                    distanceToMove += 0.5;
+                    if (cryptoColumn == RelicRecoveryVuMark.LEFT)
+                        distanceToMove += 0.5;
+                }
             }
             Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached + ", dist: " + distanceToMove );
             move(DT_POWER_FOR_CRYPTO,
@@ -799,20 +926,24 @@ public abstract class BoKAutoCommon implements BoKAuto
             if (sensorFront) {
                 // if diffFromTarget > 0 then wheelPower is +ve, but we need to move
                 // backward (BLUE FAR).
-                Log.v("BOK", "Front current RS: " + cmCurrent +
-                        " Difference: " + diffFromTarget +
-                        " Power: " + wheelPower);
+                //Log.v("BOK", "Front current RS: " + cmCurrent +
+                //        " Difference: " + diffFromTarget +
+                //        " Power: " + wheelPower);
                 robot.setPowerToDTMotors(-wheelPower, -wheelPower, wheelPower, wheelPower);
             }
             else { // back range sensor
                 // if diffFromTarget > 0 then wheelPower is +ve
-                Log.v("BOK", "Back current RS: " + cmCurrent +
-                        " Difference: " + diffFromTarget +
-                        " Power: (move fwd) " + wheelPower);
+                //Log.v("BOK", "Back current RS: " + cmCurrent +
+                //        " Difference: " + diffFromTarget +
+                //        " Power: (move fwd) " + wheelPower);
                 robot.setPowerToDTMotors(wheelPower, wheelPower, -wheelPower, -wheelPower);
             }
         }
 
+        if (sensorFront)
+            Log.v("BOK", "Front current RS: " + cmCurrent);
+        else
+            Log.v("BOK", "Back current RS: " + cmCurrent);
         robot.setPowerToDTMotors(0, 0, 0, 0);
     }
 
@@ -963,6 +1094,13 @@ public abstract class BoKAutoCommon implements BoKAuto
             robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
             opMode.sleep(WAIT_FOR_SERVO_MS);
 
+//            robot.jewelFlicker.setPosition(robot.JF_FINAL);
+//            opMode.sleep(WAIT_FOR_SERVO_MS);
+//            robot.jewelArm.setPosition(robot.JA_MID);
+//            opMode.sleep(WAIT_FOR_SERVO_MS*2);
+
+//            robot.jewelArm.setPosition(robot.JA_INIT);
+//            opMode.sleep(WAIT_FOR_SERVO_MS);
             // Push the glyph
             // Strafe to the right
             strafe(DT_POWER_FOR_STRAFE,
@@ -976,6 +1114,9 @@ public abstract class BoKAutoCommon implements BoKAuto
                     distanceLeftStrafe,
                     false,
                     DT_STRAFE_TIMEOUT);
+
+            //robot.jewelFlicker.setPosition(robot.JF_FINAL);
+            //robot.jewelArm.setPosition(robot.JA_MID);
         }
     }
 }

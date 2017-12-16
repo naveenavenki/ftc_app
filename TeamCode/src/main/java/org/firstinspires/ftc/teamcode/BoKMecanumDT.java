@@ -177,10 +177,10 @@ public class BoKMecanumDT extends BoKHardwareBot
     /*
      * move() method: setup the robot to move encoder counts
      */
-    public void startMove(double leftPower,
-                          double rightPower,
-                          double inches,
-                          boolean forward)
+    public int startMove(double leftPower,
+                         double rightPower,
+                         double inches,
+                         boolean forward)
     {
         double targetEncCount = getTargetEncCount(inches);
         if (forward) {
@@ -191,9 +191,10 @@ public class BoKMecanumDT extends BoKHardwareBot
             setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
             setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
         }
+        return (int)targetEncCount;
     }
     
-    public void startStrafe(double power, double rotations, boolean right)
+    public int startStrafe(double power, double rotations, boolean right)
     {
         double targetEncCount = (rotations*COUNTS_PER_MOTOR_REV) * DRIVE_GEAR_REDUCTION;
         if (right) {
@@ -218,6 +219,7 @@ public class BoKMecanumDT extends BoKHardwareBot
                 ", LB " + leftBackTarget +
                 ", RF" + rightFrontTarget +
                 ", RB " + rightBackTarget);
+        return (int)targetEncCount;
     }
 
     public void stopMove()
