@@ -874,8 +874,14 @@ public abstract class BoKAutoCommon implements BoKAuto
                     distanceToMove = (cmCurrent / 2.54) - 1.32;
                 else if (cryptoColumn == RelicRecoveryVuMark.CENTER)
                     distanceToMove = (cmCurrent / 2.54) - 1.25;
-                else
-                    distanceToMove = (cmCurrent / 2.54) - 1.25;
+                else {
+                    if (far) {
+                        distanceToMove = (cmCurrent / 2.54) - 1.5;
+                    }
+                    else {
+                        distanceToMove = (cmCurrent / 2.54) - 1.25;
+                    }
+                }
             }
             Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached + ", dist: " + distanceToMove );
             move(DT_POWER_FOR_CRYPTO,
