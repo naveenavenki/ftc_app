@@ -33,6 +33,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -317,6 +318,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             if (opMode.gamepad1.y) {
                 relicTrackables.deactivate();
                 CameraDevice.getInstance().setFlashTorchMode(false);
+                robot.setPowerToDTMotors(0,0,0,0);
                 if (!robotPosition.isEmpty()) {
                     Log.v("BOK", robotPosition +
                             String.format("xOffset %.1f, zOffset: %.1f", tXOffset, tZOffset));
