@@ -24,6 +24,19 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     @Override
     public void runSoftware()
     {
+       /* robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+        robot.glyphArm.clawWrist.setPosition(0.4);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+
+        //arm position in encoder counts : 1902
+        robot.glyphArm.moveUpperArm(122,0.2);
+        robot.glyphArm.clawWrist.setPosition(0.88);
+        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+        //robot.glyphArm.moveUpperArm(-155,-0.2);
+*/
         // Detect Vuforia image and flick the jewel
         detectVuforiaImgAndFlick();
 
@@ -53,5 +66,9 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
         // Prepare to unload the glyph
         moveToCrypto();
+
+        gyroTurn(0.2,-90,5.0);
     }
+
+
 }

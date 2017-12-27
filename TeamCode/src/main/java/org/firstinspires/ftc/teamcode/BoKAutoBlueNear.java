@@ -26,7 +26,21 @@ public class BoKAutoBlueNear extends BoKAutoCommon
 
     @Override
     public void runSoftware()
-    {
+    {   /*//Arm:2239
+        //Wrist:0.
+
+
+        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+        robot.glyphArm.clawWrist.setPosition(0.7);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
+        opMode.sleep(WAIT_FOR_SERVO_MS);
+
+        //arm position in encoder counts : 1902
+        robot.glyphArm.moveUpperArm(122,0.2);
+        robot.glyphArm.clawWrist.setPosition(0.88);
+        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
         // NOTE: Move backwards towards crypto
 
         // Detect Vuforia image and flick the jewel
@@ -60,5 +74,21 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         //       DT_STRAFE_TIMEOUT);
 
         moveToCrypto();
+        */
+        double[] goToPosition = {0,5}; //(x,y)
+        goToPosition(goToPosition, 0.5, .5);
+        opMode.sleep(3000);
+        goToPosition[0] = 10;
+        goToPosition[1] = 20;
+        goToPosition(goToPosition, 0.5, .5);
+        opMode.sleep(3000);
+        goToPosition[0] = 0;
+        goToPosition[1] = 15;
+        goToPosition(goToPosition, 0.5, .5);
+        opMode.sleep(3000);
+        goToPosition[0] = 0;
+        goToPosition[1] = 0;
+        goToPosition(goToPosition, 0.5, .5);
+
     }
 }

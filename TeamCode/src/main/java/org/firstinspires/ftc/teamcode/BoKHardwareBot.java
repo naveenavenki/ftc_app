@@ -2,9 +2,16 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import java.io.File;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.robotcore.internal.system.PreferencesHelper;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -12,6 +19,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import android.graphics.Color;
 import android.util.Log;
 
 /**
@@ -25,48 +34,60 @@ public abstract class BoKHardwareBot
     protected static final double CW_INIT = 0.92;
     protected static final double CW_MIN = 0.1;
     protected static final double CW_MID = 0.45;
-    protected static final double CG_INIT = 0.4; // Closed at initialization
-    protected static final double CG_OPEN = 0.9;
-    protected static final double CG_CLOSE = 0.4;
-    protected static final double JF_INIT = 0.8;
-    protected static final double JF_FINAL = 0.42;
+    protected static final double CG_INIT = 0; // Closed at initialization
+    protected static final double CG_OPEN = 1;//0.9
+    protected static final double CG_CLOSE = 0;//0.4
+    protected static final double JF_INIT = 0.9;
+    protected static final double JF_FINAL = 0.5;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
-    protected static final double JA_INIT = 0.02;
-    protected static final double JA_MID = 0.44;
-    protected static final double JA_FINAL = 0.48;
+    protected static final double JA_INIT = 0.48;
+    protected static final double JA_MID = 0.8;//0.44
+    protected static final double JA_FINAL = 0.9;
+    protected static final double GF_INIT = 0.1;
+    protected static final double GF_MID = 0.5;
+    protected static final double GF_FINAL = 1;
 
-    protected static final double RA_INIT = 0.05;
-    protected static final double RELIC_ARM_UPPER_LIMIT = 0.49;
-    protected static final double RELIC_ARM_LOWER_LIMIT = 0.53;
-    protected static final double RELIC_HIGH_POSITION = 0.42;
-    protected static final double RELIC_ARM_DEPLOY = 0.51;
+    protected static final double RA_INIT = 0.15;
+    protected static final double RA_UPPER_LIMIT = 0.3;
+    protected static final double RA_LOWER_LIMIT = 0.63;
+    protected static final double RA_HIGH_POS = 0.52;
+    protected static final double RA_DEPLOY_POS = 0.58;
 
-    protected static final double SP_INIT = 0.05;
+    protected static final int SP_EXTENDED = 11500;
+    protected static final int SP_INIT = 0;
+
     protected static final double RC_UNLOCK = 1; // initially unlocked
-    protected static final double RC_LOCK = 0.3;
+    protected static final double RC_LOCK = 0.4;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
-    private static final String RELIC_SPOOL_SERVO = "sp";
+    private static final String RELIC_SPOOL_MOTOR = "sp";
     private static final String CLAW_WRIST_SERVO = "cw";
     private static final String CLAW_GRAB_SERVO  = "cg";
     private static final String JEWEL_ARM_SERVO  = "ja";
     private static final String JEWEL_FLICKER_SERVO  = "jf";
     private static final String RELIC_ARM_SERVO = "ra";
     private static final String RELIC_CLAW_SERVO = "rc";
-    //private static final String RIGHT_GLYPH_CLAW_SERVO  = "rg";
-    //private static final String LEFT_GLYPH_CLAW_SERVO  = "lg";
+    private static final String GLYPH_FLICKER = "gf";
     private static final String RANGE_SENSOR_JA = "rs";
     private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
+    private static final String COLOR_SENSOR_CFG = "cs";
     private static final String IMU_TOP = "imu_top";
 
     protected static final int WAIT_PERIOD = 40; // 40 ms
+    // sometimes it helps to multiply the raw RGB values with a scale factor
+    // to amplify/attentuate the measured values.
+    final double CS_SCALE_FACTOR = 255;
+
+    LinearOpMode opMode; // current opMode
 
     // DC motors
     protected DcMotor turnTable;
     protected DcMotor upperArm;
+    protected DcMotor relicSpool;
+
 
     // Servos
     private Servo glyphClawWrist; // These are used in the GlyphArm
@@ -74,11 +95,8 @@ public abstract class BoKHardwareBot
     protected Servo jewelArm;
     protected Servo jewelFlicker;
     protected Servo relicArm;
-    protected Servo relicSpool;
     protected Servo relicClaw;
-
-    //protected CRServo rightGlyphServo;
-    //protected CRServo leftGlyphServo;
+    protected Servo glyphFlicker;
 
     // Sensors
     protected BNO055IMU imu;
@@ -87,8 +105,11 @@ public abstract class BoKHardwareBot
     protected ModernRoboticsI2cRangeSensor rangeSensorFront;
     protected ModernRoboticsI2cRangeSensor rangeSensorBack;
 
+    protected ColorSensor sensorColor;
+
     // Glyph Arm
     BoKGlyphArm glyphArm;
+    private Orientation angles;
 
     // waitForTicks
     private ElapsedTime period  = new ElapsedTime();
@@ -100,6 +121,9 @@ public abstract class BoKHardwareBot
         BOK_HARDWARE_SUCCESS
     }
 
+    // hsvValues is an array that will hold the hue, saturation, and value information.
+    float hsvValues[] = {0F, 0F, 0F};
+
     /*
      * The initHardware() method initializes the hardware on the robot including the drive train.
      * It calls the abstract initDriveTrainMotors() and initMotorsAndSensors() methods.
@@ -107,11 +131,12 @@ public abstract class BoKHardwareBot
      */
     public BoKHardwareStatus initHardware(LinearOpMode opMode)
     {
+        this.opMode = opMode;
         // First initialize the drive train
-        BoKHardwareStatus rc = initDriveTrainMotors(opMode);
+        BoKHardwareStatus rc = initDriveTrainMotors();
         if (rc == BoKHardwareStatus.BOK_HARDWARE_SUCCESS) {
             // Next initialize the other motors and sensors
-            rc = initMotorsAndSensors(opMode);
+            rc = initMotorsAndSensors();
         }
         return rc;
     }
@@ -120,19 +145,8 @@ public abstract class BoKHardwareBot
      * The initMotorsAndSensors() method initializes the motors (other than the drive train) and
      * sensors on the robot.
      */
-    private BoKHardwareStatus initMotorsAndSensors(LinearOpMode opMode)
+    private BoKHardwareStatus initMotorsAndSensors()
     {
-/*
-        rightGlyphServo = opMode.hardwareMap.crservo.get(RIGHT_GLYPH_CLAW_SERVO);
-        if(rightGlyphServo == null){
-            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
-        }
-
-        leftGlyphServo = opMode.hardwareMap.crservo.get(LEFT_GLYPH_CLAW_SERVO);
-        if(leftGlyphServo == null){
-            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
-        }
-*/
         glyphClawWrist = opMode.hardwareMap.servo.get(CLAW_WRIST_SERVO);
         if(glyphClawWrist == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
@@ -158,13 +172,18 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        relicSpool = opMode.hardwareMap.servo.get(RELIC_SPOOL_SERVO);
+        relicSpool = opMode.hardwareMap.dcMotor.get(RELIC_SPOOL_MOTOR);
         if(relicSpool == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
         relicClaw = opMode.hardwareMap.servo.get(RELIC_CLAW_SERVO);
         if(relicClaw == null){
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        glyphFlicker = opMode.hardwareMap.servo.get(GLYPH_FLICKER);
+        if(glyphFlicker == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
@@ -201,6 +220,11 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
+        sensorColor = opMode.hardwareMap.get(ColorSensor.class, COLOR_SENSOR_CFG);
+        if (sensorColor == null) {
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
         if (!opMode.getClass().getName().contains("Tele")) {
             //Make sure that the flicker is open
             jewelFlicker.setPosition(JF_FINAL);
@@ -231,7 +255,6 @@ public abstract class BoKHardwareBot
             jewelArm.setPosition(JA_INIT);
             jewelFlicker.setPosition(JF_INIT);
             relicArm.setPosition(RA_INIT);
-            relicSpool.setPosition(SP_INIT);
             relicClaw.setPosition(RC_UNLOCK);
         }
         else {
@@ -244,12 +267,17 @@ public abstract class BoKHardwareBot
             relicClaw.setPosition(RC_UNLOCK);
         }
 
-        upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
+        //upperArm.setDirection(DcMotorSimple.Direction.REVERSE);
         upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //upperArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         upperArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         upperArm.setPower(0);
+
+        relicSpool.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relicSpool.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        relicSpool.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        relicSpool.setPower(0);
 
         glyphArm = new BoKGlyphArm(this, opMode, glyphClawWrist, glyphClawGrab);
        
@@ -270,7 +298,7 @@ public abstract class BoKHardwareBot
     }
 
     // Initialization of drive train is protected but abstract
-    protected abstract BoKHardwareStatus initDriveTrainMotors(LinearOpMode opMode);
+    protected abstract BoKHardwareStatus initDriveTrainMotors();
 
     // Using the drive train is public
     public abstract void resetDTEncoders();
@@ -298,6 +326,11 @@ public abstract class BoKHardwareBot
     public abstract double getTargetEncCount(double targetDistanceInches);
     public abstract int getLFEncCount();
     public abstract int getRFEncCount();
+    public abstract int getRBEncCount();
+    public abstract int getLBEncCount();
+    protected abstract void getCurrentPosition ();
+    protected abstract double[] calculateGoToPosition(double[] gotoPos);
+
     /*
      *
      * waitForTick implements a periodic delay. However, this acts like a metronome with a regular
@@ -322,5 +355,33 @@ public abstract class BoKHardwareBot
 
         // Reset the cycle clock for the next pass.
         period.reset();
+    }
+
+    protected double getAngle (){
+
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC,
+                AxesOrder.XYZ,
+                AngleUnit.DEGREES);
+        return angles.thirdAngle;
+    }
+
+    protected void displayColorReading()
+    {
+        Color.RGBToHSV((int) (sensorColor.red() * CS_SCALE_FACTOR),
+                (int) (sensorColor.green() * CS_SCALE_FACTOR),
+                (int) (sensorColor.blue() * CS_SCALE_FACTOR),
+                hsvValues);
+        opMode.telemetry.addData("CS", "Red: " + sensorColor.red() + " ,blue: " +
+                + sensorColor.blue() + " ,hue: " + hsvValues[0]);
+        opMode.telemetry.update();
+    }
+
+    protected float getHue()
+    {
+        Color.RGBToHSV((int) (sensorColor.red() * CS_SCALE_FACTOR),
+                (int) (sensorColor.green() * CS_SCALE_FACTOR),
+                (int) (sensorColor.blue() * CS_SCALE_FACTOR),
+                hsvValues);
+        return hsvValues[0];
     }
 }

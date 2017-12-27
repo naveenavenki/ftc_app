@@ -1033,9 +1033,27 @@ public abstract class BoKAutoCommon implements BoKAuto
         //Log.v("BOK", "Err: " + error + ", Steer: " + String.format("%.2f", steer));
         //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
         //      String.format("%5.2f", rightSpeed));
+
+        if(((BoKMecanumDT)robot).isPositionTrackingEnabled()) {
+            robot.getCurrentPosition();
+        }
+
         return onTarget;
     }
-    
+
+    protected void goToPosition(double[] goToPosition, double speed, double error) {
+        if(!((BoKMecanumDT)robot).isPositionTrackingEnabled()) {
+            ((BoKMecanumDT)robot).enablePositionTracking();
+        }
+        goToPosition = robot.calculateGoToPosition(goToPosition);
+        while (opMode.opModeIsActive() && goToPosition[1] <= error) {
+            gyroTurn(speed, goToPosition[0], 5);
+            move(speed, speed, goToPosition[1], true, 10);
+            goToPosition = robot.calculateGoToPosition(goToPosition);
+        }
+    }
+
+
     /**
      * getError determines the error between the target angle and the robot's current heading
      * @param   targetAngle
@@ -1091,7 +1109,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             // Now prepare to unload the glyph
             // move the flicker to init and slowly move the wrist down
             robot.jewelFlicker.setPosition(robot.JF_INIT);
-            for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
+            /*for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
                 robot.glyphArm.clawWrist.setPosition(i);
                 opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
             }
@@ -1101,6 +1119,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             opMode.sleep(WAIT_FOR_SERVO_MS);
             robot.glyphArm.clawWrist.setPosition(robot.CW_INIT);
             opMode.sleep(WAIT_FOR_SERVO_MS);
+            */
 
 //            robot.jewelFlicker.setPosition(robot.JF_FINAL);
 //            opMode.sleep(WAIT_FOR_SERVO_MS);

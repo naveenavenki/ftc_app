@@ -5,6 +5,11 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 /**
  * Created by Krishna Saxena on 10/2/2017.
  * Extends BoKHardwareBot to implement the Mecanum wheels drive train with 4 DC Motors.
@@ -37,17 +42,20 @@ public class BoKMecanumDT extends BoKHardwareBot
     private int rightFrontTarget;
     private int rightBackTarget;
 
-    LinearOpMode opMode; // current opMode
+    double lastEncRF = 0.0;
+    double lastEncLF = 0.0;
+    double lastEncRB = 0.0;
+    double lastEncLB = 0.0;
+    double currentPosition[] =  {0, 0, 0};
+    boolean positionTracking = false;
 
     /*
      * Implement all the abstract methods
      * Initialize the drive system variables.
      * The initDriveTrainMotors() method of the hardware class does all the work here
      */
-    protected BoKHardwareStatus initDriveTrainMotors(LinearOpMode opMode)
+    protected BoKHardwareStatus initDriveTrainMotors()
     {
-        this.opMode = opMode;
-
         leftBack = opMode.hardwareMap.dcMotor.get(LEFT_BACK_MOTOR_NAME);
         if (leftBack == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
@@ -191,6 +199,9 @@ public class BoKMecanumDT extends BoKHardwareBot
             setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
             setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
         }
+        if(isPositionTrackingEnabled()) {
+            getCurrentPosition();
+        }
         return (int)targetEncCount;
     }
     
@@ -265,5 +276,85 @@ public class BoKMecanumDT extends BoKHardwareBot
     public int getRFEncCount()
     {
         return rightFront.getCurrentPosition();
+    }
+
+    public int getLBEncCount()
+    {
+        return leftBack.getCurrentPosition();
+    }
+
+    public int getRBEncCount()
+    {
+        return rightBack.getCurrentPosition();
+    }
+
+    protected double getAverageEnc() {
+        double EncRF = -getRFEncCount()-lastEncRF;
+        double EncLF = getLFEncCount()-lastEncLF;
+        double EncRB = -getRBEncCount()-lastEncRB;
+        double EncLB = getLBEncCount()-lastEncLB;
+        double enc = (((EncRF+EncLF)/2.0)+((EncRB+EncLB)/2.0))/2.0;
+        lastEncRF = -getRFEncCount();
+        lastEncLF = getLFEncCount();
+        lastEncLB = getLBEncCount();
+        lastEncRB = -getRBEncCount();
+        enc /= 45.42625; // ???
+        return enc;
+    }
+
+    //IMU NEEDS TO BE RESET WHEN POS TRACK IS ENABLED
+    protected void enablePositionTracking() {
+        positionTracking = true;
+        lastEncLB = 0.0;
+        lastEncLF = 0.0;
+        lastEncRB = 0.0;
+        lastEncRF = 0.0;
+        currentPosition[0] = 0;
+        currentPosition[1] = 0;
+        currentPosition[2] = 0;
+    }
+
+    protected void disablePositionTracking() {
+        positionTracking = false;
+    }
+
+    protected boolean isPositionTrackingEnabled() {
+        return positionTracking;
+    }
+
+    protected void getCurrentPosition ()
+    {
+        double angle = getAngle();
+        double distance = getAverageEnc();
+        angle += 90;
+        currentPosition[0] = distance*Math.cos(angle * (Math.PI/180.0)) + currentPosition[0];
+        currentPosition[1] = distance*Math.sin(angle * (Math.PI/180.0)) + currentPosition[1];
+        currentPosition[2] =  angle;
+        opMode.telemetry.addData("Position X: ", currentPosition[0]);
+        opMode.telemetry.addData("Position Y: ", currentPosition[1]);
+        opMode.telemetry.addData("Angle: ", currentPosition[2]);
+    }
+
+    protected double[] calculateGoToPosition(double[] gotoPos)
+    {
+        double x = gotoPos[0] - currentPosition[0];
+        double y = gotoPos[1] -currentPosition[1];
+        double disToTravel = Math.sqrt(x*x + y*y);
+        double angle = Math.atan2(y,x) * (180.0/Math.PI);
+        angle -= 90;
+        while (opMode.opModeIsActive() && (angle < -180 || angle > 180)) {
+            if (angle < -180) {
+                angle += 360;
+            }
+            else if(angle  > 180) {
+                angle -= 360;
+            }
+        }
+
+        opMode.telemetry.addData("gotoAngle: ", angle);
+        opMode.telemetry.addData("distance: ", disToTravel);
+
+        double[] goToPositionData = {angle, disToTravel};
+        return goToPositionData;
     }
 }
