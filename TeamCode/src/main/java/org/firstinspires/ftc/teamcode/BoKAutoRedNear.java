@@ -67,8 +67,6 @@ public class BoKAutoRedNear extends BoKAutoCommon {
         // Prepare to unload the glyph
         moveToCrypto();
 
-        gyroTurn(0.2,-90,5.0);
+        gyroTurn(0.2,90,5.0);
     }
-
-
 }

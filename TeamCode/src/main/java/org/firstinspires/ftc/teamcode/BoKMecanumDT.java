@@ -330,9 +330,6 @@ public class BoKMecanumDT extends BoKHardwareBot
         currentPosition[0] = distance*Math.cos(angle * (Math.PI/180.0)) + currentPosition[0];
         currentPosition[1] = distance*Math.sin(angle * (Math.PI/180.0)) + currentPosition[1];
         currentPosition[2] =  angle;
-        //opMode.telemetry.addData("Position X: ", currentPosition[0]);
-        //opMode.telemetry.addData("Position Y: ", currentPosition[1]);
-        //opMode.telemetry.addData("Angle: ", currentPosition[2]);
         Log.v("BOK", "Dist: " + distance + " x: " + currentPosition[0] +
                      ", y: " + currentPosition [1] + " angle: " + (angle-90));
     }
@@ -354,8 +351,6 @@ public class BoKMecanumDT extends BoKHardwareBot
             }
         }
 
-        //opMode.telemetry.addData("gotoAngle: ", angle);
-        //opMode.telemetry.addData("distance: ", disToTravel);
         Log.v("BOK", "Goto angle " + angle + ", distance: " + disToTravel);
 
         double[] goToPositionData = {angle, disToTravel};

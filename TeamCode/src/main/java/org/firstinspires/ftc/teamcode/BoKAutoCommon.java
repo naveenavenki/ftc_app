@@ -582,11 +582,16 @@ public abstract class BoKAutoCommon implements BoKAuto
                     /*(robot.getDTCurrentPosition() == false) &&*/
                     robot.areDTMotorsBusy() &&
                     (runTime.seconds() < waitForSec)) {
-                //opMode.telemetry.update();
-                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                if (robot.isPositionTrackingEnabled()) {
+                    robot.getCurrentPosition();
+                }
             }
 
             robot.stopMove();
+            if (robot.isPositionTrackingEnabled()) {
+                robot.getCurrentPosition();
+            }
+            opMode.telemetry.update();
         }
     }
 
@@ -797,17 +802,6 @@ public abstract class BoKAutoCommon implements BoKAuto
         robot.resetDTEncoders(); // reset encoders
         runTime.reset();
 
-/*
-        if (cryptoColumn == RelicRecoveryVuMark.RIGHT) {
-            robot.jewelArm.setPosition(robot.JA_MID - 0.05);
-            // Strafe to the right
-            strafe(DT_POWER_FOR_STRAFE,
-                    ROTATIONS_STRAFE_TO_WALL-0.05,
-                    true,
-                    DT_STRAFE_TIMEOUT);
-        }
-*/
-
         //cmCurrent = robot.rangeSensorJA.rawOptical();
         //Log.v("BOK", "Distance RS (start raw optical): " + cmCurrent);
         //Log.v("BOK", "Distance RS (start optical): " + robot.rangeSensorJA.cmOptical());
@@ -976,13 +970,19 @@ public abstract class BoKAutoCommon implements BoKAuto
         while (opMode.opModeIsActive() && 
                !onHeading(speed, angle, P_TURN_COEFF) &&
                (runTime.seconds() < waitForSeconds)) {
+            if (robot.isPositionTrackingEnabled()) {
+                robot.getCurrentPosition();
+            }
             // Update telemetry & Allow time for other processes to run.
             opMode.telemetry.update();
             //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
 
         Log.v("BOK", "turnF: " + angles.thirdAngle);
-    }   
+        if (robot.isPositionTrackingEnabled()) {
+            robot.getCurrentPosition();
+        }
+    }
 
     /**
      * Perform one cycle of closed loop heading control.
@@ -1034,23 +1034,19 @@ public abstract class BoKAutoCommon implements BoKAuto
         //Log.v("BOK", "Left Speed: " + String.format("%5.2f", leftSpeed) + ", Right Speed: " +
         //      String.format("%5.2f", rightSpeed));
 
-        if(((BoKMecanumDT)robot).isPositionTrackingEnabled()) {
-            robot.getCurrentPosition();
-        }
-
         return onTarget;
     }
 
-    protected void goToPosition(double[] goToPosition, double speed, double error) {
-        if(!((BoKMecanumDT)robot).isPositionTrackingEnabled()) {
-            ((BoKMecanumDT)robot).enablePositionTracking();
+    protected void goToPosition(double[] goToPosition, double speed, double error)
+    {
+        if (!robot.isPositionTrackingEnabled()) {
+            robot.enablePositionTracking();
         }
-        goToPosition = robot.calculateGoToPosition(goToPosition);
-        while (opMode.opModeIsActive() && goToPosition[1] <= error) {
-            gyroTurn(speed, goToPosition[0], 5);
-            move(speed, speed, goToPosition[1], true, 10);
-            goToPosition = robot.calculateGoToPosition(goToPosition);
-        }
+        double[] goToPositionData = robot.calculateGoToPosition(goToPosition);
+        gyroTurn(speed, goToPositionData[0], 5);
+        Log.v("BOK: ", "turned");
+        move(speed, speed, goToPositionData[1], true, 10);
+        Log.v("BOK: ", "moved");
     }
 
 
@@ -1130,7 +1126,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 //            opMode.sleep(WAIT_FOR_SERVO_MS);
             // Push the glyph
             // Strafe to the right
-            strafe(DT_POWER_FOR_STRAFE,
+            /*strafe(DT_POWER_FOR_STRAFE,
                    ROTATIONS_STRAFE_TO_WALL * 8.5,
                    true,
                    DT_STRAFE_TIMEOUT);
@@ -1141,7 +1137,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     distanceLeftStrafe,
                     false,
                     DT_STRAFE_TIMEOUT);
-
+*/
             //robot.jewelFlicker.setPosition(robot.JF_FINAL);
             //robot.jewelArm.setPosition(robot.JA_MID);
         }
