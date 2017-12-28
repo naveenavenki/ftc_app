@@ -11,7 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.robotcore.internal.system.PreferencesHelper;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -28,35 +27,34 @@ import android.util.Log;
  */
 public abstract class BoKHardwareBot
 {
-    // Constants
+    // CONSTANTS
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
-
+    // Claw wrist
     protected static final double CW_INIT = 0.92;
     protected static final double CW_MIN = 0.1;
-    protected static final double CW_MID = 0.45;
+    // Claw grab
     protected static final double CG_INIT = 0; // Closed at initialization
     protected static final double CG_OPEN = 1;//0.9
     protected static final double CG_CLOSE = 0;//0.4
+    // Jewel flioker arm
+    protected static final double JA_INIT = 0.48;
+    protected static final double JA_MID = 0.8;//0.44
+    protected static final double JA_FINAL = 0.9;
+    // Jewel flicker
     protected static final double JF_INIT = 0.9;
     protected static final double JF_FINAL = 0.5;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
-    protected static final double JA_INIT = 0.48;
-    protected static final double JA_MID = 0.8;//0.44
-    protected static final double JA_FINAL = 0.9;
+    // Glyph flicker
     protected static final double GF_INIT = 0.1;
-    protected static final double GF_MID = 0.5;
     protected static final double GF_FINAL = 1;
-
+    // Relic lift arm
     protected static final double RA_INIT = 0.15;
     protected static final double RA_UPPER_LIMIT = 0.3;
     protected static final double RA_LOWER_LIMIT = 0.63;
     protected static final double RA_HIGH_POS = 0.52;
     protected static final double RA_DEPLOY_POS = 0.58;
-
-    protected static final int SP_EXTENDED = 11500;
-    protected static final int SP_INIT = 0;
-
+    // Relic claw
     protected static final double RC_UNLOCK = 1; // initially unlocked
     protected static final double RC_LOCK = 0.4;
 
@@ -79,7 +77,7 @@ public abstract class BoKHardwareBot
     protected static final int WAIT_PERIOD = 40; // 40 ms
     // sometimes it helps to multiply the raw RGB values with a scale factor
     // to amplify/attentuate the measured values.
-    final double CS_SCALE_FACTOR = 255;
+    private static final double CS_SCALE_FACTOR = 255;
 
     LinearOpMode opMode; // current opMode
 
@@ -243,6 +241,7 @@ public abstract class BoKHardwareBot
 
         turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turnTable.setDirection(DcMotorSimple.Direction.REVERSE);
         //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turnTable.setPower(0);

@@ -13,9 +13,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class BoKGlyphArm
 {
     // CONSTANTS
-    private static final double COUNTS_PER_MOTOR_REV    = 1120;
+    private static final double COUNTS_PER_MOTOR_REV    = 1120; // AndyMark 40
     private static final double DRIVE_GEAR_REDUCTION    = 5.0;
-    private static final int JOYSTICK_RATIO = 100;
+    private static final int WRIST_JOYSTICK_RATIO = 10;
 
     private BoKHardwareBot robot;
     private LinearOpMode opMode;
@@ -66,7 +66,7 @@ public class BoKGlyphArm
         if(pos > 1) {
         }
         else {
-            clawWrist.setPosition(pos + trigger/JOYSTICK_RATIO);
+            clawWrist.setPosition(pos + trigger/WRIST_JOYSTICK_RATIO);
         }
     }
 
@@ -77,7 +77,7 @@ public class BoKGlyphArm
         if(pos < robot.CW_MIN) {
         }
         else {
-            clawWrist.setPosition(pos - trigger/JOYSTICK_RATIO);
+            clawWrist.setPosition(pos - trigger/WRIST_JOYSTICK_RATIO);
         }
     }
 
