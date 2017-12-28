@@ -42,12 +42,13 @@ public class BoKMecanumDT extends BoKHardwareBot
     private int rightFrontTarget;
     private int rightBackTarget;
 
-    double lastEncRF = 0.0;
-    double lastEncLF = 0.0;
-    double lastEncRB = 0.0;
-    double lastEncLB = 0.0;
-    double currentPosition[] =  {0, 0, 0};
-    boolean positionTracking = false;
+    // Position tracking
+    private double lastEncRF = 0.0;
+    private double lastEncLF = 0.0;
+    private double lastEncRB = 0.0;
+    private double lastEncLB = 0.0;
+    private double currentPosition[] =  {0, 0, 0};
+    private boolean positionTracking = false;
 
     /*
      * Implement all the abstract methods
@@ -92,7 +93,7 @@ public class BoKMecanumDT extends BoKHardwareBot
      * 2. set mode
      * 3. set motor encoder target
      */
-    public void setPowerToDTMotors(double left, double right)
+    protected void setPowerToDTMotors(double left, double right)
     {
         leftBack.setPower(left);
         rightBack.setPower(right);
@@ -101,7 +102,7 @@ public class BoKMecanumDT extends BoKHardwareBot
         opMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
-    public void setPowerToDTMotors(double leftFrontPower, double leftBackPower,
+    protected void setPowerToDTMotors(double leftFrontPower, double leftBackPower,
                                    double rightFrontPower, double rightBackPower)
     {
         leftBack.setPower(leftBackPower);
@@ -111,7 +112,7 @@ public class BoKMecanumDT extends BoKHardwareBot
         opMode.sleep(OPMODE_SLEEP_INTERVAL_MS_SHORT);
     }
 
-    public void setModeForDTMotors(DcMotor.RunMode runMode)
+    protected void setModeForDTMotors(DcMotor.RunMode runMode)
     {
         leftBack.setMode(runMode);
         rightBack.setMode(runMode);
@@ -124,7 +125,7 @@ public class BoKMecanumDT extends BoKHardwareBot
      * getTargetEncCount(targetDistanceInches): returns the target encoder count
      * based on the wheel diameter, gear reduction ratio and counts per motor rev.
      */
-    public double getTargetEncCount(double targetDistanceInches)
+    protected double getTargetEncCount(double targetDistanceInches)
     {
         double degreesOfWheelTurn, degreesOfMotorTurn;
         degreesOfWheelTurn = (360.0 / (Math.PI * BoKMecanumDT.WHEEL_DIAMETER_INCHES)) *
@@ -133,11 +134,12 @@ public class BoKMecanumDT extends BoKHardwareBot
         return (BoKMecanumDT.COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
     }
 
-    public void resetDTEncoders()
+    protected void resetDTEncoders()
     {
         // all four motors need encoder wires to use RUN_TO_POSITION
         setModeForDTMotors(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setModeForDTMotors(DcMotor.RunMode.RUN_USING_ENCODER);
+        lastEncRF = lastEncLF = lastEncLB = lastEncRB = 0;
     }
 
     private void setDTMotorEncoderTarget(int leftTarget, int rightTarget)
@@ -185,10 +187,10 @@ public class BoKMecanumDT extends BoKHardwareBot
     /*
      * move() method: setup the robot to move encoder counts
      */
-    public int startMove(double leftPower,
-                         double rightPower,
-                         double inches,
-                         boolean forward)
+    protected int startMove(double leftPower,
+                            double rightPower,
+                            double inches,
+                            boolean forward)
     {
         double targetEncCount = getTargetEncCount(inches);
         if (forward) {
@@ -199,13 +201,10 @@ public class BoKMecanumDT extends BoKHardwareBot
             setDTMotorEncoderTarget((int) -targetEncCount, (int) targetEncCount);
             setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
         }
-        if(isPositionTrackingEnabled()) {
-            getCurrentPosition();
-        }
         return (int)targetEncCount;
     }
-    
-    public int startStrafe(double power, double rotations, boolean right)
+
+    protected int startStrafe(double power, double rotations, boolean right)
     {
         double targetEncCount = (rotations*COUNTS_PER_MOTOR_REV) * DRIVE_GEAR_REDUCTION;
         if (right) {
@@ -226,14 +225,10 @@ public class BoKMecanumDT extends BoKHardwareBot
                     rightFrontTarget, rightBackTarget);
             setPowerToDTMotors(-power, power, -power, power);
         }
-        Log.v("BOK", "Target LF " + leftFrontTarget +
-                ", LB " + leftBackTarget +
-                ", RF" + rightFrontTarget +
-                ", RB " + rightBackTarget);
         return (int)targetEncCount;
     }
 
-    public void stopMove()
+    protected void stopMove()
     {
         // Stop all motion;
         setPowerToDTMotors(0, 0, 0, 0);
@@ -241,7 +236,7 @@ public class BoKMecanumDT extends BoKHardwareBot
         setModeForDTMotors(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public boolean areDTMotorsBusy()
+    protected boolean areDTMotorsBusy()
     {
         //Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
         //        ", RF " + rightFront.getCurrentPosition() +
@@ -253,7 +248,7 @@ public class BoKMecanumDT extends BoKHardwareBot
                 rightBack.isBusy());
     }
 
-    public boolean haveDTMotorsReachedTarget()
+    protected boolean haveDTMotorsReachedTarget()
     {
         //Log.v("BOK", "Current LF " + leftFront.getCurrentPosition() +
         //        ", LB " + leftBack.getCurrentPosition() +
@@ -268,57 +263,62 @@ public class BoKMecanumDT extends BoKHardwareBot
         return false;
     }
 
-    public int getLFEncCount()
+    protected int getLFEncCount()
     {
         return leftFront.getCurrentPosition();
     }
 
-    public int getRFEncCount()
+    protected int getRFEncCount()
     {
         return rightFront.getCurrentPosition();
     }
 
-    public int getLBEncCount()
+    protected int getLBEncCount()
     {
         return leftBack.getCurrentPosition();
     }
 
-    public int getRBEncCount()
+    protected int getRBEncCount()
     {
         return rightBack.getCurrentPosition();
     }
 
-    protected double getAverageEnc() {
-        double EncRF = -getRFEncCount()-lastEncRF;
-        double EncLF = getLFEncCount()-lastEncLF;
-        double EncRB = -getRBEncCount()-lastEncRB;
-        double EncLB = getLBEncCount()-lastEncLB;
-        double enc = (((EncRF+EncLF)/2.0)+((EncRB+EncLB)/2.0))/2.0;
-        lastEncRF = -getRFEncCount();
-        lastEncLF = getLFEncCount();
-        lastEncLB = getLBEncCount();
-        lastEncRB = -getRBEncCount();
-        enc /= 45.42625; // ???
+    private double getAverageEnc() {
+        double EncRF = getRFEncCount();
+
+        double diffRF = -EncRF - lastEncRF;
+        double EncLF = getLFEncCount();
+        double diffLF = EncLF - lastEncLF;
+        double EncRB = getRBEncCount(); //
+        double diffRB = -EncRB - lastEncRB;
+        double EncLB = getLBEncCount();
+        double diffLB = EncLB - lastEncLB;
+        Log.v("BOK", "EncRF: " + EncRF + ", LF: " + EncLF + " EncRB: " + EncRB + " LB: " + EncLB );
+        double enc = (((diffRF+diffLF)/2.0)+((diffRB+diffLB)/2.0))/2.0;
+        lastEncRF = -EncRF;
+        lastEncLF = EncLF;
+        lastEncLB = EncLB;
+        lastEncRB = -EncRB;
+        enc /= 56.9; // encoder counts  per inch (AndyMark Orbital 20)
         return enc;
     }
 
-    //IMU NEEDS TO BE RESET WHEN POS TRACK IS ENABLED
-    protected void enablePositionTracking() {
-        positionTracking = true;
-        lastEncLB = 0.0;
-        lastEncLF = 0.0;
-        lastEncRB = 0.0;
-        lastEncRF = 0.0;
-        currentPosition[0] = 0;
-        currentPosition[1] = 0;
-        currentPosition[2] = 0;
+    protected void enablePositionTracking()
+    {
+        if (!positionTracking) {
+            positionTracking = true;
+            currentPosition[0] = currentPosition[1] = currentPosition[2] = 0;
+            resetDTEncoders();
+        }
     }
 
-    protected void disablePositionTracking() {
+    protected void disablePositionTracking()
+    {
         positionTracking = false;
     }
 
-    protected boolean isPositionTrackingEnabled() {
+    protected boolean isPositionTrackingEnabled()
+    {
         return positionTracking;
     }
 
@@ -330,16 +330,19 @@ public class BoKMecanumDT extends BoKHardwareBot
         currentPosition[0] = distance*Math.cos(angle * (Math.PI/180.0)) + currentPosition[0];
         currentPosition[1] = distance*Math.sin(angle * (Math.PI/180.0)) + currentPosition[1];
         currentPosition[2] =  angle;
-        opMode.telemetry.addData("Position X: ", currentPosition[0]);
-        opMode.telemetry.addData("Position Y: ", currentPosition[1]);
-        opMode.telemetry.addData("Angle: ", currentPosition[2]);
+        //opMode.telemetry.addData("Position X: ", currentPosition[0]);
+        //opMode.telemetry.addData("Position Y: ", currentPosition[1]);
+        //opMode.telemetry.addData("Angle: ", currentPosition[2]);
+        Log.v("BOK", "Dist: " + distance + " x: " + currentPosition[0] +
+                     ", y: " + currentPosition [1] + " angle: " + (angle-90));
     }
 
     protected double[] calculateGoToPosition(double[] gotoPos)
     {
-        double x = gotoPos[0] - currentPosition[0];
-        double y = gotoPos[1] -currentPosition[1];
-        double disToTravel = Math.sqrt(x*x + y*y);
+        double x = Math.abs(gotoPos[0]) - Math.abs(currentPosition[0]);
+        double y = Math.abs(gotoPos[1]) - Math.abs(currentPosition[1]);
+        double disToTravel = Math.hypot(currentPosition[0] - gotoPos[0],
+                currentPosition[1] - gotoPos[1]);
         double angle = Math.atan2(y,x) * (180.0/Math.PI);
         angle -= 90;
         while (opMode.opModeIsActive() && (angle < -180 || angle > 180)) {
@@ -351,8 +354,9 @@ public class BoKMecanumDT extends BoKHardwareBot
             }
         }
 
-        opMode.telemetry.addData("gotoAngle: ", angle);
-        opMode.telemetry.addData("distance: ", disToTravel);
+        //opMode.telemetry.addData("gotoAngle: ", angle);
+        //opMode.telemetry.addData("distance: ", disToTravel);
+        Log.v("BOK", "Goto angle " + angle + ", distance: " + disToTravel);
 
         double[] goToPositionData = {angle, disToTravel};
         return goToPositionData;
