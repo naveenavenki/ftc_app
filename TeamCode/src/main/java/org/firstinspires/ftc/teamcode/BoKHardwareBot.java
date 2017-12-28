@@ -113,7 +113,7 @@ public abstract class BoKHardwareBot
     private ElapsedTime period  = new ElapsedTime();
 
     // return status
-    public enum BoKHardwareStatus
+    protected enum BoKHardwareStatus
     {
         BOK_HARDWARE_FAILURE,
         BOK_HARDWARE_SUCCESS
@@ -127,7 +127,7 @@ public abstract class BoKHardwareBot
      * It calls the abstract initDriveTrainMotors() and initMotorsAndSensors() methods.
      * Returns BOK_SUCCESS if the initialization is successful, BOK_FAILURE otherwise.
      */
-    public BoKHardwareStatus initHardware(LinearOpMode opMode)
+    protected BoKHardwareStatus initHardware(LinearOpMode opMode)
     {
         this.opMode = opMode;
         // First initialize the drive train
@@ -300,35 +300,38 @@ public abstract class BoKHardwareBot
     protected abstract BoKHardwareStatus initDriveTrainMotors();
 
     // Using the drive train is public
-    public abstract void resetDTEncoders();
-    public abstract boolean areDTMotorsBusy();
-    public abstract boolean haveDTMotorsReachedTarget();
+    protected abstract void resetDTEncoders();
+    protected abstract boolean areDTMotorsBusy();
+    protected abstract boolean haveDTMotorsReachedTarget();
 
     //public abstract void setPowerToDTMotors(double leftPower, double rightPower);
-    public abstract void setPowerToDTMotors(double leftFrontPower,
-                                            double leftBackPower,
-                                            double rightFrontPower,
-                                            double rightBackPower);
-    public abstract void setModeForDTMotors(DcMotor.RunMode runMode);
+    protected abstract void setPowerToDTMotors(double leftFrontPower,
+                                               double leftBackPower,
+                                               double rightFrontPower,
+                                               double rightBackPower);
+    protected abstract void setModeForDTMotors(DcMotor.RunMode runMode);
 
     // Autonomous driving
-    public abstract int startMove(double leftPower,
-                                  double rightPower,
-                                  double inches,
-                                  boolean backward);
+    protected abstract int startMove(double leftPower,
+                                     double rightPower,
+                                     double inches,
+                                     boolean backward);
 
-    public abstract int startStrafe(double power, double rotations,
-                                    boolean right);
+    protected abstract int startStrafe(double power, double rotations,
+                                       boolean right);
 
-    public abstract void stopMove();
+    protected abstract void stopMove();
 
-    public abstract double getTargetEncCount(double targetDistanceInches);
-    public abstract int getLFEncCount();
-    public abstract int getRFEncCount();
-    public abstract int getRBEncCount();
-    public abstract int getLBEncCount();
+    protected abstract double getTargetEncCount(double targetDistanceInches);
+    protected abstract int getLFEncCount();
+    protected abstract int getRFEncCount();
+    protected abstract int getRBEncCount();
+    protected abstract int getLBEncCount();
     protected abstract void getCurrentPosition ();
     protected abstract double[] calculateGoToPosition(double[] gotoPos);
+    protected abstract void enablePositionTracking();
+    protected abstract void disablePositionTracking();
+    protected abstract boolean isPositionTrackingEnabled();
 
     /*
      *
@@ -339,7 +342,7 @@ public abstract class BoKHardwareBot
      * @param periodMs  Length of wait cycle in mSec.
      * @throws InterruptedException
      */
-    public void waitForTick(long periodMs)
+    protected void waitForTick(long periodMs)
     {
         long  remaining = periodMs - (long)period.milliseconds();
 

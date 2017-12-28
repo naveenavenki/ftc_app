@@ -19,17 +19,17 @@ public interface BoKAuto
     public static long WAIT_FOR_SERVO_MS = 500;
     public static double VUFORIA_TIMEOUT = 4.0;
     public static double CRS_CRYPTO_TIMEOUT = 2.5;
-    public static double DT_STRAFE_TIMEOUT = 3.0;
+    //public static double DT_STRAFE_TIMEOUT = 3.0;
     public static double DT_TURN_TIMEOUT = 3.0;
     public static double BLUE_CRYPTO_MOVE_TIMEOUT = 5.0;
 
     public static double DT_POWER_FOR_STONE = 0.2;
-    public static double DT_POWER_FOR_STRAFE = 0.2;
+    //public static double DT_POWER_FOR_STRAFE = 0.2;
     public static double DT_POWER_FOR_RS = 0.15;
     public static double DT_POWER_FOR_CRYPTO = 0.12;
     public static double DT_TURN_SPEED_LOW  = 0.15;
     public static double DT_TURN_SPEED_HIGH = 0.4;
-    public static double ROTATIONS_STRAFE_TO_WALL = 0.15;
+    //public static double ROTATIONS_STRAFE_TO_WALL = 0.15;
     public static double DT_RAMP_SPEED_INIT = 0.15;
 
     public BoKAutoStatus initSoftware(BoKAutoOpMode opMode,
