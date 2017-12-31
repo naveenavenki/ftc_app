@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import android.util.Log;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 /**
@@ -10,13 +11,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 public class BoKAutoBlueNear extends BoKAutoCommon
 {
-    private static final double TIMEOUT_RIGHT = 4;
+    private static final double TIMEOUT_LEFT = 4;
     private static final double TIMEOUT_CENTER = 5;
-    private static final double TIMEOUT_LEFT = 6;
+    private static final double TIMEOUT_RIGHT = 6;
 
-    private static final double DISTANCE_TO_LEFT_COL = 26; // inches!!
-    private static final double DISTANCE_TO_CENTER_COL = 33;
-    private static final double DISTANCE_TO_RIGHT_COL = 40;
+    private static final double DISTANCE_TO_LEFT_COL = 21; // inches!!
+    private static final double DISTANCE_TO_CENTER_COL = 29;
+    private static final double DISTANCE_TO_RIGHT_COL = 37;
 
     // Constructor
     public BoKAutoBlueNear()
@@ -27,38 +28,23 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     @Override
     public void runSoftware()
     {
-        //Arm:2239
-        //Wrist:0.
-
-
-        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-        robot.glyphArm.clawWrist.setPosition(0.7);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-
-        //arm position in encoder counts : 1902
-        robot.glyphArm.moveUpperArm(122,0.2);
-        robot.glyphArm.clawWrist.setPosition(0.88);
-        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
-        /*
         // NOTE: Move backwards towards crypto
 
         // Detect Vuforia image and flick the jewel
+        Log.v("BOK", "RSF " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
         detectVuforiaImgAndFlick();
 
         // Move forward out of balancing stone
         // Distance and timeout depends on column number; TBD
-        double distance = DISTANCE_TO_RIGHT_COL;
-        double timeout = TIMEOUT_RIGHT;
+        double distance = DISTANCE_TO_LEFT_COL;
+        double timeout = TIMEOUT_LEFT;
         if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
             distance = DISTANCE_TO_CENTER_COL;
             timeout = TIMEOUT_CENTER;
         }
-        else if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
-            distance = DISTANCE_TO_LEFT_COL;
-            timeout = TIMEOUT_LEFT;
+        else if (cryptoColumn == RelicRecoveryVuMark.RIGHT) {
+            distance = DISTANCE_TO_RIGHT_COL;
+            timeout = TIMEOUT_RIGHT;
         }
 
         // Move backward out of balancing stone
@@ -68,7 +54,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
              distance,
              false,
              timeout);
-
+        Log.v("BOK", "RSF " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
         // Strafe to the right
         //strafe(DT_POWER_FOR_STRAFE,
         //       ROTATIONS_STRAFE_TO_WALL,
@@ -76,6 +62,10 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         //       DT_STRAFE_TIMEOUT);
 
         moveToCrypto();
-        */
+        gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 10, false, DT_TIMEOUT);
+        moveGlyphFlicker();
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
+
     }
 }

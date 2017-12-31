@@ -13,10 +13,10 @@ public class BoKAutoBlueFar extends BoKAutoCommon
     private static double TIMEOUT_CENTER = 8;
     private static double TIMEOUT_RIGHT = 10;
     private static int TURN_RIGHT_DEGREES = -90;
-    private static double DT_MOVE_TO_CRYPTO = 17.5;
-    private static int DISTANCE_TO_LEFT_COL_CM = 46;
-    private static int DISTANCE_TO_CENTER_COL_CM = 62;
-    private static int DISTANCE_TO_RIGHT_COL_CM = 80;
+    private static double DT_MOVE_TO_CRYPTO = 19;
+    private static int DISTANCE_TO_LEFT_COL_CM = 32 ;
+    private static int DISTANCE_TO_CENTER_COL_CM = 51;
+    private static int DISTANCE_TO_RIGHT_COL_CM = 70;
 
     // Constructor
     public BoKAutoBlueFar()
@@ -37,7 +37,7 @@ public class BoKAutoBlueFar extends BoKAutoCommon
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, DT_MOVE_TO_CRYPTO, false, DT_TIMEOUT);
 
         // Turn right 90 degrees
-        gyroTurn(DT_TURN_SPEED_HIGH, TURN_RIGHT_DEGREES, DT_TURN_TIMEOUT);
+        double current_angle = gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_RIGHT_DEGREES, DT_TURN_TIMEOUT);
 
         // Distance to crypto and timeout depends on column number
         int distance = DISTANCE_TO_RIGHT_COL_CM;
@@ -56,5 +56,15 @@ public class BoKAutoBlueFar extends BoKAutoCommon
 
         // Prepare to unload the glyph
         moveToCrypto();
+
+        //turn left 90 degrees
+        gyroTurn(DT_TURN_SPEED_HIGH, current_angle, 0, DT_TURN_TIMEOUT*3);
+
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 7.5, false, DT_TIMEOUT);
+
+        moveGlyphFlicker();
+
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
+
     }
 }

@@ -30,24 +30,24 @@ public abstract class BoKHardwareBot
     // CONSTANTS
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     // Claw wrist
-    protected static final double CW_INIT = 0.92;
+    protected static final double CW_INIT = 0.5;
     protected static final double CW_MIN = 0.1;
     // Claw grab
-    protected static final double CG_INIT = 0; // Closed at initialization
+    protected static final double CG_INIT = 0.15; // Closed at initialization
     protected static final double CG_OPEN = 1;//0.9
-    protected static final double CG_CLOSE = 0;//0.4
+    protected static final double CG_CLOSE = 0.15;//0.4
     // Jewel flioker arm
-    protected static final double JA_INIT = 0.48;
-    protected static final double JA_MID = 0.8;//0.44
-    protected static final double JA_FINAL = 0.9;
+    protected static final double JA_INIT = 0.0;
+    protected static final double JA_MID = 0.38;//0.44
+    protected static final double JA_FINAL = 0.48;
     // Jewel flicker
     protected static final double JF_INIT = 0.9;
     protected static final double JF_FINAL = 0.5;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
     // Glyph flicker
-    protected static final double GF_INIT = 0.1;
-    protected static final double GF_FINAL = 1;
+    protected static final double GF_INIT = 0.27;
+    protected static final double GF_FINAL = 0.65;
     // Relic lift arm
     protected static final double RA_INIT = 0.15;
     protected static final double RA_UPPER_LIMIT = 0.3;
@@ -88,8 +88,8 @@ public abstract class BoKHardwareBot
 
 
     // Servos
-    private Servo glyphClawWrist; // These are used in the GlyphArm
-    private Servo glyphClawGrab;
+    protected Servo glyphClawWrist; // These are used in the GlyphArm
+    protected Servo glyphClawGrab;
     protected Servo jewelArm;
     protected Servo jewelFlicker;
     protected Servo relicArm;
@@ -241,7 +241,7 @@ public abstract class BoKHardwareBot
 
         turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        turnTable.setDirection(DcMotorSimple.Direction.REVERSE);
+        //turnTable.setDirection(DcMotorSimple.Direction.REVERSE);
         //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turnTable.setPower(0);
@@ -255,6 +255,7 @@ public abstract class BoKHardwareBot
             jewelFlicker.setPosition(JF_INIT);
             relicArm.setPosition(RA_INIT);
             relicClaw.setPosition(RC_UNLOCK);
+            glyphFlicker.setPosition(GF_INIT);
         }
         else {
             //glyphClawWrist.setPosition(CW_INIT);

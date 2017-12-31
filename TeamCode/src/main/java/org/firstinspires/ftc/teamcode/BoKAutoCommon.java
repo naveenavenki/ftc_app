@@ -832,8 +832,8 @@ public abstract class BoKAutoCommon implements BoKAuto
         robot.stopMove();
 
         // Raise the jewel arm
-        robot.jewelArm.setPosition(robot.JA_INIT);
-        opMode.sleep(WAIT_FOR_SERVO_MS); // temp
+        //robot.jewelArm.setPosition(robot.JA_INIT);
+        //opMode.sleep(WAIT_FOR_SERVO_MS); // temp
 
         // take a picture
         //takePicture("c_crypto.png");
@@ -914,7 +914,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                 (Math.abs(diffFromTarget) >= RS_DIFF_THRESHOLD_CM) &&
                 (runTime.seconds() < waitForSeconds)) {
             cmCurrent = rangeSensor.getDistance(DistanceUnit.CM);
-            if (cmCurrent == 255) // Invalid sensor reading
+            if (cmCurrent >= 255) // Invalid sensor reading
                 continue;
 
             diffFromTarget = targetDistanceCm - cmCurrent;
@@ -961,14 +961,14 @@ public abstract class BoKAutoCommon implements BoKAuto
      *              0 = fwd. +ve is CCW from fwd. -ve is CW from forward.
      *              If a relative angle is required, add/subtract from current heading.
      */
-    public void gyroTurn(double speed, double angle, double waitForSeconds)
+    public double gyroTurn(double speed, double init_angle, double angle, double waitForSeconds)
     {
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         runTime.reset();
 
         // keep looping while we are still active, and not on heading.
         while (opMode.opModeIsActive() && 
-               !onHeading(speed, angle, P_TURN_COEFF) &&
+               !onHeading(speed, init_angle, angle, P_TURN_COEFF) &&
                (runTime.seconds() < waitForSeconds)) {
             if (robot.isPositionTrackingEnabled()) {
                 robot.getCurrentPosition();
@@ -982,6 +982,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         if (robot.isPositionTrackingEnabled()) {
             robot.getCurrentPosition();
         }
+        return angles.thirdAngle;
     }
 
     /**
@@ -995,6 +996,7 @@ public abstract class BoKAutoCommon implements BoKAuto
      * @return
      */
     protected boolean onHeading(double speed,
+                                double init_angle,
                                 double angle, 
                                 double PCoeff)
     {
@@ -1006,7 +1008,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
         // determine turn power based on +/- error
         error = getError(angle);
-        if (Math.abs(error) <= (Math.abs(angle)/2))
+        if (Math.abs(error) <= (Math.abs(angle-init_angle)/2))
             speed /= 2;
 
         if (Math.abs(error) <= HEADING_THRESHOLD) {
@@ -1043,8 +1045,15 @@ public abstract class BoKAutoCommon implements BoKAuto
             robot.enablePositionTracking();
         }
         double[] goToPositionData = robot.calculateGoToPosition(goToPosition);
-        gyroTurn(speed, goToPositionData[0], 5);
+
+        //gyroTurn(speed * 1.5, goToPositionData[0], 10);
         Log.v("BOK: ", "turned");
+        goToPositionData = robot.calculateGoToPosition(goToPosition);
+        //gyroTurn(speed, goToPositionData[0], 10);
+        Log.v("BOK: ", "turned");
+        goToPositionData = robot.calculateGoToPosition(goToPosition);
+        move(speed * 1.25, speed * 1.25, goToPositionData[1], true, 10);
+        goToPositionData = robot.calculateGoToPosition(goToPosition);
         move(speed, speed, goToPositionData[1], true, 10);
         Log.v("BOK: ", "moved");
     }
@@ -1066,6 +1075,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                                                  AxesOrder.XYZ,
                                                  AngleUnit.DEGREES);
         robotError = targetAngle - angles.thirdAngle;
+        //Log.v ("BOK", "Angle: " + angles.thirdAngle);
         while (robotError > 180)  robotError -= 360;
         while (robotError <= -180) robotError += 360;
         return robotError;
@@ -1082,6 +1092,20 @@ public abstract class BoKAutoCommon implements BoKAuto
         return Range.clip(error * PCoeff, -1, 1);
     }
 
+    protected void moveGlyphFlicker()
+    {
+        double pos = robot.glyphFlicker.getPosition();
+        while(pos < robot.GF_FINAL) {
+            pos = robot.glyphFlicker.getPosition();
+            robot.glyphFlicker.setPosition(pos + 0.03);
+            opMode.sleep(robot.OPMODE_SLEEP_INTERVAL_MS_SHORT*3);
+        }
+        Log.v("BOK", "Done raising!!!");
+        opMode.sleep(robot.OPMODE_SLEEP_INTERVAL_MS_SHORT*30);
+        robot.glyphFlicker.setPosition(robot.GF_INIT);
+        pos = robot.glyphFlicker.getPosition();
+    }
+
     protected void moveToCrypto()
     {
         if (opMode.opModeIsActive()) {
@@ -1089,8 +1113,8 @@ public abstract class BoKAutoCommon implements BoKAuto
             //takePicture("b_crypto.png");
 
             // Lower the jewel arm & the range sensor
-            robot.jewelArm.setPosition(robot.JA_MID);
-            opMode.sleep(WAIT_FOR_SERVO_MS * 3); // let the flicker settle down
+            //robot.jewelArm.setPosition(robot.JA_MID);
+            //opMode.sleep(WAIT_FOR_SERVO_MS * 3); // let the flicker settle down
 
             angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
                                                      AxesOrder.XYZ,
@@ -1098,9 +1122,9 @@ public abstract class BoKAutoCommon implements BoKAuto
             Log.v("BOK", String.format("IMU angle %.1f", angles.thirdAngle));
 
             // Move forward towards cryptobox using range sensor
-            moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
-                    (allianceColor == BoKAllianceColor.BOK_ALLIANCE_RED) ? true : false,
-                    CRS_CRYPTO_TIMEOUT);
+            //moveTowardsCrypto(DT_POWER_FOR_CRYPTO,
+            //        (allianceColor == BoKAllianceColor.BOK_ALLIANCE_RED) ? true : false,
+            //        CRS_CRYPTO_TIMEOUT);
 
             // Now prepare to unload the glyph
             // move the flicker to init and slowly move the wrist down

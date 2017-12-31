@@ -11,9 +11,9 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     private static final double TIMEOUT_CENTER = 5;
     private static final double TIMEOUT_LEFT = 6;
     
-    private static final double DISTANCE_TO_RIGHT_COL = 16.5; // inches!!
-    private static final double DISTANCE_TO_CENTER_COL = 26;
-    private static final double DISTANCE_TO_LEFT_COL = 33;
+    private static final double DISTANCE_TO_RIGHT_COL = 32.5; // inches!!
+    private static final double DISTANCE_TO_CENTER_COL = 40;
+    private static final double DISTANCE_TO_LEFT_COL = 47;
 
     // Constructor
     public BoKAutoRedNear()
@@ -24,19 +24,6 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     @Override
     public void runSoftware()
     {
-       /* robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-        robot.glyphArm.clawWrist.setPosition(0.4);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
-        opMode.sleep(WAIT_FOR_SERVO_MS);
-
-        //arm position in encoder counts : 1902
-        robot.glyphArm.moveUpperArm(122,0.2);
-        robot.glyphArm.clawWrist.setPosition(0.88);
-        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
-        //robot.glyphArm.moveUpperArm(-155,-0.2);
-*/
         // Detect Vuforia image and flick the jewel
         detectVuforiaImgAndFlick();
 
@@ -58,15 +45,15 @@ public class BoKAutoRedNear extends BoKAutoCommon {
              true,
              timeout);
 
-        // Strafe to the right
-        //strafe(DT_POWER_FOR_STRAFE,
-        //       ROTATIONS_STRAFE_TO_WALL,
-        //       true,
-        //       DT_STRAFE_TIMEOUT);
-
         // Prepare to unload the glyph
         moveToCrypto();
 
-        gyroTurn(0.2,90,5.0);
+        gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 10.5, false, DT_TIMEOUT);
+        moveGlyphFlicker();
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
+
+        // gyroTurn(0.4,90,5.0);
+
     }
 }

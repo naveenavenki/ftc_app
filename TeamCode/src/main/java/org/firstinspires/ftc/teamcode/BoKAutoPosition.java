@@ -33,7 +33,7 @@ public class BoKAutoPosition extends BoKAutoCommon
         goToPosition(goToPosition, 0.3, .5);
         Log.v("BOK", "Stage 1 passed");
         robot.getCurrentPosition();
-        opMode.sleep(4000);
+        opMode.sleep(1000);
 
         goToPosition[0] = 20;
         goToPosition[1] = 40;
@@ -41,22 +41,21 @@ public class BoKAutoPosition extends BoKAutoCommon
 
         Log.v("BOK", "Stage 2 passed");
         robot.getCurrentPosition();
-        opMode.sleep(4000);
+        opMode.sleep(1000);
 
         goToPosition[0] = 0;
-        goToPosition[1] = 15;
+        goToPosition[1] = 30;
         goToPosition(goToPosition, 0.3, .5);
 
         Log.v("BOK", "Stage 3 passed");
+
         robot.getCurrentPosition();
-        opMode.sleep(4000);
+        opMode.sleep(1000);
 
         goToPosition[0] = 0;
-        goToPosition[1] = 10;
+        goToPosition[1] = 6;
         goToPosition(goToPosition, 0.3, .5);
-
         Log.v("BOK", "Stage 4 passed");
-        robot.getCurrentPosition();
         opMode.sleep(10000);
     }
 }
