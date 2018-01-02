@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import java.io.File;
 
@@ -47,6 +48,7 @@ public abstract class BoKHardwareBot
     protected static final double JF_LEFT = 0;
     // Glyph flicker
     protected static final double GF_INIT = 0.27;
+    protected static final double GF_MID = 0.35;
     protected static final double GF_FINAL = 0.65;
     // Relic lift arm
     protected static final double RA_INIT = 0.15;
@@ -57,6 +59,16 @@ public abstract class BoKHardwareBot
     // Relic claw
     protected static final double RC_UNLOCK = 1; // initially unlocked
     protected static final double RC_LOCK = 0.4;
+    // Glyph arm positions to place the glyph
+    protected static final int UA_GLYPH_AT_TIP = 138;
+    protected static final int UA_GLYPH_AT_MID = 160;
+    protected static final int UA_GLYPH_AT_END = 180;
+    // Wrist positions to place the glyph
+    protected static final double CW_GLYPH_AT_TIP = 0.8;
+    protected static final double CW_GLYPH_AT_MID = 0.73;
+    protected static final double CW_GLYPH_AT_END = 0.65;
+    // Glyph arm placement power
+    protected static final double UA_MOVE_POWER = 0.2;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
@@ -72,6 +84,7 @@ public abstract class BoKHardwareBot
     private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
     private static final String COLOR_SENSOR_CFG = "cs";
+    private static final String COLOR_SENSOR_GA_CFG = "csg";
     private static final String IMU_TOP = "imu_top";
 
     protected static final int WAIT_PERIOD = 40; // 40 ms
@@ -102,6 +115,7 @@ public abstract class BoKHardwareBot
     protected ModernRoboticsI2cRangeSensor rangeSensorJA;
     protected ModernRoboticsI2cRangeSensor rangeSensorFront;
     protected ModernRoboticsI2cRangeSensor rangeSensorBack;
+    protected ModernRoboticsI2cRangeSensor rangeSensorGA;
 
     protected ColorSensor sensorColor;
 
@@ -220,6 +234,11 @@ public abstract class BoKHardwareBot
 
         sensorColor = opMode.hardwareMap.get(ColorSensor.class, COLOR_SENSOR_CFG);
         if (sensorColor == null) {
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        rangeSensorGA = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, COLOR_SENSOR_GA_CFG);
+        if (rangeSensorGA == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
@@ -368,22 +387,11 @@ public abstract class BoKHardwareBot
         return angles.thirdAngle;
     }
 
-    protected void displayColorReading()
+    protected float getHue(ColorSensor senseColor)
     {
-        Color.RGBToHSV((int) (sensorColor.red() * CS_SCALE_FACTOR),
-                (int) (sensorColor.green() * CS_SCALE_FACTOR),
-                (int) (sensorColor.blue() * CS_SCALE_FACTOR),
-                hsvValues);
-        opMode.telemetry.addData("CS", "Red: " + sensorColor.red() + " ,blue: " +
-                + sensorColor.blue() + " ,hue: " + hsvValues[0]);
-        opMode.telemetry.update();
-    }
-
-    protected float getHue()
-    {
-        Color.RGBToHSV((int) (sensorColor.red() * CS_SCALE_FACTOR),
-                (int) (sensorColor.green() * CS_SCALE_FACTOR),
-                (int) (sensorColor.blue() * CS_SCALE_FACTOR),
+        Color.RGBToHSV((int) (senseColor.red() * CS_SCALE_FACTOR),
+                (int) (senseColor.green() * CS_SCALE_FACTOR),
+                (int) (senseColor.blue() * CS_SCALE_FACTOR),
                 hsvValues);
         return hsvValues[0];
     }

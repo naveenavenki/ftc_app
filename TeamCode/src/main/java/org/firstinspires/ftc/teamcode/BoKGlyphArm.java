@@ -15,7 +15,10 @@ public class BoKGlyphArm
     // CONSTANTS
     private static final double COUNTS_PER_MOTOR_REV    = 1120; // AndyMark 40
     private static final double DRIVE_GEAR_REDUCTION    = 5.0;
-    private static final int WRIST_JOYSTICK_RATIO = 10;
+    protected static final double ARM_DEGREES_PER_ENC_COUNT = 0.064;
+    protected static final int ARM_AT_90_DEGREES_ENC_COUNT = 1400;
+    protected static final int WRIST_SERVO_MAX_DEGREES = 240; // programmed for Rev Smart Servo
+    private static final int WRIST_JOYSTICK_RATIO = 100;
 
     private BoKHardwareBot robot;
     private LinearOpMode opMode;
@@ -32,8 +35,8 @@ public class BoKGlyphArm
         this.clawWrist = clawWrist;
         this.clawGrab = clawGrab;
     }
-    
-    private double getTargetEncCount(double targetAngleDegrees)
+
+     private double getTargetEncCount(double targetAngleDegrees)
     {
         double degreesOfMotorTurn = DRIVE_GEAR_REDUCTION * targetAngleDegrees;
         return (COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
@@ -59,6 +62,27 @@ public class BoKGlyphArm
         robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    public void moveUpperArmDegrees(double targetAngleDegrees, double power)
+    {
+        int target = (int) getTargetEncCount(targetAngleDegrees);
+        Log.v("BOK", "TargetD (arm enc): " + target + ", current: " +
+                robot.upperArm.getCurrentPosition());
+
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.upperArm.setTargetPosition(target);
+        robot.upperArm.setPower(power);
+    }
+
+    public void moveUpperArmEncCount(int targetEncCount, double power)
+    {
+        Log.v("BOK", "TargetE (arm enc): " + targetEncCount + ", " +
+                "current: " + robot.upperArm.getCurrentPosition());
+
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.upperArm.setTargetPosition(targetEncCount);
+        robot.upperArm.setPower(power);
+    }
+
     public void increaseClawWristPos(double trigger)
     {
         double pos = clawWrist.getPosition();
@@ -68,6 +92,7 @@ public class BoKGlyphArm
         else {
             clawWrist.setPosition(pos + trigger/WRIST_JOYSTICK_RATIO);
         }
+        Log.v("BOK", "Wrist Pos" + clawWrist.getPosition());
     }
 
     public void decreaseClawWristPos(double trigger)
@@ -79,6 +104,7 @@ public class BoKGlyphArm
         else {
             clawWrist.setPosition(pos - trigger/WRIST_JOYSTICK_RATIO);
         }
+        Log.v("BOK", "Wrist Pos" + clawWrist.getPosition());
     }
 
     public void setClawGrabOpen()

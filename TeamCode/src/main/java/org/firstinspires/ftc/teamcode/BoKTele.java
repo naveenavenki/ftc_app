@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.robocol.TelemetryMessage;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
  * Created by Krishna Saxena on 10/3/2017.
@@ -26,11 +27,15 @@ public class BoKTele
     private static final double UPPER_ARM_MOTOR_POWER_FAST = 0.6;//0.4
     private static final double SPEED_COEFF_SLOW = 0.25;
     private static final double SPEED_COEFF_FAST = 0.5;
-    private static final int RA_JOYSTICK_RATIO = 200;
+    private static final int RA_JOYSTICK_RATIO = 500;
     private static final int RELIC_DELAY_START = 40;
     private static final int RELIC_DEPLOY_STOP = 80; // loop runs 25 times a second
     private static final double RELIC_DEPLOY_POWER = 0.6;
-    private static final float GLYPH_FLICKER_INCREMENT = 0.3F;
+    private static final float GLYPH_FLICKER_INCREMENT = 0.01F;
+
+    private static int glyphArmInitialPos = 0;
+    private static double glyphWristInitialPos = 0.0;
+
 
     private BoKHardwareBot robot;
     private LinearOpMode opMode;
@@ -60,6 +65,7 @@ public class BoKTele
         boolean tank = false;
         boolean end_game = false;
         boolean relic_mode = false;
+        boolean placementMode = false;
 
         double posOfUpperArm = 0;
         boolean clawClosed = false;
@@ -84,6 +90,8 @@ public class BoKTele
             // X:                  Go in mecanum mode
             // A:                  Go in slow mode
             // Y:                  Go in fast mode
+            // Left bumper:        Raise glyph flicker
+            // Right bumper:       Lower glyph flicker
             if (opMode.gamepad1.b) {
                 tank = true;
             }
@@ -111,8 +119,12 @@ public class BoKTele
             // A:                      Claw closed
             // Y:                      End Game
             // X:                      Not End Game
-            // Left bumper:            Raise glyph flicker
-            // Right bumper:           Lower glyph flicker
+            // Dpad Left:              Enter placement mode & raise the arm to 138 degrees
+            // Dpad Right:             Exit placement mode
+            // When in Placement Mode, use
+            // Left bumper:            adjust upper arm position to 160 degrees
+            // Right bumper:           adjust upper arm position to 180 degrees
+            // X:                      adjust upper arm position to 138 degrees
             // When in End Game, use
             // Dpad Down:              Start Relic Mode
             // DPad Up:                End Relic Mode
@@ -120,9 +132,9 @@ public class BoKTele
             // Right Stick:            Relic Lift
             // B:                      Relic claw open
             // A:                      Relic claw closed
-            // Dpad Left:              Deploy relic lift (initial)
             // Left bumper:            Raise relic arm to clear the wall
             // Right bumper:           Lower relic arm for relic placement
+
             if (opMode.gamepad2.y) {
                 end_game = true;
                 Log.v("BOK", "End Game Started");
@@ -175,44 +187,79 @@ public class BoKTele
             if ((Math.abs(opMode.gamepad2.right_stick_y) >= TURNTABLE_STICK_DEAD_ZONE) ||
                     (Math.abs(opMode.gamepad2.right_stick_x) >= TURNTABLE_STICK_DEAD_ZONE)) {
                 if (!relic_mode) {
-                    double y = -opMode.gamepad2.right_stick_y;
+                    double y = Math.abs(opMode.gamepad2.right_stick_y);
                     double x = opMode.gamepad2.right_stick_x;
                     double angle = Math.atan2(y, x);
-                    angle = (-angle * 180 / Math.PI) + 90;
-                    if (angle >= 90 && angle <= 120) {
-                        angle = 90;
-                    } else if (angle >= 240 && angle <= 270) {
-                        angle = -90;
-                    }
-                    //opMode.telemetry.addData("Angle", angle);
+                    angle = (angle * 180 / Math.PI);
+                    opMode.telemetry.addData("Angle", angle);
+                    opMode.telemetry.update();
+                    //Log.v("BOK", "Angle: " + angle + " x: " + x + " y: " + y);
                     robot.turnTable.setTargetPosition(
                             (int)((TURNTABLE_COUNTS_PER_MOTOR_REV * (angle - 90))) / 180);
                     robot.turnTable.setPower(TURNTABLE_MOTOR_POWER);
                     //Log.v("BoK:", "Turntable Position: " + robot.turnTable.getCurrentPosition());
                 }
             } else {
-                if (!relic_mode && (robot.turnTable.getPower() != 0))
+                if (!relic_mode && (robot.turnTable.getPower() != 0) && (!placementMode))
                     robot.turnTable.setPower(0.0);
             }
 
-            if (!relic_mode && !left_bumper_pressed && opMode.gamepad2.left_bumper) {
-                left_bumper_pressed = true;
-                robot.glyphFlicker.setPosition(robot.GF_INIT);
-            }
-            if (!relic_mode && left_bumper_pressed) {
-                if (robot.glyphFlicker.getPosition() < robot.GF_FINAL - 0.1) {
-                    robot.glyphFlicker.setPosition(
-                            robot.glyphFlicker.getPosition() + GLYPH_FLICKER_INCREMENT);
+            if (!relic_mode) {
+                if (!left_bumper_pressed && opMode.gamepad1.left_bumper) {
+                    left_bumper_pressed = true;
+                    robot.glyphFlicker.setPosition(robot.GF_INIT);
                 }
-                else {
-                    robot.glyphFlicker.setPosition(robot.GF_FINAL);
-                    left_bumper_pressed = false; // stop moving the glyph flicker
+                if (left_bumper_pressed){
+                    if (robot.glyphFlicker.getPosition() < robot.GF_FINAL - 0.01) {
+                        robot.glyphFlicker.setPosition(
+                                robot.glyphFlicker.getPosition() + GLYPH_FLICKER_INCREMENT);
+                    } else {
+                        robot.glyphFlicker.setPosition(robot.GF_FINAL);
+                        left_bumper_pressed = false; // stop moving the glyph flicker
+                    }
                 }
-            }
 
-            if (!relic_mode && opMode.gamepad2.right_bumper) { // close the glyph flicker
-                left_bumper_pressed = false; // ready to open again
-                robot.glyphFlicker.setPosition(robot.GF_INIT);
+                if (opMode.gamepad1.right_bumper) { // close the glyph flicker
+                    left_bumper_pressed = false; // ready to open again
+                    robot.glyphFlicker.setPosition(robot.GF_INIT);
+                }
+
+                if (opMode.gamepad2.dpad_left && !placementMode) {
+                    // enter placement mode & set to initial positions (if grabbed by tip of claw)
+                    placementMode = true;
+                    // move the turn table to straight position
+                    glyphArmInitialPos = robot.upperArm.getCurrentPosition();
+                    Log.v("BOK", "Dpad Left Arm Pos " + glyphArmInitialPos);
+                    glyphWristInitialPos = robot.glyphClawWrist.getPosition();
+                    robot.turnTable.setTargetPosition(0);
+                    robot.turnTable.setPower(TURNTABLE_MOTOR_POWER);
+                    robot.glyphFlicker.setPosition(robot.GF_MID);
+                    robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_TIP, robot.UA_MOVE_POWER);
+                    robot.glyphArm.clawWrist.setPosition(robot.CW_GLYPH_AT_TIP);
+                }
+
+                if (placementMode) {
+                    if (opMode.gamepad2.dpad_right) {
+                        // exit placement mode
+                        placementMode = false;
+                        robot.glyphFlicker.setPosition(robot.GF_INIT);
+                        robot.glyphArm.clawWrist.setPosition(glyphWristInitialPos);
+                        robot.glyphArm.moveUpperArmEncCount(glyphArmInitialPos,
+                                robot.UA_MOVE_POWER);
+                    }
+                    // position of upper arm if grabbed by middle of claw
+                    if (opMode.gamepad2.left_bumper) {
+                        robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_MID,
+                                robot.UA_MOVE_POWER);
+                        robot.glyphClawWrist.setPosition(robot.CW_GLYPH_AT_MID);
+                    }
+                    // position of upper arm if grabbed fully by claw
+                    if (opMode.gamepad2.right_bumper) {
+                        robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_END,
+                                robot.UA_MOVE_POWER);
+                        robot.glyphClawWrist.setPosition(robot.CW_GLYPH_AT_END);
+                    }
+                }
             }
 
             if (relic_mode) {
@@ -226,20 +273,38 @@ public class BoKTele
                 else if (!relic_deploying) { // manual mode
                     robot.relicSpool.setPower(0);
                 }
+                if (!left_bumper_pressed && opMode.gamepad2.left_bumper ) {
+                    //Log.v("BOK", "Left bumper pressed"); // raise the relic arm to RA_HIGH_POS
+                    left_bumper_pressed = true;
+                    robot.relicArm.setPosition(BoKHardwareBot.RA_HIGH_POS);
+                }
+                if (!right_bumper_pressed && opMode.gamepad2.right_bumper ) {
+                    //Log.v("BOK", "Right bumper pressed"); // lower the relic arm to RA_DEPLOY_POS
+                    right_bumper_pressed = true;
+                    robot.relicArm.setPosition(BoKHardwareBot.RA_DEPLOY_POS-0.01);
+                }
             }
 
             if (opMode.gamepad2.left_stick_y < -UPPER_ARM_STICK_DEAD_ZONE) {
                 if (!end_game) {
+                    stopUAAndResetGlyphFlicker(false);
+                    placementMode = false;
+
                     double posOfArm = robot.upperArm.getCurrentPosition();
-                    double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
-                    robot.glyphArm.clawWrist.setPosition(
-                            robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
-                    posOfUpperArm = posOfArm;
-                    Log.v("BoK","Upper arm position: " + robot.upperArm.getCurrentPosition());
+                    if (posOfArm < robot.glyphArm.ARM_AT_90_DEGREES_ENC_COUNT) {
+                        double degreesChanged = (posOfArm - posOfUpperArm) *
+                                robot.glyphArm.ARM_DEGREES_PER_ENC_COUNT;
+                        robot.glyphArm.clawWrist.setPosition(
+                                robot.glyphArm.clawWrist.getPosition() -
+                                        (degreesChanged / robot.glyphArm.WRIST_SERVO_MAX_DEGREES));
+                        posOfUpperArm = posOfArm;
+                        //Log.v("BoK","Upper arm position: " + robot.upperArm.getCurrentPosition());
+                    }
                     if (clawClosed)
                         robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_FAST);
                     else
                         robot.upperArm.setPower(UPPER_ARM_MOTOR_POWER_SLOW);
+                    Log.v("BOK", "Upper arm position: " + robot.upperArm.getCurrentPosition());
                 } else if (relic_mode) {
                     //Log.v("BOK", "Relic mode Left Stick Up");
                     // Move relic arm up
@@ -254,16 +319,19 @@ public class BoKTele
                 }
             } else if (opMode.gamepad2.left_stick_y > UPPER_ARM_STICK_DEAD_ZONE) {
                 if (!end_game) {
+                    stopUAAndResetGlyphFlicker(false);
+                    placementMode = false;
+
                     double posOfArm = robot.upperArm.getCurrentPosition();
                     double degreesChanged = (posOfArm - posOfUpperArm) * 0.064;
                     robot.glyphArm.clawWrist.setPosition(
                             robot.glyphArm.clawWrist.getPosition() - (degreesChanged / 240));
                     posOfUpperArm = posOfArm;
-                    Log.v("BoK","Upper arm position: " + robot.upperArm.getCurrentPosition());
                     if (clawClosed)
                         robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_FAST);
                     else
                         robot.upperArm.setPower(-UPPER_ARM_MOTOR_POWER_SLOW);
+                    Log.v("BoK","Upper arm position: " + robot.upperArm.getCurrentPosition());
                 } else if (relic_mode) {
                     // Move relic arm down
                     double posOfArm = robot.relicArm.getPosition();
@@ -276,18 +344,12 @@ public class BoKTele
                     }
                 }
             } else {
-                robot.upperArm.setPower(0);
-            }
-
-            if (relic_mode && !left_bumper_pressed && opMode.gamepad2.left_bumper ) {
-                //Log.v("BOK", "Left bumper pressed"); // raise the relic arm to RA_HIGH_POS
-                left_bumper_pressed = true;
-                robot.relicArm.setPosition(BoKHardwareBot.RA_HIGH_POS);
-            }
-            if (relic_mode && !right_bumper_pressed && opMode.gamepad2.right_bumper ) {
-                //Log.v("BOK", "Right bumper pressed"); // lower the relic arm to RA_DEPLOY_POS
-                right_bumper_pressed = true;
-                robot.relicArm.setPosition(BoKHardwareBot.RA_DEPLOY_POS-0.01);
+                if (robot.upperArm.getMode() == DcMotor.RunMode.RUN_TO_POSITION) {
+                    stopUAAndResetGlyphFlicker(true);
+                }
+                else {
+                    robot.upperArm.setPower(0);
+                }
             }
 
             if (opMode.gamepad2.left_trigger > GAME_TRIGGER_DEAD_ZONE) {
@@ -327,7 +389,12 @@ public class BoKTele
             }
 
             robot.waitForTick(BoKHardwareBot.WAIT_PERIOD);
+            //Log.v("BOK", "Distance of Glyph: " +
+            //        robot.rangeSensorGA.getDistance(DistanceUnit.CM));
+            //Log.v("BOK", "Distance of Glyph (opt): " +
+            //        robot.rangeSensorGA.rawOptical());
         }
+
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
@@ -415,5 +482,17 @@ public class BoKTele
                 (motorPowerLB * speedCoef),
                 (motorPowerRF * speedCoef),
                 (motorPowerRB * speedCoef));
+    }
+
+    private void stopUAAndResetGlyphFlicker(boolean checkIsBusy)
+    {
+        if (robot.upperArm.getMode() == DcMotor.RunMode.RUN_TO_POSITION) {
+            if (!checkIsBusy || (checkIsBusy && !robot.upperArm.isBusy())) {
+                robot.upperArm.setPower(0);
+                robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                //robot.glyphFlicker.setPosition(robot.GF_INIT);
+                Log.v("BOK", "Final Arm Pos " + robot.upperArm.getCurrentPosition());
+            }
+        }
     }
 }
