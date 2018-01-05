@@ -32,7 +32,7 @@ public abstract class BoKHardwareBot
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     // Claw wrist
     protected static final double CW_INIT = 0.5;
-    protected static final double CW_MIN = 0.2;
+    protected static final double CW_MIN = 0.1;
     // Claw grab
     protected static final double CG_INIT = 0.15; // Closed at initialization
     protected static final double CG_OPEN = 1;//0.9

@@ -98,8 +98,11 @@ public class BoKGlyphArm
     public void decreaseClawWristPos(double trigger)
     {
         double pos = clawWrist.getPosition();
+        double min = robot.CW_MIN;
+        if (robot.upperArm.getCurrentPosition() < 450) // approx 30 degree
+            min = 0.25;
 
-        if(pos < robot.CW_MIN) {
+        if(pos < min) {
         }
         else {
             clawWrist.setPosition(pos - trigger/WRIST_JOYSTICK_RATIO);
