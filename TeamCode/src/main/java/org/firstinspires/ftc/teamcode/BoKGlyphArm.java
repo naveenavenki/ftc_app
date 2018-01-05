@@ -92,7 +92,7 @@ public class BoKGlyphArm
         else {
             clawWrist.setPosition(pos + trigger/WRIST_JOYSTICK_RATIO);
         }
-        Log.v("BOK", "Wrist Pos" + clawWrist.getPosition());
+        //Log.v("BOK", "Wrist Pos" + clawWrist.getPosition());
     }
 
     public void decreaseClawWristPos(double trigger)
@@ -104,7 +104,7 @@ public class BoKGlyphArm
         else {
             clawWrist.setPosition(pos - trigger/WRIST_JOYSTICK_RATIO);
         }
-        Log.v("BOK", "Wrist Pos" + clawWrist.getPosition());
+        //Log.v("BOK", "Wrist Pos" + clawWrist.getPosition());
     }
 
     public void setClawGrabOpen()

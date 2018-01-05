@@ -32,11 +32,11 @@ public abstract class BoKHardwareBot
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     // Claw wrist
     protected static final double CW_INIT = 0.5;
-    protected static final double CW_MIN = 0.1;
+    protected static final double CW_MIN = 0.2;
     // Claw grab
     protected static final double CG_INIT = 0.15; // Closed at initialization
     protected static final double CG_OPEN = 1;//0.9
-    protected static final double CG_CLOSE = 0.15;//0.4
+    protected static final double CG_CLOSE = 0.1;//0.4
     // Jewel flioker arm
     protected static final double JA_INIT = 0.0;
     protected static final double JA_MID = 0.38;//0.44
@@ -68,7 +68,7 @@ public abstract class BoKHardwareBot
     protected static final double CW_GLYPH_AT_MID = 0.73;
     protected static final double CW_GLYPH_AT_END = 0.65;
     // Glyph arm placement power
-    protected static final double UA_MOVE_POWER = 0.2;
+    protected static final double UA_MOVE_POWER = 0.6;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
