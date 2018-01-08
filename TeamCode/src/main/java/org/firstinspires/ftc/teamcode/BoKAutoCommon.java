@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -1194,5 +1195,46 @@ public abstract class BoKAutoCommon implements BoKAuto
         robot.upperArm.setPower(0);
         // Turn off RUN_TO_POSITION
         robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    protected void moveUntilColor(double leftPower,
+                                  double rightPower,
+                                  boolean forward,
+                                  boolean red,
+                                  double waitForSec)
+    {
+        // Ensure that the opmode is still active
+        if (opMode.opModeIsActive()) {
+            ColorSensor cs;
+            robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            runTime.reset();
+            if (forward) {
+                cs = robot.sensorColorFront;
+                robot.setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
+            }
+            else {
+                cs = robot.sensorColorBack;
+                robot.setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
+            }
+            while (opMode.opModeIsActive()) {
+                if (runTime.seconds() >= waitForSec) {
+                    Log.v("BOK", "moveUntilColor timed out!" + String.format(" %.1f", waitForSec));
+                    break;
+                }
+                float currentColor = robot.getHue(cs);
+                if (red) {
+                    if ((currentColor > 320) || (currentColor < 60)) {
+                        Log.v("BOK", "reached red: " + currentColor);
+                        break;
+                    }
+                }
+                else if ((currentColor > 120) && (currentColor < 160)) {
+                    Log.v("BOK", "reached red: " + currentColor);
+                    break;
+                }
+            }
+
+            robot.stopMove();
+        }
     }
 }

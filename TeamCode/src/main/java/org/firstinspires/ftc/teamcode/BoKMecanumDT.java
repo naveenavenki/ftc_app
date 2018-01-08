@@ -161,8 +161,8 @@ public class BoKMecanumDT extends BoKHardwareBot
     
     private void setDTMotorEncoderTargetStrafe(int leftFrontTarget,
                                                int leftBackTarget,
-                                               int rightFrontTarget,
-                                               int rightBackTarget)
+                                              int rightFrontTarget,
+                                              int rightBackTarget)
     {
         int currentLeftFrontTarget = leftFront.getCurrentPosition() + leftFrontTarget;
         int currentLeftBackTarget = leftBack.getCurrentPosition() + leftBackTarget;
