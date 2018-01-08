@@ -69,7 +69,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         // setup the glyph wrist and open the claw
         robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
         robot.glyphClawWrist.setPosition(0.35);
-        moveUpperArm(45, 0.4, 2);
+        moveUpperArm(45, 0.4, UA_TIMEOUT);
 
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20, true, DT_TIMEOUT);
 
@@ -94,7 +94,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
             opMode.sleep(250);
             robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
             opMode.sleep(1000);
-            moveUpperArm(0, 0.4, 2);
+            moveUpperArm(0, 0.4, UA_TIMEOUT);
             robot.glyphClawWrist.setPosition(0.5);
             opMode.sleep(1000);
 

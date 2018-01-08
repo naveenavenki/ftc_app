@@ -306,7 +306,7 @@ public class BoKTele
 
             if (opMode.gamepad2.left_stick_y < -UPPER_ARM_STICK_DEAD_ZONE) {
                 if (!end_game) {
-                    stopUAAndResetGlyphFlicker(false);
+                    stopUpperArm(false);
                     placementMode = false;
 
                     double posOfArm = robot.upperArm.getCurrentPosition();
@@ -338,7 +338,7 @@ public class BoKTele
                 }
             } else if (opMode.gamepad2.left_stick_y > UPPER_ARM_STICK_DEAD_ZONE) {
                 if (!end_game) {
-                    stopUAAndResetGlyphFlicker(false);
+                    stopUpperArm(false);
                     placementMode = false;
 
                     double posOfArm = robot.upperArm.getCurrentPosition();
@@ -363,7 +363,7 @@ public class BoKTele
                 }
             } else {
                 if (robot.upperArm.getMode() == DcMotor.RunMode.RUN_TO_POSITION) {
-                    stopUAAndResetGlyphFlicker(true);
+                    stopUpperArm(true);
                 }
                 else {
                     robot.upperArm.setPower(0);
@@ -505,13 +505,13 @@ public class BoKTele
                 (motorPowerRB * speedCoef));
     }
 
-    private void stopUAAndResetGlyphFlicker(boolean checkIsBusy)
+    private void stopUpperArm(boolean checkIsBusy)
     {
         if (robot.upperArm.getMode() == DcMotor.RunMode.RUN_TO_POSITION) {
             if (!checkIsBusy || (checkIsBusy && !robot.upperArm.isBusy())) {
                 robot.upperArm.setPower(0);
                 robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                //robot.glyphFlicker.setPosition(robot.GF_INIT);
+                //robot.glyphFlipper.setPosition(robot.GF_INIT);
                 Log.v("BOK", "Final Arm Pos " + robot.upperArm.getCurrentPosition());
             }
         }
