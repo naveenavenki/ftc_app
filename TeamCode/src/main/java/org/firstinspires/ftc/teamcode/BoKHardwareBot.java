@@ -38,18 +38,16 @@ public abstract class BoKHardwareBot
     protected static final double CG_OPEN = 1;//0.9
     protected static final double CG_CLOSE = 0.1;//0.4
     // Jewel flioker arm
-    protected static final double JA_INIT = 0.0;
-    protected static final double JA_MID = 0.38;//0.44
-    protected static final double JA_FINAL = 0.48;
+    protected static final double JA_INIT = 0.2;
+    protected static final double JA_FINAL = 0.72;
     // Jewel flicker
     protected static final double JF_INIT = 0.9;
     protected static final double JF_FINAL = 0.5;
     protected static final double JF_RIGHT = 1;
     protected static final double JF_LEFT = 0;
     // Glyph flicker
-    protected static final double GF_INIT = 0.27;
-    protected static final double GF_MID = 0.35;
-    protected static final double GF_FINAL = 0.65;
+    protected static final double GF_INIT = 0.34;
+    protected static final double GF_FINAL = 0.72;
     // Relic lift arm
     protected static final double RA_INIT = 0.15;
     protected static final double RA_UPPER_LIMIT = 0.3;
@@ -62,13 +60,14 @@ public abstract class BoKHardwareBot
     // Glyph arm positions to place the glyph
     protected static final int UA_GLYPH_AT_TIP = 138;
     protected static final int UA_GLYPH_AT_MID = 160;
-    protected static final int UA_GLYPH_AT_END = 180;
+    protected static final int UA_GLYPH_AT_END = 170;
     // Wrist positions to place the glyph
-    protected static final double CW_GLYPH_AT_TIP = 0.8;
-    protected static final double CW_GLYPH_AT_MID = 0.73;
+    //protected static final double CW_GLYPH_AT_TIP = 0.8;
+    protected static final double CW_GLYPH_AT_MID = 0.65;
     protected static final double CW_GLYPH_AT_END = 0.65;
     // Glyph arm placement power
-    protected static final double UA_MOVE_POWER = 0.6;
+    protected static final double UA_MOVE_POWER_UP = 0.6;
+    protected static final double UA_MOVE_POWER_DN = 0.8;
 
     private static final String TURN_TABLE_MOTOR = "tt";
     private static final String UPPER_ARM_MOTOR  = "ua";
@@ -83,8 +82,9 @@ public abstract class BoKHardwareBot
     private static final String RANGE_SENSOR_JA = "rs";
     private static final String RANGE_SENSOR_FRONT_CFG  = "rsf";
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
-    private static final String COLOR_SENSOR_CFG = "cs";
-    private static final String COLOR_SENSOR_GA_CFG = "csg";
+    private static final String RANGE_SENSOR_GA_CFG = "rsg";
+    private static final String COLOR_SENSOR_FRONT_CFG = "csf";
+    private static final String COLOR_SENSOR_BACK_CFG = "csf";
     private static final String IMU_TOP = "imu_top";
 
     protected static final int WAIT_PERIOD = 40; // 40 ms
@@ -117,7 +117,8 @@ public abstract class BoKHardwareBot
     protected ModernRoboticsI2cRangeSensor rangeSensorBack;
     protected ModernRoboticsI2cRangeSensor rangeSensorGA;
 
-    protected ColorSensor sensorColor;
+    protected ColorSensor sensorColorFront;
+    protected ColorSensor sensorColorBack;
 
     // Glyph Arm
     BoKGlyphArm glyphArm;
@@ -232,12 +233,17 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        sensorColor = opMode.hardwareMap.get(ColorSensor.class, COLOR_SENSOR_CFG);
-        if (sensorColor == null) {
+        sensorColorFront = opMode.hardwareMap.get(ColorSensor.class, COLOR_SENSOR_FRONT_CFG);
+        if (sensorColorFront == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        rangeSensorGA = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, COLOR_SENSOR_GA_CFG);
+        sensorColorBack = opMode.hardwareMap.get(ColorSensor.class, COLOR_SENSOR_BACK_CFG);
+        if (sensorColorBack == null) {
+            return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
+        }
+
+        rangeSensorGA = opMode.hardwareMap.get(ModernRoboticsI2cRangeSensor.class, RANGE_SENSOR_GA_CFG);
         if (rangeSensorGA == null) {
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
@@ -260,13 +266,8 @@ public abstract class BoKHardwareBot
 
         turnTable.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        //turnTable.setDirection(DcMotorSimple.Direction.REVERSE);
-        //turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turnTable.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turnTable.setPower(0);
-        //turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-       // right.setDirection(CRServo.Direction.REVERSE);
 
         if (!opMode.getClass().getName().contains("Tele")) {
             glyphClawGrab.setPosition(CG_INIT);

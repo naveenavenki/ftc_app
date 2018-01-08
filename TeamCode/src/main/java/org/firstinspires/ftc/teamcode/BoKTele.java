@@ -57,6 +57,7 @@ public class BoKTele
         this.opMode = opMode;
         this.robot = robot;
         robot.initializeImu();
+        robot.setModeForDTMotors(DcMotor.RunMode.RUN_USING_ENCODER);
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
@@ -72,7 +73,8 @@ public class BoKTele
 
         boolean right_bumper_pressed = false;
         boolean left_bumper_pressed = false;
-        boolean glyph_at_end = false;
+        boolean glyph_flipper_open = false;
+        //boolean glyph_at_end = false;
         boolean relic_deploying = false;
         int relic_extend_delay_count = 0;
 
@@ -85,6 +87,7 @@ public class BoKTele
 
         // run until the end of the match (driver presses STOP)
         while (opMode.opModeIsActive()) {
+            //Log.v("BOK", "Glyph RS" + robot.rangeSensorGA.getDistance(DistanceUnit.CM));
             // GAMEPAD 1 CONTROLS:
             // Left & Right stick: Drive
             // B:                  Go in tank mode
@@ -120,12 +123,11 @@ public class BoKTele
             // A:                      Claw closed
             // Y:                      End Game
             // X:                      Not End Game
-            // Dpad Left:              Enter placement mode & raise the arm to 138 degrees
+            // Dpad Left:              Enter placement mode & raise the arm to 160 degrees
             // Dpad Right:             Exit placement mode
             // When in Placement Mode, use
             // Left bumper:            adjust upper arm position to 160 degrees
             // Right bumper:           adjust upper arm position to 180 degrees
-            // X:                      adjust upper arm position to 138 degrees
             // When in End Game, use
             // Dpad Down:              Start Relic Mode
             // DPad Up:                End Relic Mode
@@ -154,7 +156,7 @@ public class BoKTele
                     right_bumper_pressed = false;
                     if (relic_extend_delay_count == 0) { // only once
                         // delay deploying the relic lift so that the wires are not tangled
-                        relic_extend_delay_count = 1;
+                        //relic_extend_delay_count = 1;
                     }
                     Log.v("BOK", "Relic mode started");
                 }
@@ -208,6 +210,7 @@ public class BoKTele
             if (!relic_mode) {
                 if (!left_bumper_pressed && opMode.gamepad1.left_bumper) {
                     left_bumper_pressed = true;
+                    glyph_flipper_open = true;
                     robot.glyphFlicker.setPosition(robot.GF_INIT);
                 }
                 if (left_bumper_pressed){
@@ -223,17 +226,19 @@ public class BoKTele
                 if (opMode.gamepad1.right_bumper) { // close the glyph flicker
                     left_bumper_pressed = false; // ready to open again
                     robot.glyphFlicker.setPosition(robot.GF_INIT);
+                    glyph_flipper_open = false;
                 }
 
-                if (!placementMode) {
+                // Do not allow placement mode if glyph flipper is open
+                if (!placementMode && !glyph_flipper_open) {
                     if (opMode.gamepad2.dpad_left || opMode.gamepad2.left_bumper ||
                             opMode.gamepad2.right_bumper) {
-                        // enter placement mode & set to initial positions (if grabbed by tip of claw)
+                        // enter placement mode & record initial positions
                         placementMode = true;
-                        // move the turn table to straight position
                         glyphArmInitialPos = robot.upperArm.getCurrentPosition();
                         Log.v("BOK", "Dpad Left Arm Pos " + glyphArmInitialPos);
                         glyphWristInitialPos = robot.glyphClawWrist.getPosition();
+                        // move the turn table to straight position
                         robot.turnTable.setTargetPosition(0);
                         robot.turnTable.setPower(TURNTABLE_MOTOR_POWER);
                     }
@@ -246,26 +251,26 @@ public class BoKTele
                         //robot.glyphFlicker.setPosition(robot.GF_INIT);
                         robot.glyphArm.clawWrist.setPosition(glyphWristInitialPos);
                         robot.glyphArm.moveUpperArmEncCount(glyphArmInitialPos,
-                                0.8);
+                                robot.UA_MOVE_POWER_DN);
                     }
                     if (opMode.gamepad2.dpad_left) {
-                        glyph_at_end = false;
-                        //robot.glyphFlicker.setPosition(robot.GF_MID);
-                        robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_TIP, robot.UA_MOVE_POWER);
-                        robot.glyphArm.clawWrist.setPosition(robot.CW_GLYPH_AT_TIP);
+                        //glyph_at_end = false;
+                        robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_MID,
+                                robot.UA_MOVE_POWER_UP);
+                        robot.glyphArm.clawWrist.setPosition(robot.CW_GLYPH_AT_MID);
                     }
                     // position of upper arm if grabbed by middle of claw
                     if (opMode.gamepad2.left_bumper) {
-                        glyph_at_end = false;
+                        //glyph_at_end = false;
                         robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_MID,
-                                robot.UA_MOVE_POWER);
+                                robot.UA_MOVE_POWER_UP);
                         robot.glyphClawWrist.setPosition(robot.CW_GLYPH_AT_MID);
                     }
                     // position of upper arm if grabbed fully by claw
                     if (opMode.gamepad2.right_bumper) {
-                        glyph_at_end = true;
+                        //glyph_at_end = true;
                         robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_END,
-                                robot.UA_MOVE_POWER);
+                                robot.UA_MOVE_POWER_UP);
                         robot.glyphClawWrist.setPosition(robot.CW_GLYPH_AT_END);
                     }
                 }
@@ -379,12 +384,13 @@ public class BoKTele
             if (opMode.gamepad2.b) { // open the glyph claw grab or relic claw
                 if (!relic_mode) {
                     robot.glyphArm.setClawGrabOpen();
+                    /*
                     if (glyph_at_end && placementMode) {
                         robot.glyphArm.moveUpperArmDegrees(robot.UA_GLYPH_AT_MID,
                                 robot.UA_MOVE_POWER);
                         robot.glyphClawWrist.setPosition(robot.CW_GLYPH_AT_MID);
                         glyph_at_end = false;
-                    }
+                    }*/
                 }
                 else {
                     robot.relicClaw.setPosition(robot.RC_UNLOCK);

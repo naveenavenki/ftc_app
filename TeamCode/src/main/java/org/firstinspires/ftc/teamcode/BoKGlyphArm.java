@@ -44,8 +44,8 @@ public class BoKGlyphArm
 
     public void moveUpperArm(double targetAngleDegrees, double power)
     {
-        robot.upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //robot.upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         int target = (int) getTargetEncCount(targetAngleDegrees);
