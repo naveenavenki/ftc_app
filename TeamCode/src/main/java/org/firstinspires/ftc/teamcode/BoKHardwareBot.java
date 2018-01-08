@@ -107,7 +107,7 @@ public abstract class BoKHardwareBot
     protected Servo jewelFlicker;
     protected Servo relicArm;
     protected Servo relicClaw;
-    protected Servo glyphFlicker;
+    protected Servo glyphFlipper;
 
     // Sensors
     protected BNO055IMU imu;
@@ -195,8 +195,8 @@ public abstract class BoKHardwareBot
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
-        glyphFlicker = opMode.hardwareMap.servo.get(GLYPH_FLICKER);
-        if(glyphFlicker == null){
+        glyphFlipper = opMode.hardwareMap.servo.get(GLYPH_FLICKER);
+        if(glyphFlipper == null){
             return BoKHardwareStatus.BOK_HARDWARE_FAILURE;
         }
 
@@ -249,7 +249,7 @@ public abstract class BoKHardwareBot
         }
 
         if (!opMode.getClass().getName().contains("Tele")) {
-            //Make sure that the flicker is open
+            //Make sure that the jewel flicker is open
             jewelFlicker.setPosition(JF_FINAL);
 
 
@@ -275,7 +275,7 @@ public abstract class BoKHardwareBot
             jewelFlicker.setPosition(JF_INIT);
             relicArm.setPosition(RA_INIT);
             relicClaw.setPosition(RC_UNLOCK);
-            glyphFlicker.setPosition(GF_INIT);
+            glyphFlipper.setPosition(GF_INIT);
         }
         else {
             //glyphClawWrist.setPosition(CW_INIT);

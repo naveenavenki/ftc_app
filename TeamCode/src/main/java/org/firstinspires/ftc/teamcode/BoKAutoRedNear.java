@@ -50,7 +50,7 @@ public class BoKAutoRedNear extends BoKAutoCommon {
 
         gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 10.5, false, DT_TIMEOUT);
-        moveGlyphFlicker();
+        moveGlyphFlipper(GF_TIMEOUT);
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
 
         // gyroTurn(0.4,90,5.0);

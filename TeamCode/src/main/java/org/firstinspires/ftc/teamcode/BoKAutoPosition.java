@@ -19,7 +19,26 @@ public class BoKAutoPosition extends BoKAutoCommon
     // Constructor
     public BoKAutoPosition()
     {
-        allianceColor = BoKAllianceColor.BOK_ALLIANCE_BLUE;
+        allianceColor = BoKAllianceColor.BOK_ALLIANCE_BLUE; // temporary
+    }
+
+    private void goToPosition(double[] goToPosition, double speed, double error)
+    {
+        if (!robot.isPositionTrackingEnabled()) {
+            robot.enablePositionTracking();
+        }
+        double[] goToPositionData = robot.calculateGoToPosition(goToPosition);
+
+        //gyroTurn(speed * 1.5, goToPositionData[0], 10);
+        Log.v("BOK: ", "turned");
+        goToPositionData = robot.calculateGoToPosition(goToPosition);
+        //gyroTurn(speed, goToPositionData[0], 10);
+        Log.v("BOK: ", "turned");
+        goToPositionData = robot.calculateGoToPosition(goToPosition);
+        move(speed * 1.25, speed * 1.25, goToPositionData[1], true, 10);
+        goToPositionData = robot.calculateGoToPosition(goToPosition);
+        move(speed, speed, goToPositionData[1], true, 10);
+        Log.v("BOK: ", "moved");
     }
 
     @Override

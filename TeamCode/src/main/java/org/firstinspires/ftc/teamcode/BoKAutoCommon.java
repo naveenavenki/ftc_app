@@ -442,7 +442,11 @@ public abstract class BoKAutoCommon implements BoKAuto
         relicTrackables.activate();
         runTime.reset();
 
-        while (opMode.opModeIsActive() && !vuMarkVisible && runTime.seconds() < waitForSec) {
+        while (opMode.opModeIsActive() && !vuMarkVisible) {
+            if (runTime.seconds() >= waitForSec) {
+                Log.v("BOK", "getCryptoColumn timed out!" + String.format(" %.1f", waitForSec));
+                break;
+            }
             /**
              * See if any of the instances of relicTemplate are currently visible.
              * RelicRecoveryVuMark is an enum which can have the following values:
@@ -531,7 +535,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     public void detectVuforiaImgAndFlick()
     {
         if (getCryptoColumn(VUFORIA_TIMEOUT)) {
-            // Straighten the flicker
+            // Straighten the jewel flicker
             robot.jewelFlicker.setPosition(robot.JF_FINAL);
             // Lower the jewel arm
             robot.jewelArm.setPosition(robot.JA_FINAL);
@@ -553,13 +557,13 @@ public abstract class BoKAutoCommon implements BoKAuto
                 opMode.sleep(WAIT_FOR_SERVO_MS);
             }
 
-            // Straighten the flicker
+            // Straighten the jewel flicker
             robot.jewelFlicker.setPosition(robot.JF_FINAL);
             // Raise the jewel arm
             robot.jewelArm.setPosition(robot.JA_INIT);
         }
         else { // failed to detect Vuforia image
-            // Position the flicker to face the cryptobox
+            // Position the jewel flicker to face the cryptobox
             robot.jewelFlicker.setPosition(robot.JF_FINAL);
         }
     }
@@ -580,8 +584,11 @@ public abstract class BoKAutoCommon implements BoKAuto
             runTime.reset();
             while (opMode.opModeIsActive() &&
                     /*(robot.getDTCurrentPosition() == false) &&*/
-                    robot.areDTMotorsBusy() &&
-                    (runTime.seconds() < waitForSec)) {
+                    robot.areDTMotorsBusy()) {
+                if (runTime.seconds() >= waitForSec) {
+                    Log.v("BOK", "move timed out!" + String.format(" %.1f", waitForSec));
+                    break;
+                }
                 if (robot.isPositionTrackingEnabled()) {
                     robot.getCurrentPosition();
                 }
@@ -618,10 +625,11 @@ public abstract class BoKAutoCommon implements BoKAuto
             runTime.reset();
             while (opMode.opModeIsActive() &&
                     /*(robot.getDTCurrentPosition() == false) &&*/
-                    robot.areDTMotorsBusy() &&
-                    (runTime.seconds() < waitForSec)) {
-                //opMode.telemetry.update();
-                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                    robot.areDTMotorsBusy()) {
+                if (runTime.seconds() >= waitForSec) {
+                    Log.v("BOK", "moveRamp timed out!" + String.format(" %.1f", waitForSec));
+                    break;
+                }
                 int lfEncCount = Math.abs(robot.getLFEncCount());
                 if (lfEncCount < rampupEncCount) {
                     double power = DT_RAMP_SPEED_INIT + ratePower*lfEncCount;
@@ -675,10 +683,12 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             runTime.reset();
             while (opMode.opModeIsActive() &&
-                   !robot.haveDTMotorsReachedTarget() &&
-                    //robot.areDTMotorsBusy() &&
-                    (runTime.seconds() < waitForSec)) {
-                //opMode.telemetry.update();
+                   /*!robot.haveDTMotorsReachedTarget()*/ robot.areDTMotorsBusy()) {
+                if (runTime.seconds() >= waitForSec) {
+                    Log.v("BOK", "strafe timed out!" + String.format(" %.1f", waitForSec));
+                    break;
+                }
+
                 angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
                         AxesOrder.XYZ,
                         AngleUnit.DEGREES);
@@ -732,10 +742,12 @@ public abstract class BoKAutoCommon implements BoKAuto
             runTime.reset();
             while (opMode.opModeIsActive() &&
                     /*(robot.getDTCurrentPosition() == false) &&*/
-                    robot.areDTMotorsBusy() &&
-                    (runTime.seconds() < waitForSec)) {
-                //opMode.telemetry.update();
-                //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+                    robot.areDTMotorsBusy()) {
+                if (runTime.seconds() >= waitForSec) {
+                    Log.v("BOK", "strafeRamp timed out!" + String.format(" %.1f", waitForSec));
+                    break;
+                }
+
                 int lfEncCount = Math.abs(robot.getLFEncCount());
                 if (lfEncCount < rampupEncCount) {
                     double power = DT_RAMP_SPEED_INIT + ratePower*lfEncCount;
@@ -851,7 +863,8 @@ public abstract class BoKAutoCommon implements BoKAuto
                         distanceToMove += 0.5;
                 }
             }
-            Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached + ", dist: " + distanceToMove );
+            Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached +
+                  ", dist: " + distanceToMove );
             move(DT_POWER_FOR_CRYPTO,
                     DT_POWER_FOR_CRYPTO,
                     distanceToMove,
@@ -879,7 +892,8 @@ public abstract class BoKAutoCommon implements BoKAuto
                     }
                 }
             }
-            Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached + ", dist: " + distanceToMove );
+            Log.v("BOK", "TargetEncCountReached: " + targetEncCountReached +
+                  ", dist: " + distanceToMove );
             move(DT_POWER_FOR_CRYPTO,
                     DT_POWER_FOR_CRYPTO,
                     distanceToMove,
@@ -893,7 +907,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     public void moveWithRangeSensor(double power,
                                     int targetDistanceCm,
                                     boolean sensorFront,
-                                    double waitForSeconds)
+                                    double waitForSec)
     {
         double cmCurrent, diffFromTarget, pCoeff, wheelPower = power;
         robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -911,8 +925,12 @@ public abstract class BoKAutoCommon implements BoKAuto
         runTime.reset();
 
         while (opMode.opModeIsActive() &&
-                (Math.abs(diffFromTarget) >= RS_DIFF_THRESHOLD_CM) &&
-                (runTime.seconds() < waitForSeconds)) {
+                (Math.abs(diffFromTarget) >= RS_DIFF_THRESHOLD_CM)) {
+            if (runTime.seconds() >= waitForSec) {
+                Log.v("BOK", "moveWithRS timed out!" + String.format(" %.1f", waitForSec));
+                break;
+            }
+
             cmCurrent = rangeSensor.getDistance(DistanceUnit.CM);
             if (cmCurrent >= 255) // Invalid sensor reading
                 continue;
@@ -968,8 +986,12 @@ public abstract class BoKAutoCommon implements BoKAuto
 
         // keep looping while we are still active, and not on heading.
         while (opMode.opModeIsActive() && 
-               !onHeading(speed, init_angle, angle, P_TURN_COEFF) &&
-               (runTime.seconds() < waitForSeconds)) {
+               !onHeading(speed, init_angle, angle, P_TURN_COEFF)) {
+            if (runTime.seconds() >= waitForSeconds) {
+                Log.v("BOK", "gyroTurn timed out!" + String.format(" %.1f", waitForSeconds));
+                break;
+            }
+
             if (robot.isPositionTrackingEnabled()) {
                 robot.getCurrentPosition();
             }
@@ -1039,26 +1061,6 @@ public abstract class BoKAutoCommon implements BoKAuto
         return onTarget;
     }
 
-    protected void goToPosition(double[] goToPosition, double speed, double error)
-    {
-        if (!robot.isPositionTrackingEnabled()) {
-            robot.enablePositionTracking();
-        }
-        double[] goToPositionData = robot.calculateGoToPosition(goToPosition);
-
-        //gyroTurn(speed * 1.5, goToPositionData[0], 10);
-        Log.v("BOK: ", "turned");
-        goToPositionData = robot.calculateGoToPosition(goToPosition);
-        //gyroTurn(speed, goToPositionData[0], 10);
-        Log.v("BOK: ", "turned");
-        goToPositionData = robot.calculateGoToPosition(goToPosition);
-        move(speed * 1.25, speed * 1.25, goToPositionData[1], true, 10);
-        goToPositionData = robot.calculateGoToPosition(goToPosition);
-        move(speed, speed, goToPositionData[1], true, 10);
-        Log.v("BOK: ", "moved");
-    }
-
-
     /**
      * getError determines the error between the target angle and the robot's current heading
      * @param   targetAngle
@@ -1092,18 +1094,23 @@ public abstract class BoKAutoCommon implements BoKAuto
         return Range.clip(error * PCoeff, -1, 1);
     }
 
-    protected void moveGlyphFlicker()
+    protected void moveGlyphFlipper(double waitForSec)
     {
-        double pos = robot.glyphFlicker.getPosition();
-        while(pos < robot.GF_FINAL) {
-            pos = robot.glyphFlicker.getPosition();
-            robot.glyphFlicker.setPosition(pos + 0.03);
+        double pos = robot.glyphFlipper.getPosition();
+        runTime.reset();
+        while(opMode.opModeIsActive() && (pos < robot.GF_FINAL)) {
+            if (runTime.seconds() >= waitForSec) {
+                Log.v("BOK", "moveGlyphFlipper timed out!" + String.format(" %.1f", waitForSec));
+                break;
+            }
+
+            pos = robot.glyphFlipper.getPosition();
+            robot.glyphFlipper.setPosition(pos + 0.03);
             opMode.sleep(robot.OPMODE_SLEEP_INTERVAL_MS_SHORT*3);
         }
         Log.v("BOK", "Done raising!!!");
-        opMode.sleep(robot.OPMODE_SLEEP_INTERVAL_MS_SHORT*30);
-        robot.glyphFlicker.setPosition(robot.GF_INIT);
-        pos = robot.glyphFlicker.getPosition();
+        //opMode.sleep(robot.OPMODE_SLEEP_INTERVAL_MS_SHORT*30);
+        //robot.glyphFlipper.setPosition(robot.GF_INIT);
     }
 
     protected void moveToCrypto()
@@ -1114,7 +1121,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             // Lower the jewel arm & the range sensor
             //robot.jewelArm.setPosition(robot.JA_MID);
-            //opMode.sleep(WAIT_FOR_SERVO_MS * 3); // let the flicker settle down
+            //opMode.sleep(WAIT_FOR_SERVO_MS * 3); // let the jewel flicker settle down
 
             angles = robot.imu.getAngularOrientation(AxesReference.INTRINSIC,
                                                      AxesOrder.XYZ,
@@ -1127,7 +1134,7 @@ public abstract class BoKAutoCommon implements BoKAuto
             //        CRS_CRYPTO_TIMEOUT);
 
             // Now prepare to unload the glyph
-            // move the flicker to init and slowly move the wrist down
+            // move the jewel flicker to init and slowly move the wrist down
             robot.jewelFlicker.setPosition(robot.JF_INIT);
             /*for (double i = robot.glyphArm.clawWrist.getPosition(); i > robot.CW_MID; i -= 0.01) {
                 robot.glyphArm.clawWrist.setPosition(i);
@@ -1165,5 +1172,27 @@ public abstract class BoKAutoCommon implements BoKAuto
             //robot.jewelFlicker.setPosition(robot.JF_FINAL);
             //robot.jewelArm.setPosition(robot.JA_MID);
         }
+    }
+
+    public void moveUpperArm(double targetAngleDegrees, double power, double waitForSec)
+    {
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        int target = (int) robot.glyphArm.getTargetEncCount(targetAngleDegrees);
+        runTime.reset();
+        //Log.v("BOK", "Target (arm): " + target);
+
+        robot.upperArm.setTargetPosition((int)robot.glyphArm.getTargetEncCount(targetAngleDegrees));
+        robot.upperArm.setPower(power);
+        while (opMode.opModeIsActive() && robot.upperArm.isBusy()) {
+            if (runTime.seconds() >= waitForSec) {
+                Log.v("BOK", "moveUpperArm timed out!" + String.format(" %.1f", waitForSec));
+                break;
+            }
+            //opMode.telemetry.update();
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+        robot.upperArm.setPower(0);
+        // Turn off RUN_TO_POSITION
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 }

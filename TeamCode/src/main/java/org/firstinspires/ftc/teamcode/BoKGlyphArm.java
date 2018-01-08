@@ -36,37 +36,17 @@ public class BoKGlyphArm
         this.clawGrab = clawGrab;
     }
 
-     private double getTargetEncCount(double targetAngleDegrees)
+    protected double getTargetEncCount(double targetAngleDegrees)
     {
         double degreesOfMotorTurn = DRIVE_GEAR_REDUCTION * targetAngleDegrees;
         return (COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
     }
 
-    public void moveUpperArm(double targetAngleDegrees, double power)
-    {
-        //robot.upperArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        int target = (int) getTargetEncCount(targetAngleDegrees);
-        Log.v("BOK", "Target (arm): " + target);
-
-        robot.upperArm.setTargetPosition((int)getTargetEncCount(targetAngleDegrees));
-        robot.upperArm.setPower(power);
-        while (opMode.opModeIsActive() && robot.upperArm.isBusy()) {
-            //opMode.telemetry.update();
-            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-        }
-        robot.upperArm.setPower(0);
-        // Turn off RUN_TO_POSITION
-        robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
     public void moveUpperArmDegrees(double targetAngleDegrees, double power)
     {
         int target = (int) getTargetEncCount(targetAngleDegrees);
-        Log.v("BOK", "TargetD (arm enc): " + target + ", current: " +
-                robot.upperArm.getCurrentPosition());
+        //Log.v("BOK", "TargetD (arm enc): " + target + ", current: " +
+        //        robot.upperArm.getCurrentPosition());
 
         robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.upperArm.setTargetPosition(target);
@@ -75,8 +55,8 @@ public class BoKGlyphArm
 
     public void moveUpperArmEncCount(int targetEncCount, double power)
     {
-        Log.v("BOK", "TargetE (arm enc): " + targetEncCount + ", " +
-                "current: " + robot.upperArm.getCurrentPosition());
+        //Log.v("BOK", "TargetE (arm enc): " + targetEncCount + ", " +
+        //        "current: " + robot.upperArm.getCurrentPosition());
 
         robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.upperArm.setTargetPosition(targetEncCount);

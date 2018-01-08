@@ -62,7 +62,7 @@ public class BoKAutoBlueFar extends BoKAutoCommon
 
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 7.5, false, DT_TIMEOUT);
 
-        moveGlyphFlicker();
+        moveGlyphFlipper(GF_TIMEOUT);
 
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
 

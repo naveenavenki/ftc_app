@@ -160,9 +160,9 @@ public class BoKMecanumDT extends BoKHardwareBot
     }
     
     private void setDTMotorEncoderTargetStrafe(int leftFrontTarget,
-                                              int leftBackTarget,
-                                              int rightFrontTarget,
-                                              int rightBackTarget)
+                                               int leftBackTarget,
+                                               int rightFrontTarget,
+                                               int rightBackTarget)
     {
         int currentLeftFrontTarget = leftFront.getCurrentPosition() + leftFrontTarget;
         int currentLeftBackTarget = leftBack.getCurrentPosition() + leftBackTarget;
@@ -175,7 +175,7 @@ public class BoKMecanumDT extends BoKHardwareBot
         rightBack.setTargetPosition(currentRightBackTarget);
 
         // Turn On RUN_TO_POSITION
-        //setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
+        setModeForDTMotors(DcMotor.RunMode.RUN_TO_POSITION);
 
         //Log.v("BOK", "START: LF: " + leftFront.getCurrentPosition() + ", " +
         //        currentLeftFrontTarget + ", LB: " +

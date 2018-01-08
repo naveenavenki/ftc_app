@@ -33,6 +33,8 @@ public interface BoKAuto
     public static double DT_RAMP_SPEED_INIT = 0.15;
     public static int TURN_LEFT_DEGREES = 90;
     public static double DT_TIMEOUT = 4;
+    public static double UA_TIMEOUT = 2;
+    public static double GF_TIMEOUT = 2;
 
     public BoKAutoStatus initSoftware(BoKAutoOpMode opMode,
                                       BoKHardwareBot robot);

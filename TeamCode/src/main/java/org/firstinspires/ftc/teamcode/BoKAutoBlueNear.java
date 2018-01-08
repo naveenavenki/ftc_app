@@ -31,7 +31,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         // NOTE: Move backwards towards crypto
 
         // Detect Vuforia image and flick the jewel
-        Log.v("BOK", "RSF " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
+        Log.v("BOK", "RSF Before: " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
         detectVuforiaImgAndFlick();
 
         // Move forward out of balancing stone
@@ -54,7 +54,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
              distance,
              false,
              timeout);
-        Log.v("BOK", "RSF " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
+        Log.v("BOK", "RSF After: " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
         // Strafe to the right
         //strafe(DT_POWER_FOR_STRAFE,
         //       ROTATIONS_STRAFE_TO_WALL,
@@ -64,8 +64,56 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         moveToCrypto();
         gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
         move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 10, false, DT_TIMEOUT);
-        moveGlyphFlicker();
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
+        moveGlyphFlipper(GF_TIMEOUT);
 
+        // setup the glyph wrist and open the claw
+        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+        robot.glyphClawWrist.setPosition(0.35);
+        moveUpperArm(45, 0.4, 2);
+
+        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20, true, DT_TIMEOUT);
+
+        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
+        opMode.sleep(1000);
+
+        double distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+        int countDown = 10;
+        while (distanceToGlyph > 255 && (countDown >= 0)) {
+            distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+            countDown--;
+        }
+        if (distanceToGlyph > 10) {
+            move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 16, false, DT_TIMEOUT);
+        }
+        else {
+
+            Log.v("BOK", "Glyph RS: " + robot.rangeSensorGA.getDistance(DistanceUnit.CM));
+
+            moveUpperArm(robot.UA_GLYPH_AT_MID, robot.UA_MOVE_POWER_UP, 2);
+            robot.glyphArm.clawWrist.setPosition(robot.CW_GLYPH_AT_MID);
+            opMode.sleep(250);
+            robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
+            opMode.sleep(1000);
+            moveUpperArm(0, 0.4, 2);
+            robot.glyphClawWrist.setPosition(0.5);
+            opMode.sleep(1000);
+
+            distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+            while (distanceToGlyph > 255)
+                distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+            Log.v("BOK", "Glyph RS: " + distanceToGlyph);
+            distanceToGlyph -= 1.77;
+            distanceToGlyph /= 2.54;
+            move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, distanceToGlyph, true, DT_TIMEOUT);
+            robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
+            opMode.sleep(1000);
+            robot.glyphClawWrist.setPosition(0.55);
+
+            move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20 + distanceToGlyph, false, DT_TIMEOUT);
+            moveGlyphFlipper(GF_TIMEOUT);
+        }
+//        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
+
+//        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20, false, DT_TIMEOUT);
     }
 }
