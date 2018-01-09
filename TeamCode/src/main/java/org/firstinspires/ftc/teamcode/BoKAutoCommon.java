@@ -1229,7 +1229,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     }
                 }
                 else if ((currentColor > 120) && (currentColor < 160)) {
-                    Log.v("BOK", "reached red: " + currentColor);
+                    Log.v("BOK", "reached blue: " + currentColor);
                     break;
                 }
             }
