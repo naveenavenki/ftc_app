@@ -15,6 +15,7 @@ public class BoKGlyphArm
     // CONSTANTS
     private static final double COUNTS_PER_MOTOR_REV    = 1120; // AndyMark 40
     private static final double DRIVE_GEAR_REDUCTION    = 5.0;
+    private static final double DRIVE_GEAR_REDUCTION_TT    = 2.0;
     protected static final double ARM_DEGREES_PER_ENC_COUNT = 0.064;
     protected static final int ARM_AT_90_DEGREES_ENC_COUNT = 1400;
     protected static final int WRIST_SERVO_MAX_DEGREES = 240; // programmed for Rev Smart Servo
@@ -39,6 +40,12 @@ public class BoKGlyphArm
     protected double getTargetEncCount(double targetAngleDegrees)
     {
         double degreesOfMotorTurn = DRIVE_GEAR_REDUCTION * targetAngleDegrees;
+        return (COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
+    }
+
+    protected double getTargetEncCountTT(double targetAngleDegrees)
+    {
+        double degreesOfMotorTurn = DRIVE_GEAR_REDUCTION_TT * targetAngleDegrees;
         return (COUNTS_PER_MOTOR_REV * degreesOfMotorTurn) / 360.0;
     }
 

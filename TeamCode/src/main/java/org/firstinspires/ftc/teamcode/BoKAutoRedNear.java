@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
+import com.qualcomm.robotcore.hardware.ColorSensor;
+
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 /**
@@ -10,10 +14,11 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     private static final double TIMEOUT_RIGHT = 4;
     private static final double TIMEOUT_CENTER = 5;
     private static final double TIMEOUT_LEFT = 6;
-    
-    private static final double DISTANCE_TO_RIGHT_COL = 32.5; // inches!!
-    private static final double DISTANCE_TO_CENTER_COL = 40;
-    private static final double DISTANCE_TO_LEFT_COL = 47;
+
+    private static final double DISTANCE_TO_RIGHT_COL = 5.75;  // 32.5 // inches!!
+    private static final double DISTANCE_TO_CENTER_COL = 14;   // 40
+    private static final double DISTANCE_TO_LEFT_COL = 21.25;  // 47
+    private static final double DISTANCE_BACK_TO_CRYPTO = 10.75;
 
     // Constructor
     public BoKAutoRedNear()
@@ -28,7 +33,12 @@ public class BoKAutoRedNear extends BoKAutoCommon {
         detectVuforiaImgAndFlick();
 
         // Move forward out of balancing stone
-        // Distance and timeout depends on column number; TBD
+        moveRamp(DT_POWER_FOR_STONE, DISTANCE_OFF_BALANCE, true, DT_TIMEOUT);
+
+        // Move to the red line
+        moveUntilColor(DT_POWER_FOR_LINE, true, DT_TIMEOUT);
+
+        // Distance and timeout depends on column number
         double distance = DISTANCE_TO_RIGHT_COL;
         double timeout = TIMEOUT_RIGHT;
         if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
@@ -39,18 +49,15 @@ public class BoKAutoRedNear extends BoKAutoCommon {
             timeout = TIMEOUT_LEFT;
         }
 
-        move(DT_POWER_FOR_STONE,
-             DT_POWER_FOR_STONE,
-             distance,
-             true,
-             timeout);
+        moveRamp(DT_POWER_FOR_STONE, distance, true, timeout);
 
         // Prepare to unload the glyph
         moveToCrypto();
 
+        // Turn left 90 degrees
         gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 10.5, false, DT_TIMEOUT);
-        moveGlyphFlipper(GF_TIMEOUT);
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 4, true, DT_TIMEOUT);
+
+        // Deliver glyph to crypto
+        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO, DISTANCE_AWAY_FROM_CRYPTO);
     }
 }

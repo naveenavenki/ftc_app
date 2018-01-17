@@ -23,7 +23,8 @@ public interface BoKAuto
     public static double DT_TURN_TIMEOUT = 4.0;
     public static double BLUE_CRYPTO_MOVE_TIMEOUT = 5.0;
 
-    public static double DT_POWER_FOR_STONE = 0.2;
+    public static double DT_POWER_FOR_STONE = 0.25;
+    public static double DT_POWER_FOR_LINE = 0.15;
     //public static double DT_POWER_FOR_STRAFE = 0.2;
     public static double DT_POWER_FOR_RS = 0.15;
     public static double DT_POWER_FOR_CRYPTO = 0.12;
@@ -32,6 +33,8 @@ public interface BoKAuto
     //public static double ROTATIONS_STRAFE_TO_WALL = 0.15;
     public static double DT_RAMP_SPEED_INIT = 0.15;
     public static int TURN_LEFT_DEGREES = 90;
+    public static final double DISTANCE_OFF_BALANCE = 20; // inches
+    public static final double DISTANCE_AWAY_FROM_CRYPTO = 3.25;
     public static double DT_TIMEOUT = 4;
     public static double UA_TIMEOUT = 2;
     public static double GF_TIMEOUT = 2;

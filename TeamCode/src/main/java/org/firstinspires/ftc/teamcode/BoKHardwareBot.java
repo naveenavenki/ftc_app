@@ -32,11 +32,12 @@ public abstract class BoKHardwareBot
     protected static final int OPMODE_SLEEP_INTERVAL_MS_SHORT  = 10;
     // Claw wrist
     protected static final double CW_INIT = 0.5;
+    protected static final double CW_SLANT = 0.6;
     protected static final double CW_MIN = 0.1;
     // Claw grab
-    protected static final double CG_INIT = 0.15; // Closed at initialization
+    protected static final double CG_INIT = 0.3; // Closed at initialization
     protected static final double CG_OPEN = 1;//0.9
-    protected static final double CG_CLOSE = 0.1;//0.4
+    protected static final double CG_CLOSE = 0.3;//0.4
     // Jewel flioker arm
     protected static final double JA_INIT = 0.2;
     protected static final double JA_FINAL = 0.72;
@@ -47,7 +48,8 @@ public abstract class BoKHardwareBot
     protected static final double JF_LEFT = 0;
     // Glyph flicker
     protected static final double GF_INIT = 0.34;
-    protected static final double GF_FINAL = 0.72;
+    protected static final double GF_FINAL_AUTO = 0.6;
+    protected static final double GF_FINAL_TELE = 0.7;
     // Relic lift arm
     protected static final double RA_INIT = 0.15;
     protected static final double RA_UPPER_LIMIT = 0.3;
@@ -84,7 +86,7 @@ public abstract class BoKHardwareBot
     private static final String RANGE_SENSOR_BACK_CFG   = "rsb";
     private static final String RANGE_SENSOR_GA_CFG = "rsg";
     private static final String COLOR_SENSOR_FRONT_CFG = "csf";
-    private static final String COLOR_SENSOR_BACK_CFG = "csf";
+    private static final String COLOR_SENSOR_BACK_CFG = "csb";
     private static final String IMU_TOP = "imu_top";
 
     protected static final int WAIT_PERIOD = 40; // 40 ms
@@ -122,6 +124,7 @@ public abstract class BoKHardwareBot
 
     // Glyph Arm
     BoKGlyphArm glyphArm;
+    protected double wristInitPosFromFile = CW_INIT;
     private Orientation angles;
 
     // waitForTicks
@@ -135,7 +138,7 @@ public abstract class BoKHardwareBot
     }
 
     // hsvValues is an array that will hold the hue, saturation, and value information.
-    float hsvValues[] = {0F, 0F, 0F};
+    private float hsvValues[] = {0F, 0F, 0F};
 
     /*
      * The initHardware() method initializes the hardware on the robot including the drive train.
@@ -260,7 +263,8 @@ public abstract class BoKHardwareBot
                 glyphClawWrist.setPosition(CW_INIT);
             } else {
                 Log.v("BOK", "Calibration data: " + value);
-                glyphClawWrist.setPosition(Double.parseDouble(value));
+                wristInitPosFromFile = Double.parseDouble(value);
+                glyphClawWrist.setPosition(wristInitPosFromFile);
             }
         }
 
@@ -278,12 +282,8 @@ public abstract class BoKHardwareBot
             glyphFlipper.setPosition(GF_INIT);
         }
         else {
-            //glyphClawWrist.setPosition(CW_INIT);
-            //glyphClawGrab.setPosition(CG_INIT);
-            //jewelArm.setPosition(JA_INIT);
-            //jewelFlicker.setPosition(JF_INIT);
+            // IMPORTANT: Do not move the servos during initialization of Teleop
             relicArm.setPosition(RA_INIT);
-            //relicSpool.setPosition(SP_INIT);
             relicClaw.setPosition(RC_UNLOCK);
         }
 
@@ -388,12 +388,13 @@ public abstract class BoKHardwareBot
         return angles.thirdAngle;
     }
 
-    protected float getHue(ColorSensor senseColor)
+    protected float[] getHue(ColorSensor senseColor)
     {
         Color.RGBToHSV((int) (senseColor.red() * CS_SCALE_FACTOR),
                 (int) (senseColor.green() * CS_SCALE_FACTOR),
                 (int) (senseColor.blue() * CS_SCALE_FACTOR),
                 hsvValues);
-        return hsvValues[0];
+        // Log.v("BOK", "Hue: " + hsvValues[0] + ", sat: " + hsvValues[1] + ", val: " + hsvValues[2]);
+        return hsvValues;
     }
 }

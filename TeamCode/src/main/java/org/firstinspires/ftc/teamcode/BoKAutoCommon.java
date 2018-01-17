@@ -74,13 +74,14 @@ public abstract class BoKAutoCommon implements BoKAuto
     private static final double P_TURN_COEFF = 0.5;
     private static final double HEADING_THRESHOLD = 1;
     private static final int RS_DIFF_THRESHOLD_CM = 1;
-    private static final double DT_POWER_FOR_RS_MIN = 0.1;
+    private static final double DT_POWER_FOR_RS_MIN = 0.12;
     private static final double ROBOT_LOCATION_OFFSET_X = -183.5; // mm from the center of
     private static final double ROBOT_LOCATION_OFFSET_Z = 562;   // the Vuforia image
     private static final int VUFORIA_LOCK_BALL_X_OFFSET = 230; // pixels offset from the center
     private static final int VUFORIA_LOCK_BALL_Y_OFFSET = 130; // of the Vuforia image
     private static final int VUFORIA_LOCK_BALL_RECT_WIDTH = 95;
     private static final int VUFORIA_LOCK_BALL_RECT_HEIGHT = 100;
+    private static final double DISTANCE_AWAY_FROM_CRYPTO_ABIT = 0.75; // inches
     protected static final boolean DEBUG_OPEN_CV = true;
     private static final String VUFORIA_LOCK_IMG = "vuImage.png";
     private static final String ROI_IMG = "roiImage.png";
@@ -441,6 +442,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                 RelicRecoveryVuMark.LEFT : RelicRecoveryVuMark.RIGHT;
         // activate
         relicTrackables.activate();
+        CameraDevice.getInstance().setFlashTorchMode(true);
         runTime.reset();
 
         while (opMode.opModeIsActive() && !vuMarkVisible) {
@@ -529,6 +531,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         // deactivate
         relicTrackables.deactivate();
         cryptoColumn = vuMark;
+        CameraDevice.getInstance().setFlashTorchMode(false);
         Log.v("BOK", "Detecting Crypto Column: " + runTime.seconds());
         return vuforiaSuccess;
     }
@@ -537,6 +540,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     {
         if (getCryptoColumn(VUFORIA_TIMEOUT)) {
             // Straighten the jewel flicker
+            robot.jewelArm.setPosition(robot.JA_INIT+0.1);
             robot.jewelFlicker.setPosition(robot.JF_FINAL);
             // Lower the jewel arm
             robot.jewelArm.setPosition(robot.JA_FINAL);
@@ -732,6 +736,7 @@ public abstract class BoKAutoCommon implements BoKAuto
 
             robot.resetDTEncoders();
             int targetEncCount = robot.startStrafe(DT_RAMP_SPEED_INIT, rotations, right);
+            Log.v("BOK", "strafeRamp: " + targetEncCount);
 
             // speed up during the initial 1/4 enc counts
             // maintain max power during the next 1/2 enc counts
@@ -754,25 +759,25 @@ public abstract class BoKAutoCommon implements BoKAuto
                     double power = DT_RAMP_SPEED_INIT + ratePower*lfEncCount;
                     //Log.v("BOK", lfEncCount + " power Up: " + String.format("%.2f", power));
                     if (right) {
-                        robot.setPowerToDTMotors(power, -power, power, -power);
+                        robot.setPowerToDTMotors(power*2, -(power*1), (power*1), -power*2);
                     }
                     else {
-                        robot.setPowerToDTMotors(-power, power, -power, power);
+                        robot.setPowerToDTMotors(-power*2, power, -power, power*2);
                     }
                 }
                 else if (lfEncCount < rampdnEncCount) {
                     if (right) {
-                        robot.setPowerToDTMotors(maxPower, -maxPower, maxPower, -maxPower);
+                        robot.setPowerToDTMotors(maxPower*2, -maxPower*1, maxPower*1, -maxPower*2);
                     }
                     else {
-                        robot.setPowerToDTMotors(-maxPower, maxPower, -maxPower, maxPower);
+                        robot.setPowerToDTMotors(-maxPower*2, maxPower, -maxPower, maxPower*2);
                     }
                 }
                 else {
                     double power = DT_RAMP_SPEED_INIT - ratePower*(lfEncCount - targetEncCount);
                     //Log.v("BOK", lfEncCount + " power dn: " + String.format("%.2f", power));
                     if (right) {
-                        robot.setPowerToDTMotors(power, -power, power, -power);
+                        robot.setPowerToDTMotors(power*2, -power*1, power*1, -power*2);
                     }
                     else {
                         robot.setPowerToDTMotors(-power, power, -power, power);
@@ -1099,7 +1104,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     {
         double pos = robot.glyphFlipper.getPosition();
         runTime.reset();
-        while(opMode.opModeIsActive() && (pos < robot.GF_FINAL)) {
+        while(opMode.opModeIsActive() && (pos < robot.GF_FINAL_AUTO)) {
             if (runTime.seconds() >= waitForSec) {
                 Log.v("BOK", "moveGlyphFlipper timed out!" + String.format(" %.1f", waitForSec));
                 break;
@@ -1169,7 +1174,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     distanceLeftStrafe,
                     false,
                     DT_STRAFE_TIMEOUT);
-*/
+            */
             //robot.jewelFlicker.setPosition(robot.JF_FINAL);
             //robot.jewelArm.setPosition(robot.JA_MID);
         }
@@ -1177,12 +1182,13 @@ public abstract class BoKAutoCommon implements BoKAuto
 
     public void moveUpperArm(double targetAngleDegrees, double power, double waitForSec)
     {
-        robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         int target = (int) robot.glyphArm.getTargetEncCount(targetAngleDegrees);
         runTime.reset();
         //Log.v("BOK", "Target (arm): " + target);
 
         robot.upperArm.setTargetPosition((int)robot.glyphArm.getTargetEncCount(targetAngleDegrees));
+        robot.upperArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.upperArm.setPower(power);
         while (opMode.opModeIsActive() && robot.upperArm.isBusy()) {
             if (runTime.seconds() >= waitForSec) {
@@ -1197,10 +1203,31 @@ public abstract class BoKAutoCommon implements BoKAuto
         robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    protected void moveUntilColor(double leftPower,
-                                  double rightPower,
+    public void moveTurnTable(double targetAngleDegrees, double power, double waitForSec)
+    {
+        robot.turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        int target = (int) robot.glyphArm.getTargetEncCountTT(targetAngleDegrees);
+        runTime.reset();
+        //Log.v("BOK", "Target (arm): " + target);
+
+        robot.turnTable.setTargetPosition(target);
+        robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.turnTable.setPower(power);
+        while (opMode.opModeIsActive() && robot.turnTable.isBusy()) {
+            if (runTime.seconds() >= waitForSec) {
+                Log.v("BOK", "moveTurnTable timed out!" + String.format(" %.1f", waitForSec));
+                break;
+            }
+            //opMode.telemetry.update();
+            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+        robot.turnTable.setPower(0);
+        // Turn off RUN_TO_POSITION
+        robot.turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    protected void moveUntilColor(double power,
                                   boolean forward,
-                                  boolean red,
                                   double waitForSec)
     {
         // Ensure that the opmode is still active
@@ -1210,31 +1237,155 @@ public abstract class BoKAutoCommon implements BoKAuto
             runTime.reset();
             if (forward) {
                 cs = robot.sensorColorFront;
-                robot.setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
+                //robot.setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
             }
             else {
                 cs = robot.sensorColorBack;
-                robot.setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
+                //robot.setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
             }
+            //double time = 0;
+            double power_factor = 1;
             while (opMode.opModeIsActive()) {
                 if (runTime.seconds() >= waitForSec) {
                     Log.v("BOK", "moveUntilColor timed out!" + String.format(" %.1f", waitForSec));
                     break;
                 }
-                float currentColor = robot.getHue(cs);
-                if (red) {
-                    if ((currentColor > 320) || (currentColor < 60)) {
-                        Log.v("BOK", "reached red: " + currentColor);
+
+                float [] currentColor = robot.getHue(cs);
+                if (forward) {
+                    if(currentColor[0] <= 40) {
+                        power_factor = currentColor[0]/40;
+                        power_factor = Range.clip(power_factor, 0.25, 1);
+                    }
+
+                    robot.setPowerToDTMotors(power_factor*power, power_factor*power,
+                            -power_factor*power, -power_factor*power);
+                }
+                else {
+                    if ((currentColor[0] >= 200) || (currentColor[1] >= 0.21)) {
+                        power_factor = 0.75;
+                    }
+                    robot.setPowerToDTMotors(-(power_factor*power), -(power_factor*power),
+                            (power_factor*power), (power_factor*power));
+                }
+                Log.v("BOK", "Color: "+ currentColor[0] + ", power: " + power_factor*power);
+                if (forward) {
+                    if ((currentColor[0] > 300) || (currentColor[0] < 5)) {
+                        Log.v("BOK", "reached red: " + currentColor[0]);
                         break;
                     }
                 }
-                else if ((currentColor > 120) && (currentColor < 160)) {
-                    Log.v("BOK", "reached blue: " + currentColor);
-                    break;
+                else {
+                    if ((currentColor[0] > 200) && (currentColor[1] > 0.4)) {
+                        Log.v("BOK", "reached blue: " + currentColor[0] +
+                                ", sat: " + currentColor[1]);
+                        break;
+                    }
                 }
             }
 
             robot.stopMove();
+            Log.v("BOK", "After stop Color: "+ robot.getHue(cs));
         }
+    }
+
+    protected void deliverGlyphToCrypto(double distanceBackToCrypto, double moveForward)
+    {
+        moveRamp(DT_POWER_FOR_STONE, distanceBackToCrypto, false, DT_TIMEOUT);
+        moveGlyphFlipper(GF_TIMEOUT);
+        opMode.sleep(500);
+
+        // go forward a bit
+        moveRamp(DT_POWER_FOR_STONE, DISTANCE_AWAY_FROM_CRYPTO_ABIT, true, DT_TIMEOUT);
+        moveRamp(DT_POWER_FOR_STONE, moveForward, true, DT_TIMEOUT);
+    }
+
+    protected int sweepUltraSonic()
+    {
+        String fileName = "BoKUSPositions.csv";
+        File file = AppUtil.getInstance().getSettingsFile(fileName);
+        String fileInfo = "ttDegrees, usDist \n";
+        moveUpperArm(55, 0.4, 4);
+        robot.glyphClawWrist.setPosition(0.29);
+        robot.glyphClawGrab.setPosition(robot.CG_OPEN);
+        moveTurnTable(30, 0.4, 3);
+        double lastDist = 0;
+        int lastI = 30;
+        for(int i = 0; i <= 60; i+=2)
+        {
+            double [] distance = { 0, 0, 0};
+            int count = 5;
+            do {
+                distance[0] = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+                count--;
+            } while ((distance[0] > 255) || (count > 0));
+            opMode.sleep(10);
+            count = 5;
+            do {
+                distance[1] = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+                count--;
+            } while ((distance[1] > 255) || (count > 0));
+            opMode.sleep(10);
+            count = 5;
+
+            do {
+                distance[2] = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+                count--;
+            } while ((distance[2] > 255) || (count > 0));
+            int minIndex = 0, maxIndex = 0;
+            if (distance[0] < distance[1]) {
+                maxIndex = 1;
+            }
+            else {
+                maxIndex = 0;
+                minIndex = 1;
+            }
+            if (distance[2] < distance[maxIndex]) {
+                if (distance[2] < distance[minIndex])
+                    minIndex = 2;
+            }
+            else {
+                maxIndex = 2;
+            }
+            int j = 0;
+            for (j = 0; j < 3; j++) {
+                if ((j != minIndex) && (j != maxIndex)) {
+                    break;
+                }
+            }
+
+            Log.v("BOK", "values: " + distance[0] + ", " + distance[1] + ", " + distance[2]);
+            double dist = distance[j];
+
+            moveTurnTable(30-i, 0.4, 3);
+            //int count = 5;
+            //while(dist > 255 && (count > 0)){
+            //    dist = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
+             //   count--;
+            //}
+            if ((dist > 80) || (dist < 15))
+                continue;
+
+            fileInfo = fileInfo +
+                    "" + (30-i) + "," + dist + "\n";
+            Log.v("BOK", "i " + i + " dist: " + dist);
+            if(i == 0){
+                lastDist = dist;
+            }
+            else
+            {
+                if (dist < 35){
+                    Log.v("BOK", "tt angle " + (30-i)
+                            + " dist " + dist + " last dist " + lastDist);
+                    //opMode.sleep(1000);
+                    break;
+                }
+                lastDist = dist;
+                lastI = i;
+                //break;
+            }
+        }
+        ReadWriteFile.writeFile(file, fileInfo);
+        return 30-lastI;
     }
 }

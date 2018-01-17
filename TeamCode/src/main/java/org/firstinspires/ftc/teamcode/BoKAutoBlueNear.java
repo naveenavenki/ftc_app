@@ -15,9 +15,10 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     private static final double TIMEOUT_CENTER = 5;
     private static final double TIMEOUT_RIGHT = 6;
 
-    private static final double DISTANCE_TO_LEFT_COL = 21; // inches!!
-    private static final double DISTANCE_TO_CENTER_COL = 29;
-    private static final double DISTANCE_TO_RIGHT_COL = 37;
+    private static final double DISTANCE_TO_LEFT_COL = 5.5;  // 21 // inches!!
+    private static final double DISTANCE_TO_CENTER_COL = 3;  // 29
+    private static final double DISTANCE_TO_RIGHT_COL = 9.5; // 37
+    private static final double DISTANCE_BACK_TO_CRYPTO = 9.25;
 
     // Constructor
     public BoKAutoBlueNear()
@@ -31,11 +32,15 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         // NOTE: Move backwards towards crypto
 
         // Detect Vuforia image and flick the jewel
-        Log.v("BOK", "RSF Before: " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
         detectVuforiaImgAndFlick();
 
-        // Move forward out of balancing stone
-        // Distance and timeout depends on column number; TBD
+        // Move backward out of balancing stone
+        moveRamp(DT_POWER_FOR_STONE, DISTANCE_OFF_BALANCE, false, DT_TIMEOUT);
+
+        // Move to the blue line
+        moveUntilColor(DT_POWER_FOR_LINE, false/*back color sensor*/, DT_TIMEOUT);
+
+        // Distance and timeout to the cryptobox depends on column number
         double distance = DISTANCE_TO_LEFT_COL;
         double timeout = TIMEOUT_LEFT;
         if (cryptoColumn == RelicRecoveryVuMark.CENTER) {
@@ -47,73 +52,21 @@ public class BoKAutoBlueNear extends BoKAutoCommon
             timeout = TIMEOUT_RIGHT;
         }
 
-        // Move backward out of balancing stone
         // Distance and timeout depends on column number;
-        move(DT_POWER_FOR_STONE,
-             DT_POWER_FOR_STONE,
-             distance,
-             false,
-             timeout);
-        Log.v("BOK", "RSF After: " + robot.rangeSensorFront.getDistance(DistanceUnit.CM));
-        // Strafe to the right
-        //strafe(DT_POWER_FOR_STRAFE,
-        //       ROTATIONS_STRAFE_TO_WALL,
-        //      true,
-        //       DT_STRAFE_TIMEOUT);
-
-        moveToCrypto();
-        gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 10, false, DT_TIMEOUT);
-        moveGlyphFlipper(GF_TIMEOUT);
-
-        // setup the glyph wrist and open the claw
-        robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
-        robot.glyphClawWrist.setPosition(0.35);
-        moveUpperArm(45, 0.4, UA_TIMEOUT);
-
-        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20, true, DT_TIMEOUT);
-
-        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
-        opMode.sleep(1000);
-
-        double distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-        int countDown = 10;
-        while (distanceToGlyph > 255 && (countDown >= 0)) {
-            distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-            countDown--;
-        }
-        if (distanceToGlyph > 10) {
-            move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 16, false, DT_TIMEOUT);
+        if (cryptoColumn == RelicRecoveryVuMark.LEFT) {
+            moveRamp(DT_POWER_FOR_STONE, distance, true, timeout);
         }
         else {
-
-            Log.v("BOK", "Glyph RS: " + robot.rangeSensorGA.getDistance(DistanceUnit.CM));
-
-            moveUpperArm(robot.UA_GLYPH_AT_MID, robot.UA_MOVE_POWER_UP, 2);
-            robot.glyphArm.clawWrist.setPosition(robot.CW_GLYPH_AT_MID);
-            opMode.sleep(250);
-            robot.glyphArm.clawGrab.setPosition(robot.CG_OPEN);
-            opMode.sleep(1000);
-            moveUpperArm(0, 0.4, UA_TIMEOUT);
-            robot.glyphClawWrist.setPosition(0.5);
-            opMode.sleep(1000);
-
-            distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-            while (distanceToGlyph > 255)
-                distanceToGlyph = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-            Log.v("BOK", "Glyph RS: " + distanceToGlyph);
-            distanceToGlyph -= 1.77;
-            distanceToGlyph /= 2.54;
-            move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, distanceToGlyph, true, DT_TIMEOUT);
-            robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
-            opMode.sleep(1000);
-            robot.glyphClawWrist.setPosition(0.55);
-
-            move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20 + distanceToGlyph, false, DT_TIMEOUT);
-            moveGlyphFlipper(GF_TIMEOUT);
+            moveRamp(DT_POWER_FOR_STONE, distance, false, timeout);
         }
-//        robot.glyphArm.clawGrab.setPosition(robot.CG_CLOSE);
 
-//        move(DT_POWER_FOR_STONE, DT_POWER_FOR_STONE, 20, false, DT_TIMEOUT);
+        // Move towards the crypto
+        moveToCrypto();
+
+        // Turn left 90 degrees
+        gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
+
+        // Deliver glyph to crypto
+        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO, DISTANCE_AWAY_FROM_CRYPTO);
     }
 }

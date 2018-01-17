@@ -56,8 +56,8 @@ public class BoKTele
         this.trigger_left_decrease = trigger_left_decrease;
         this.opMode = opMode;
         this.robot = robot;
-        robot.initializeImu();
-        robot.setModeForDTMotors(DcMotor.RunMode.RUN_USING_ENCODER);
+        //robot.initializeImu();
+        robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         return BoKTeleStatus.BOK_TELE_SUCCESS;
     }
 
@@ -150,7 +150,7 @@ public class BoKTele
                 if (opMode.gamepad2.dpad_down) {
                     relic_mode = true;
                     // open the glyph flipper
-                    robot.glyphFlipper.setPosition(robot.GF_FINAL);
+                    robot.glyphFlipper.setPosition(robot.GF_FINAL_TELE);
                     // turn the relic arm
                     robot.relicArm.setPosition(robot.RA_DEPLOY_POS);
                     left_bumper_pressed = false;
@@ -219,11 +219,11 @@ public class BoKTele
                     robot.glyphFlipper.setPosition(robot.GF_INIT);
                 }
                 if (left_bumper_pressed){
-                    if (robot.glyphFlipper.getPosition() < robot.GF_FINAL - 0.01) {
+                    if (robot.glyphFlipper.getPosition() < robot.GF_FINAL_TELE - 0.01) {
                         robot.glyphFlipper.setPosition(
                                 robot.glyphFlipper.getPosition() + GLYPH_FLICKER_INCREMENT);
                     } else {
-                        robot.glyphFlipper.setPosition(robot.GF_FINAL);
+                        robot.glyphFlipper.setPosition(robot.GF_FINAL_TELE);
                         left_bumper_pressed = false; // stop moving the glyph flipper
                     }
                 }
