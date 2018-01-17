@@ -158,13 +158,11 @@ public abstract class BoKAutoCommon implements BoKAuto
         relicTrackables = vuforiaFTC.loadTrackablesFromAsset("RelicVuMark");
         relicTemplate = relicTrackables.get(0);
 
-        //robot.setModeForDTMotors(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Log.v("BOK", "Done initializing software");
         this.opMode = opMode;
         this.robot = robot;
 
         setupRobot();
-        //robot.resetDTEncoders(); // prepare for autonomous
         return BoKAutoStatus.BOK_AUTO_SUCCESS;
     }
 
@@ -468,8 +466,8 @@ public abstract class BoKAutoCommon implements BoKAuto
                 Log.v("BOK", "VuMark " + vuMark + " visible");
 
                 /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
-                 * it is perhaps unlikely that you will actually need to act on this pose information, but
-                 * we illustrate it nevertheless, for completeness. */
+                 * it is perhaps unlikely that you will actually need to act on this pose
+                 * information, but we illustrate it nevertheless, for completeness. */
                 OpenGLMatrix pose =
                     ((VuforiaTrackableDefaultListener)
                         relicTemplate.getListener()).getRawUpdatedPose();
@@ -615,6 +613,7 @@ public abstract class BoKAutoCommon implements BoKAuto
         // Ensure that the opmode is still active
         if (opMode.opModeIsActive()) {
 
+            boolean rampUp = false, steady = false, rampDn = false;
             robot.resetDTEncoders();
             int targetEncCount = robot.startMove(DT_RAMP_SPEED_INIT,
                                                  DT_RAMP_SPEED_INIT,
@@ -637,31 +636,38 @@ public abstract class BoKAutoCommon implements BoKAuto
                 }
                 int lfEncCount = Math.abs(robot.getLFEncCount());
                 if (lfEncCount < rampupEncCount) {
-                    double power = DT_RAMP_SPEED_INIT + ratePower*lfEncCount;
-                    //Log.v("BOK", lfEncCount + " power Up: " + String.format("%.2f", power));
-                    if (forward) {
-                        robot.setPowerToDTMotors(power, power, -power, -power);
-                    }
-                    else {
-                        robot.setPowerToDTMotors(-power, -power, power, power);
+                    if (!rampUp) {
+                        double power = DT_RAMP_SPEED_INIT + ratePower * lfEncCount;
+                        //Log.v("BOK", lfEncCount + " power Up: " + String.format("%.2f", power));
+                        if (forward) {
+                            robot.setPowerToDTMotors(power, power, -power, -power);
+                        } else {
+                            robot.setPowerToDTMotors(-power, -power, power, power);
+                        }
+                        rampUp = true;
                     }
                 }
                 else if (lfEncCount < rampdnEncCount) {
-                    if (forward) {
-                        robot.setPowerToDTMotors(maxPower, maxPower, -maxPower, -maxPower);
-                    }
-                    else {
-                        robot.setPowerToDTMotors(-maxPower, -maxPower, maxPower, maxPower);
+                    if (!steady) {
+                        if (forward) {
+                            robot.setPowerToDTMotors(maxPower, maxPower, -maxPower, -maxPower);
+                        } else {
+                            robot.setPowerToDTMotors(-maxPower, -maxPower, maxPower, maxPower);
+                        }
+                        steady = true;
                     }
                 }
                 else {
-                    double power = DT_RAMP_SPEED_INIT - ratePower*(lfEncCount - targetEncCount);
-                    //Log.v("BOK", lfEncCount + " power dn: " + String.format("%.2f", power));
-                    if (forward) {
-                        robot.setPowerToDTMotors(power, power, -power, -power);
-                    }
-                    else {
-                        robot.setPowerToDTMotors(-power, -power, power, power);
+                    if (!rampDn) {
+                        double power = DT_RAMP_SPEED_INIT -
+                                ratePower * (lfEncCount - targetEncCount);
+                        //Log.v("BOK", lfEncCount + " power dn: " + String.format("%.2f", power));
+                        if (forward) {
+                            robot.setPowerToDTMotors(power, power, -power, -power);
+                        } else {
+                            robot.setPowerToDTMotors(-power, -power, power, power);
+                        }
+                        rampDn = true;
                     }
                 }
             }
@@ -1237,11 +1243,9 @@ public abstract class BoKAutoCommon implements BoKAuto
             runTime.reset();
             if (forward) {
                 cs = robot.sensorColorFront;
-                //robot.setPowerToDTMotors(leftPower, leftPower, -rightPower, -rightPower);
             }
             else {
                 cs = robot.sensorColorBack;
-                //robot.setPowerToDTMotors(-leftPower, -leftPower, rightPower, rightPower);
             }
             //double time = 0;
             double power_factor = 1;
@@ -1268,7 +1272,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                     robot.setPowerToDTMotors(-(power_factor*power), -(power_factor*power),
                             (power_factor*power), (power_factor*power));
                 }
-                Log.v("BOK", "Color: "+ currentColor[0] + ", power: " + power_factor*power);
+                //Log.v("BOK", "Color: "+ currentColor[0] + ", power: " + power_factor*power);
                 if (forward) {
                     if ((currentColor[0] > 300) || (currentColor[0] < 5)) {
                         Log.v("BOK", "reached red: " + currentColor[0]);
