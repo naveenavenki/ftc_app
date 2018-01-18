@@ -34,7 +34,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
@@ -108,6 +107,7 @@ public abstract class BoKAutoCommon implements BoKAuto
     protected boolean foundRedOnLeft = false;
 
     private Orientation angles;
+    private BoKSemaphore deliverGlyphToFlipperSem = null;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(appUtil.getActivity())
     {
@@ -319,6 +319,7 @@ public abstract class BoKAutoCommon implements BoKAuto
                 relicTrackables.deactivate();
                 CameraDevice.getInstance().setFlashTorchMode(false);
                 robot.setPowerToDTMotors(0,0,0,0);
+                robot.glyphClawGrab.setPosition(robot.CG_CLOSE);
                 if (!robotPosition.isEmpty()) {
                     Log.v("BOK", robotPosition +
                             String.format("xOffset %.1f, zOffset: %.1f", tXOffset, tZOffset));
@@ -1202,34 +1203,11 @@ public abstract class BoKAutoCommon implements BoKAuto
                 break;
             }
             //opMode.telemetry.update();
-            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
         }
         robot.upperArm.setPower(0);
         // Turn off RUN_TO_POSITION
         robot.upperArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void moveTurnTable(double targetAngleDegrees, double power, double waitForSec)
-    {
-        robot.turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        int target = (int) robot.glyphArm.getTargetEncCountTT(targetAngleDegrees);
-        runTime.reset();
-        //Log.v("BOK", "Target (arm): " + target);
-
-        robot.turnTable.setTargetPosition(target);
-        robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.turnTable.setPower(power);
-        while (opMode.opModeIsActive() && robot.turnTable.isBusy()) {
-            if (runTime.seconds() >= waitForSec) {
-                Log.v("BOK", "moveTurnTable timed out!" + String.format(" %.1f", waitForSec));
-                break;
-            }
-            //opMode.telemetry.update();
-            opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
-        }
-        robot.turnTable.setPower(0);
-        // Turn off RUN_TO_POSITION
-        robot.turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     protected void moveUntilColor(double power,
@@ -1293,9 +1271,54 @@ public abstract class BoKAutoCommon implements BoKAuto
         }
     }
 
-    protected void deliverGlyphToCrypto(double distanceBackToCrypto, double moveForward)
+    class DeliverGlyphToFlipper extends Thread
     {
+        BoKSemaphore boKSemaphore = null;
+        double upperArmFinalDeg;
+        double clawWristFinalPos;
+
+        public DeliverGlyphToFlipper(BoKSemaphore s, double uaFinalDeg, double cwFinalPos) {
+            boKSemaphore = s;
+            upperArmFinalDeg = uaFinalDeg;
+            clawWristFinalPos = cwFinalPos;
+        }
+
+        @Override
+        public void run() {
+            robot.glyphArm.clawWrist.setPosition(robot.CW_GLYPH_AT_MID);
+            moveUpperArm(robot.UA_GLYPH_AT_MID, robot.UA_MOVE_POWER_UP, DT_TIMEOUT);
+            robot.glyphClawGrab.setPosition(robot.CG_OPEN);
+            try {
+                sleep(250);
+            } catch (InterruptedException e) {
+
+            }
+            moveUpperArm(100, robot.UA_MOVE_POWER_DN, DT_TIMEOUT);
+            // then signal
+            boKSemaphore.take();
+            moveUpperArm(upperArmFinalDeg, robot.UA_MOVE_POWER_DN, DT_TIMEOUT);
+            robot.glyphArm.clawWrist.setPosition(clawWristFinalPos);
+        }
+    }
+
+    protected void deliverGlyphToCrypto(double distanceBackToCrypto,
+                                        double moveForward,
+                                        double uaFinalDeg,
+                                        double cwFinalPos)
+    {
+        deliverGlyphToFlipperSem = new BoKSemaphore();
+        DeliverGlyphToFlipper deliverGlyph =
+                new DeliverGlyphToFlipper(deliverGlyphToFlipperSem, uaFinalDeg, cwFinalPos);
+        deliverGlyph.start();
         moveRamp(DT_POWER_FOR_STONE, distanceBackToCrypto, false, DT_TIMEOUT);
+        if (opMode.opModeIsActive()) {
+            try {
+                deliverGlyphToFlipperSem.release();
+            } catch (InterruptedException e) {
+                Log.v("BOK", "Received exception: " + e.getMessage());
+            }
+        }
+
         moveGlyphFlipper(GF_TIMEOUT);
         opMode.sleep(500);
 
@@ -1304,92 +1327,96 @@ public abstract class BoKAutoCommon implements BoKAuto
         moveRamp(DT_POWER_FOR_STONE, moveForward, true, DT_TIMEOUT);
     }
 
-    protected int sweepUltraSonic()
+    private double getRangeSensorDistance(ModernRoboticsI2cRangeSensor rs, int count, int min)
+    {
+        double distance = Double.MAX_VALUE;
+        do {
+            distance = rs.getDistance(DistanceUnit.CM);
+            count--;
+        } while ((distance < min) || (distance > 255) || (count > 0));
+        return distance;
+    }
+
+    public void moveTurnTable(double targetAngleDegrees, double power, double waitForSec)
+    {
+        //robot.turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        int target = (int) robot.glyphArm.getTargetEncCountTT(targetAngleDegrees);
+        runTime.reset();
+        //Log.v("BOK", "Target (tt): " + target);
+
+        robot.turnTable.setTargetPosition(target);
+        robot.turnTable.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.turnTable.setPower(power);
+        while (opMode.opModeIsActive() && robot.turnTable.isBusy()) {
+            if (runTime.seconds() >= waitForSec) {
+                Log.v("BOK", "moveTurnTable timed out!" + String.format(" %.1f", waitForSec));
+                break;
+            }
+            //opMode.telemetry.update();
+            //opMode.sleep(BoKHardwareBot.OPMODE_SLEEP_INTERVAL_MS_SHORT);
+        }
+        robot.turnTable.setPower(0);
+        // Turn off RUN_TO_POSITION
+        robot.turnTable.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    protected int sweepUltraSonic(int limitAngle, boolean leftToRight, boolean logToFile)
     {
         String fileName = "BoKUSPositions.csv";
-        File file = AppUtil.getInstance().getSettingsFile(fileName);
-        String fileInfo = "ttDegrees, usDist \n";
+        String sInfo = "ttDegrees, usDist \n";
+        File file = null;
+        if (logToFile)
+            file = AppUtil.getInstance().getSettingsFile(fileName);
+
+        // initial setup
+        int i = 0;
         moveUpperArm(55, 0.4, 4);
         robot.glyphClawWrist.setPosition(0.29);
         robot.glyphClawGrab.setPosition(robot.CG_OPEN);
-        moveTurnTable(30, 0.4, 3);
-        double lastDist = 0;
-        int lastI = 30;
-        for(int i = 0; i <= 60; i+=2)
+        moveTurnTable(limitAngle, 0.4, 3);
+        Log.v("BOK", "Initial angle: " + limitAngle);
+        int maxI = Math.abs(limitAngle*2);
+
+        for(i = 0; i <= maxI; i+=2)
         {
-            double [] distance = { 0, 0, 0};
-            int count = 5;
-            do {
-                distance[0] = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-                count--;
-            } while ((distance[0] > 255) || (count > 0));
-            opMode.sleep(10);
-            count = 5;
-            do {
-                distance[1] = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-                count--;
-            } while ((distance[1] > 255) || (count > 0));
-            opMode.sleep(10);
-            count = 5;
-
-            do {
-                distance[2] = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-                count--;
-            } while ((distance[2] > 255) || (count > 0));
-            int minIndex = 0, maxIndex = 0;
-            if (distance[0] < distance[1]) {
-                maxIndex = 1;
-            }
-            else {
-                maxIndex = 0;
-                minIndex = 1;
-            }
-            if (distance[2] < distance[maxIndex]) {
-                if (distance[2] < distance[minIndex])
-                    minIndex = 2;
-            }
-            else {
-                maxIndex = 2;
-            }
-            int j = 0;
-            for (j = 0; j < 3; j++) {
-                if ((j != minIndex) && (j != maxIndex)) {
-                    break;
+            double distance = 0;
+            for (int j = 0; j < 3; j++) {
+                distance = getRangeSensorDistance(robot.rangeSensorGA, 5, 20);
+                if (distance == Double.MAX_VALUE) {
+                    opMode.sleep(10);
+                    continue;
                 }
+                break;
             }
 
-            Log.v("BOK", "values: " + distance[0] + ", " + distance[1] + ", " + distance[2]);
-            double dist = distance[j];
+            if (leftToRight)
+                moveTurnTable(limitAngle-i, 0.4, 3);
+            else
+                moveTurnTable(limitAngle+i, 0.4, 3);
 
-            moveTurnTable(30-i, 0.4, 3);
-            //int count = 5;
-            //while(dist > 255 && (count > 0)){
-            //    dist = robot.rangeSensorGA.getDistance(DistanceUnit.CM);
-             //   count--;
-            //}
-            if ((dist > 80) || (dist < 15))
+            Log.v("BOK", "i " + i + " distance: " + distance);
+            if ((distance > 80) || (distance < 20))
                 continue;
 
-            fileInfo = fileInfo +
-                    "" + (30-i) + "," + dist + "\n";
-            Log.v("BOK", "i " + i + " dist: " + dist);
-            if(i == 0){
-                lastDist = dist;
+            if (logToFile) {
+                if (leftToRight)
+                    sInfo = sInfo + (limitAngle-i) + "," + distance + "\n";
+                else
+                    sInfo = sInfo + (limitAngle+i) + "," + distance + "\n";
             }
-            else
-            {
-                if (dist < 35){
-                    Log.v("BOK", "tt angle " + (30-i)
-                            + " dist " + dist + " last dist " + lastDist);
-                    //opMode.sleep(1000);
-                    break;
-                }
-                lastDist = dist;
-                lastI = i;
-                //break;
+
+            if (distance < 35){
+                if (leftToRight)
+                    Log.v("BOK", "tt angle " + (limitAngle-i)
+                            + " distance " + distance);
+                else
+                    Log.v("BOK", "tt angle " + (limitAngle+i)
+                            + " distance " + distance);
+                break;
             }
         }
-        ReadWriteFile.writeFile(file, fileInfo);
-        return 30-lastI;
+        if (logToFile)
+            ReadWriteFile.writeFile(file, sInfo);
+        return limitAngle-i;
     }
 }
