@@ -11,7 +11,7 @@ public class BoKAutoRedFar extends BoKAutoCommon {
     private static double TIMEOUT_CENTER = 6;
     private static double TIMEOUT_LEFT = 8;
     private static double DT_MOVE_TO_CRYPTO = 29.5;//inches
-    private static final double DISTANCE_BACK_TO_CRYPTO = 7;
+    private static final double DISTANCE_BACK_TO_CRYPTO_RF = 7;
     private static int DISTANCE_TO_RIGHT_COL_CM = 61;//cm
     private static int DISTANCE_TO_CENTER_COL_CM = 80;//43;//cm
     private static int DISTANCE_TO_LEFT_COL_CM = 97;//cm
@@ -59,6 +59,9 @@ public class BoKAutoRedFar extends BoKAutoCommon {
         gyroTurn(DT_TURN_SPEED_HIGH, current_angle, 180, DT_TURN_TIMEOUT*3);
 
         // Deliver the glyph to crypto
-        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO, DISTANCE_AWAY_FROM_CRYPTO);
+        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO_RF,
+                DISTANCE_AWAY_FROM_CRYPTO,
+                UA_INIT_ANGLE,
+                robot.wristInitPosFromFile);
     }
 }

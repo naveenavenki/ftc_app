@@ -60,6 +60,9 @@ public class BoKAutoBlueFar extends BoKAutoCommon
         //turn left 90 degrees
         gyroTurn(DT_TURN_SPEED_HIGH, current_angle, 0, DT_TURN_TIMEOUT*3);
 
-        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO, DISTANCE_AWAY_FROM_CRYPTO);
+        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO,
+                             DISTANCE_AWAY_FROM_CRYPTO,
+                             UA_INIT_ANGLE,
+                             robot.wristInitPosFromFile);
     }
 }

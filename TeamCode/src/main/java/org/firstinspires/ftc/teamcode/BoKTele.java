@@ -158,7 +158,7 @@ public class BoKTele
                     if (relic_extend_delay_count == 0) { // only once
                         // fold the wrist & bring down the upper arm
                         robot.glyphArm.moveUpperArmEncCount(0, robot.UA_MOVE_POWER_DN);
-                        robot.glyphClawWrist.setPosition(robot.CW_INIT);
+                        robot.glyphClawWrist.setPosition(robot.wristInitPosFromFile);
                         if (!opMode.gamepad2.y)
                             // delay deploying the relic lift so that the wires are not tangled
                             relic_extend_delay_count = 1;

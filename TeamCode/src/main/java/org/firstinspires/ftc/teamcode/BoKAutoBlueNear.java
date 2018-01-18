@@ -18,7 +18,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
     private static final double DISTANCE_TO_LEFT_COL = 5.5;  // 21 // inches!!
     private static final double DISTANCE_TO_CENTER_COL = 3;  // 29
     private static final double DISTANCE_TO_RIGHT_COL = 9.5; // 37
-    private static final double DISTANCE_BACK_TO_CRYPTO = 9.25;
+    private static final double DISTANCE_BACK_TO_CRYPTO_BN = 9.25;
 
     // Constructor
     public BoKAutoBlueNear()
@@ -38,7 +38,7 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         moveRamp(DT_POWER_FOR_STONE, DISTANCE_OFF_BALANCE, false, DT_TIMEOUT);
 
         // Move to the blue line
-        moveUntilColor(DT_POWER_FOR_LINE, false/*back color sensor*/, DT_TIMEOUT);
+        moveUntilColor(DT_POWER_FOR_LINE, false, DT_TIMEOUT);
 
         // Distance and timeout to the cryptobox depends on column number
         double distance = DISTANCE_TO_LEFT_COL;
@@ -67,6 +67,9 @@ public class BoKAutoBlueNear extends BoKAutoCommon
         gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
 
         // Deliver glyph to crypto
-        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO, DISTANCE_AWAY_FROM_CRYPTO);
+        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO_BN,
+                DISTANCE_AWAY_FROM_CRYPTO,
+                UA_INIT_ANGLE,
+                robot.wristInitPosFromFile);
     }
 }

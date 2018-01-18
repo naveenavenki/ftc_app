@@ -18,7 +18,6 @@ import android.util.Log;
 //@Disabled
 public class BoKSetupOpMode extends LinearOpMode
 {
-    private static final double INIT_ANGLE = 16;
     private static final double UA_POWER = 0.2;
     private static final double GAME_TRIGGER_DEAD_ZONE = 0.2;
     private static final double UPPER_ARM_STICK_DEAD_ZONE = 0.2;
@@ -75,7 +74,7 @@ public class BoKSetupOpMode extends LinearOpMode
 
             if (gamepad2.a && !moveOnce) {
                 moveOnce = true;
-                moveUpperArm(INIT_ANGLE, UA_POWER);
+                moveUpperArm(BoKAuto.UA_INIT_ANGLE, UA_POWER);
             }
 
             if (gamepad2.b && moveOnce) {

@@ -18,7 +18,7 @@ public class BoKAutoRedNear extends BoKAutoCommon {
     private static final double DISTANCE_TO_RIGHT_COL = 5.75;  // 32.5 // inches!!
     private static final double DISTANCE_TO_CENTER_COL = 14;   // 40
     private static final double DISTANCE_TO_LEFT_COL = 21.25;  // 47
-    private static final double DISTANCE_BACK_TO_CRYPTO = 10.75;
+    private static final double DISTANCE_BACK_TO_CRYPTO_RN = 10.75;
 
     // Constructor
     public BoKAutoRedNear()
@@ -58,6 +58,9 @@ public class BoKAutoRedNear extends BoKAutoCommon {
         gyroTurn(DT_TURN_SPEED_HIGH, 0, TURN_LEFT_DEGREES, DT_TURN_TIMEOUT);
 
         // Deliver glyph to crypto
-        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO, DISTANCE_AWAY_FROM_CRYPTO);
+        deliverGlyphToCrypto(DISTANCE_BACK_TO_CRYPTO_RN,
+                DISTANCE_AWAY_FROM_CRYPTO,
+                UA_INIT_ANGLE,
+                robot.wristInitPosFromFile);
     }
 }
